@@ -203,6 +203,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sector = searchParams.get("sector")?.toLowerCase() || "";
   const location = searchParams.get("location")?.toLowerCase() || "";
+  const search = searchParams.get("search")?.toLowerCase() || "";
 
   let filtered = [...jobs];
 
@@ -218,6 +219,17 @@ export async function GET(request: Request) {
       (j) =>
         j.location.toLowerCase().includes(location) ||
         j.country.toLowerCase().includes(location)
+    );
+  }
+  if (search) {
+    filtered = filtered.filter(
+      (j) =>
+        j.title.toLowerCase().includes(search) ||
+        j.company.toLowerCase().includes(search) ||
+        j.description.toLowerCase().includes(search) ||
+        j.sector.toLowerCase().includes(search) ||
+        j.location.toLowerCase().includes(search) ||
+        j.country.toLowerCase().includes(search)
     );
   }
 
