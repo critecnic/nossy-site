@@ -73,7 +73,7 @@ function SimulatedMap({ jobs, onMarkerClick, T }: { jobs: Job[]; onMarkerClick: 
             <g key={job.id} className="cursor-pointer" onClick={() => onMarkerClick(job)} onMouseEnter={() => setHoveredId(job.id)} onMouseLeave={() => setHoveredId(null)}>
               <circle cx={x} cy={y} r={isH ? 14 : 10} fill="#0ea5e9" opacity="0.2"><animate attributeName="r" values="8;14;8" dur="3s" repeatCount="indefinite" /></circle>
               <circle cx={x} cy={y} r={isH ? 6 : 4} fill="#0ea5e9" className={isH ? "" : "marker-bounce"} />
-              {isH && (<g className="animate-scale-in"><rect x={x-70} y={y-40} width="140" height="28" rx="6" fill="rgba(15,23,42,0.9)" stroke="#0ea5e9" strokeWidth="1" /><text x={x} y={y-22} textAnchor="middle" fill="white" fontSize="11" fontWeight="600">{job.title.length > 22 ? job.title.slice(0,22)+"..." : job.title}</text></g>)}
+              {isH && (<g className="animate-tooltip"><rect x={x-70} y={y-40} width="140" height="28" rx="6" fill="rgba(15,23,42,0.92)" stroke="#0ea5e9" strokeWidth="1" /><text x={x} y={y-22} textAnchor="middle" fill="white" fontSize="11" fontWeight="600">{job.title.length > 22 ? job.title.slice(0,22)+"..." : job.title}</text><text x={x} y={y-32} textAnchor="middle" fill="#38bdf8" fontSize="8" fontWeight="500">{job.location.length > 20 ? job.location.slice(0,20)+"..." : job.location}</text></g>)}
             </g>
           );
         })}
@@ -147,10 +147,13 @@ function AnimatedCounter({ end, label, suffix = "" }: { end: number; label: stri
 }
 
 function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+  const [exiting, setExiting] = useState(false);
+  const handleRemove = () => { setExiting(true); setTimeout(onRemove, 280); };
+  if (exiting) return <span className="chip-exit inline-flex items-center gap-1 rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-xs font-medium text-sky-700">{label}</span>;
   return (
-    <span className="animate-fade-in-up inline-flex items-center gap-1 rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-xs font-medium text-sky-700 transition-all hover:bg-sky-100">
+    <span className="animate-fade-in-up ripple-effect inline-flex items-center gap-1 rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-xs font-medium text-sky-700 transition-all hover:bg-sky-100 hover:border-sky-300 cursor-default">
       {label}
-      <button onClick={onRemove} className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-sky-200 hover:text-sky-900">
+      <button onClick={handleRemove} className="ml-0.5 rounded-full p-0.5 transition-all hover:bg-sky-200 hover:text-sky-900 hover:rotate-90 duration-300">
         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
     </span>
@@ -322,21 +325,21 @@ export default function HomePage() {
               <svg className="h-4 w-4 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               {T.filterByLocation}
             </div>
-            <select value={selCountry} onChange={(e) => { setSelCountry(e.target.value); setSelState(""); setSelCity(""); }} className="location-select custom-scrollbar rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-8 text-sm font-medium text-gray-700 outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-100 cursor-pointer">
+            <select value={selCountry} onChange={(e) => { setSelCountry(e.target.value); setSelState(""); setSelCity(""); }} className={`location-select custom-scrollbar rounded-xl border px-4 py-2.5 pr-8 text-sm font-medium text-gray-700 outline-none transition-all cursor-pointer ${selCountry ? "border-sky-300 bg-sky-50/50 select-glow" : "border-gray-200 bg-gray-50"} focus:border-sky-400 focus:ring-2 focus:ring-sky-100`}>
               <option value="">{T.allCountries}</option>
               {countriesSorted.map((c) => (<option key={c.code} value={c.code}>{c.flag} {getCountryName(c, lang)}</option>))}
             </select>
-            <select value={selState} onChange={(e) => { setSelState(e.target.value); setSelCity(""); }} disabled={!selCountry} className="location-select custom-scrollbar rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-8 text-sm font-medium text-gray-700 outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+            <select value={selState} onChange={(e) => { setSelState(e.target.value); setSelCity(""); }} disabled={!selCountry} className={`location-select custom-scrollbar rounded-xl border px-4 py-2.5 pr-8 text-sm font-medium text-gray-700 outline-none transition-all cursor-pointer ${selState ? "border-sky-300 bg-sky-50/50 select-glow" : selCountry ? "border-gray-200 bg-gray-50" : "border-gray-100 bg-gray-50"} focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:opacity-40 disabled:cursor-not-allowed`}>
               <option value="">{selCountry ? T.allStates : T.selectCountry}</option>
               {states.map((s) => (<option key={s.name} value={s.name}>{s.name}</option>))}
             </select>
-            <select value={selCity} onChange={(e) => setSelCity(e.target.value)} disabled={!selState} className="location-select custom-scrollbar rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-8 text-sm font-medium text-gray-700 outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+            <select value={selCity} onChange={(e) => setSelCity(e.target.value)} disabled={!selState} className={`location-select custom-scrollbar rounded-xl border px-4 py-2.5 pr-8 text-sm font-medium text-gray-700 outline-none transition-all cursor-pointer ${selCity ? "border-sky-300 bg-sky-50/50 select-glow" : selState ? "border-gray-200 bg-gray-50" : "border-gray-100 bg-gray-50"} focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:opacity-40 disabled:cursor-not-allowed`}>
               <option value="">{selState ? T.allCities : T.selectState}</option>
               {cities.map((c) => (<option key={c.name} value={c.name}>{c.name}</option>))}
             </select>
             {hasFilters && (
-              <button onClick={clearFilters} className="ml-auto flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 active:scale-95">
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <button onClick={clearFilters} className="ml-auto flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-red-500 transition-all hover:bg-red-50 hover:text-red-600 active:scale-90 ripple-effect">
+                <svg className="h-3.5 w-3.5 transition-transform hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 {T.clearFilters}
               </button>
             )}
@@ -362,13 +365,13 @@ export default function HomePage() {
             <div className="h-px flex-1 bg-gray-200" />
           </div>
           <div className="flex gap-2 overflow-x-auto sector-scroll pb-1">
-            <button onClick={() => handleSectorClick("")} className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${!selSector ? "bg-slate-800 text-white shadow-md scale-105" : "bg-white text-gray-600 border border-gray-200 hover:border-sky-300 hover:text-sky-600"}`}>{T.allSectors}</button>
+            <button onClick={() => handleSectorClick("")} className={`ripple-effect flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${!selSector ? "bg-slate-800 text-white shadow-md scale-105 pulse-ring" : "bg-white text-gray-600 border border-gray-200 hover:border-sky-300 hover:text-sky-600"}`}>{T.allSectors}</button>
             {SECTORS.map((s) => {
               const sName = sectorNames[lang]?.[s.key] || s.key;
               const active = selSector === s.key;
               return (
-                <button key={s.key} onClick={() => handleSectorClick(s.key)} className={`flex-shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${active ? `bg-gradient-to-r ${s.color} text-white shadow-md scale-105` : "bg-white text-gray-600 border border-gray-200 hover:border-sky-300 hover:text-sky-600"}`}>
-                  <span>{s.icon}</span><span>{sName}</span>
+                <button key={s.key} onClick={() => handleSectorClick(s.key)} className={`ripple-effect flex-shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${active ? `bg-gradient-to-r ${s.color} text-white shadow-lg scale-105 sector-pop` : "bg-white text-gray-600 border border-gray-200 hover:border-sky-300 hover:text-sky-600 hover:shadow-sm"}`}>
+                  <span className="text-base">{s.icon}</span><span>{sName}</span>
                 </button>
               );
             })}
@@ -388,14 +391,12 @@ export default function HomePage() {
 
       {/* MAP */}
       <section id="map" className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">{T.exploreMap}</h2>
         <SimulatedMap jobs={jobs} onMarkerClick={handleMapClick} T={T} />
       </section>
 
       {/* JOBS */}
       <section id="jobs" className="mx-auto max-w-7xl px-4 sm:px-6 pb-16">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">{T.recentJobs}</h2>
+        <div className="mb-6 flex items-center justify-end">
           <div className="flex items-center gap-2">
             {loading && (
               <div className="flex items-center gap-1.5 text-xs text-sky-500 animate-fade-in-up">
@@ -403,7 +404,7 @@ export default function HomePage() {
                 {T.filtering}
               </div>
             )}
-            <span className={`text-sm transition-all duration-300 ${filterPulse ? "text-sky-500 font-bold scale-105" : "text-gray-500"}`}>{jobs.length} {T.results}</span>
+            <span className={`number-transition text-sm font-medium ${filterPulse ? "text-sky-500 scale-110" : "text-gray-500"}`}><span className="font-bold">{jobs.length}</span> {T.results}</span>
           </div>
         </div>
         {loading ? (
@@ -419,11 +420,11 @@ export default function HomePage() {
             ))}
           </div>
         ) : jobs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-4 text-5xl">{"\uD83D\uDD0D"}</div>
+          <div className="animate-bounce-in flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-4 text-6xl animate-bounce">{"\uD83D\uDD0D"}</div>
             <h3 className="text-lg font-semibold text-gray-700">{T.noJobs}</h3>
-            <p className="mt-1 text-sm text-gray-500">{T.noJobsSub}</p>
-            {hasFilters && (<button onClick={clearFilters} className="mt-4 rounded-lg bg-sky-500 px-4 py-2 text-sm font-medium text-white hover:bg-sky-600 transition-colors active:scale-95">{T.clearFilters}</button>)}
+            <p className="mt-2 text-sm text-gray-500 max-w-xs">{T.noJobsSub}</p>
+            {hasFilters && (<button onClick={clearFilters} className="mt-5 ripple-effect rounded-xl bg-sky-500 px-6 py-2.5 text-sm font-medium text-white shadow-md hover:bg-sky-600 hover:shadow-lg transition-all active:scale-95">{T.clearFilters}</button>)}
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -438,7 +439,6 @@ export default function HomePage() {
           <div className="mb-4 inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-sm">
             <svg className="h-7 w-7 text-sky-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">{T.newsletter}</h2>
           <p className="mb-8 text-sky-200">{T.newsletterSub}</p>
           {!nlSent ? (
             <div className="mx-auto max-w-md space-y-3">
@@ -447,9 +447,10 @@ export default function HomePage() {
               <button onClick={() => { if (nlName && nlEmail) setNlSent(true); }} className="w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-sky-400 hover:shadow-xl active:scale-[0.98]">{T.subscribe}</button>
             </div>
           ) : (
-            <div className="animate-scale-in rounded-2xl bg-white/10 border border-white/20 px-6 py-8 backdrop-blur-sm">
-              <div className="mb-3 text-4xl">{"\u2705"}</div>
+            <div className="animate-scale-in rounded-2xl bg-white/10 border border-sky-400/30 px-6 py-8 backdrop-blur-sm shadow-lg shadow-sky-500/10">
+              <div className="mb-3 text-5xl">{"\u2705"}</div>
               <p className="text-lg font-semibold text-white">{T.subscribed}</p>
+              <p className="mt-2 text-sm text-sky-200">{T.newsletterSub}</p>
             </div>
           )}
         </div>
