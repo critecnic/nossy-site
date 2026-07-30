@@ -1,4 +1,7 @@
-export type Lang = "en" | "pt-br" | "pt-pt" | "es" | "fr" | "zh" | "ja" | "ar" | "de" | "hi";
+#!/usr/bin/env python3
+"""Generate i18n.ts with 10 languages for W-W Global"""
+
+output = '''export type Lang = "en" | "pt-br" | "pt-pt" | "es" | "fr" | "zh" | "ja" | "ar" | "de" | "hi";
 
 export interface LangConfig { code: Lang; flag: string; name: string; dir: "ltr" | "rtl"; }
 
@@ -216,17 +219,17 @@ const t: Record<Lang, Record<string, string>> = {
     "allCities": "Toutes les Villes",
     "selectCountry": "Sélectionnez un pays...",
     "selectState": "Sélectionnez une région...",
-    "sectors": "Secteurs d'Activité",
+    "sectors": "Secteurs d\'Activité",
     "allSectors": "Tous les Secteurs",
     "results": "résultats trouvés",
     "posted": "Publié",
     "type": "Type",
-    "unlock": "Débloquer l'Entreprise",
+    "unlock": "Débloquer l\'Entreprise",
     "newsletter": "Restez Informé",
-    "newsletterSub": "Abonnez-vous pour recevoir les dernières offres d'emploi dans votre domaine.",
+    "newsletterSub": "Abonnez-vous pour recevoir les dernières offres d\'emploi dans votre domaine.",
     "name": "Nom Complet",
     "email": "Adresse E-mail",
-    "subscribe": "S'abonner Maintenant",
+    "subscribe": "S\'abonner Maintenant",
     "subscribed": "Vous êtes abonné ! Vérifiez votre boîte de réception.",
     "statsJobs": "Emplois Disponibles",
     "statsCompanies": "Entreprises Recrutant",
@@ -238,7 +241,7 @@ const t: Record<Lang, Record<string, string>> = {
     "filterByLocation": "Filtrer par Localisation",
     "clearFilters": "Réinitialiser les Filtres",
     "noJobs": "Aucun emploi trouvé",
-    "noJobsSub": "Essayez d'ajuster vos filtres",
+    "noJobsSub": "Essayez d\'ajuster vos filtres",
     "viewDetails": "Voir Détails",
     "privacy": "Confidentialité",
     "terms": "Conditions",
@@ -562,3 +565,9 @@ export const sectorNames: Partial<Record<Lang, Record<string, string>>> = {
 };
 
 export default t;
+'''
+
+with open('/home/z/my-project/src/lib/i18n.ts', 'w', encoding='utf-8') as f:
+    f.write(output)
+
+print('i18n.ts generated successfully with 10 languages and 36 translation keys each + 12 sector names per language')

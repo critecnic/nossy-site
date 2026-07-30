@@ -1,6 +1,9 @@
-"use client";
+#!/usr/bin/env python3
+"""Generate the homepage page.tsx and [country]/page.tsx for W-W Global"""
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+homepage = '''"use client";
+
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { COUNTRIES, TOTAL_JOBS, getCountry, type CountryConfig } from "@/lib/countries";
 import { LANGUAGES, sectorNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -45,14 +48,14 @@ const SECTORS = [
   { key: "Engineering", icon: "\uD83D\uDD27", color: "from-slate-500 to-gray-400" },
 ];
 
-function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlighted: boolean }) {
+function JobCard({ job, index, lang, highlighted }: { job: Job; index: number; lang: Lang; highlighted: boolean }) {
   const [revealed, setRevealed] = useState(false);
   const T = i18n[lang];
   const sd = SECTORS.find((s) => s.key === job.sector);
   const sName = sectorNames[lang]?.[job.sector] || job.sector;
   const countryCfg = getCountry(job.country);
   return (
-    <article className="card-hover group relative overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-300 border-gray-100">
+    <article className={`card-hover group relative overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-300 ${highlighted ? "border-sky-400 ring-2 ring-sky-100" : "border-gray-100"}`}>
       <div className={`h-1 w-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"}`} />
       <div className="p-5">
         <div className="mb-3 flex items-center justify-between">
@@ -122,7 +125,7 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
   );
 }
 
-function CountryCard({ country, T, onClick }: { country: CountryConfig; T: Record<string, string>; onClick: () => void }) {
+function CountryCard({ country, T, lang, onClick }: { country: CountryConfig; T: Record<string, string>; lang: Lang; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
@@ -143,7 +146,7 @@ function CountryCard({ country, T, onClick }: { country: CountryConfig; T: Recor
         <span className="mt-0.5 text-xs text-sky-600 font-medium">{country.currency.symbol} {country.currency.code}</span>
       </div>
       {hovered && (
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-sky-500 px-3 py-1 text-[10px] font-semibold text-white shadow-md whitespace-nowrap">
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-sky-500 px-3 py-1 text-[10px] font-semibold text-white shadow-md whitespace-nowrap animate-fade-in">
           {T.viewJobs} &rarr;
         </div>
       )}
@@ -252,7 +255,7 @@ export default function HomePage() {
           <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-sky-600/10 blur-3xl" />
         </div>
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 text-center">
-          <div className="mb-4">
+          <div className="mb-4 animate-fade-in-up">
             <span className="inline-flex items-center gap-2 rounded-full bg-sky-500/20 px-4 py-1.5 text-sm font-medium text-sky-300 backdrop-blur-sm">
               <span className="inline-block h-2 w-2 rounded-full bg-sky-400 animate-pulse" />{T.statsJobs}: {TOTAL_JOBS.toLocaleString()}+
             </span>
@@ -262,7 +265,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* STATS */}
+      {/* STATS - Lightweight counters */}
       <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 py-8 border-t border-sky-500/20">
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-4 sm:px-6 sm:grid-cols-4">
           <AnimatedCounter end={TOTAL_JOBS} suffix="+" label={T.statsJobs} />
@@ -272,7 +275,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* COUNTRY GRID */}
+      {/* COUNTRY GRID - Replaced Map */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <div className="text-center mb-8">
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{T.exploreCountries}</h2>
@@ -280,7 +283,7 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {COUNTRIES.map((country) => (
-            <CountryCard key={country.code} country={country} T={T} onClick={() => handleCountryClick(country.code)} />
+            <CountryCard key={country.code} country={country} T={T} lang={lang} onClick={() => handleCountryClick(country.code)} />
           ))}
         </div>
       </section>
@@ -346,7 +349,7 @@ export default function HomePage() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-4 text-5xl">🔍</div>
+            <div className="mb-4 text-5xl">\uD83D\uDD0D</div>
             <h3 className="text-lg font-semibold text-gray-700">{T.noJobs}</h3>
             <p className="mt-2 text-sm text-gray-500 max-w-xs">{T.noJobsSub}</p>
             {hasFilters && <button onClick={clearFilters} className="mt-5 rounded-xl bg-sky-500 px-6 py-2.5 text-sm font-medium text-white shadow-md hover:bg-sky-600 transition-all">{T.clearFilters}</button>}
@@ -373,7 +376,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="rounded-2xl bg-white/10 border border-sky-400/30 px-6 py-8 backdrop-blur-sm">
-              <div className="mb-3 text-4xl">✅</div>
+              <div className="mb-3 text-4xl">\u2705</div>
               <p className="text-lg font-semibold text-white">{T.subscribed}</p>
             </div>
           )}
@@ -397,3 +400,9 @@ export default function HomePage() {
     </div>
   );
 }
+'''
+
+with open('/home/z/my-project/src/app/page.tsx', 'w', encoding='utf-8') as f:
+    f.write(homepage)
+
+print('page.tsx generated: homepage with country grid, no map, optimized')
