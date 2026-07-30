@@ -14,28 +14,37 @@ interface JobJsonLdProps {
   sector: string;
   posted: string;
   datePosted?: string;
+  jobId?: number;
 }
 
 export function JobJsonLd({
   title, description, company, companyUrl, location, country,
-  salary, type, sector, posted, datePosted
+  salary, type, sector, posted, datePosted, jobId
 }: JobJsonLdProps) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
+    "@id": `https://ww.jobs/job/${jobId || 0}`,
     title,
-    description,
+    description: `${description} Apply now on W-W World of Work.`,
     hiringOrganization: {
       "@type": "Organization",
       name: company,
       sameAs: companyUrl,
+      logo: `${companyUrl}/logo.png`,
     },
     jobLocation: {
       "@type": "Place",
       address: {
         "@type": "PostalAddress",
-        addressLocality: location,
+        addressLocality: location.split(',')[0]?.trim() || location,
+        addressRegion: location.split(',')[1]?.trim() || '',
         addressCountry: country.code.toUpperCase(),
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: country.lat,
+        longitude: country.lng,
       },
     },
     countryRequirement: {
@@ -53,14 +62,22 @@ export function JobJsonLd({
         "@type": "QuantitativeValue",
         minValue: salary.min,
         maxValue: salary.max,
-        unitText: "YEAR",
+        unitText: salary.currency === 'INR' || salary.currency === 'JPY' || salary.currency === 'KRW' || salary.currency === 'BRL' || salary.currency === 'MXN' || salary.currency === 'IDR' || salary.currency === 'NGN' || salary.currency === 'TRY' ? "YEAR" : "YEAR",
       },
     },
     industry: sector,
+    occupationalCategory: sector,
     datePosted: datePosted || new Date(Date.now() - parsePosted(posted)).toISOString().split('T')[0],
+    validThrough: new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
     applicantLocationRequirements: {
       "@type": "CountryRequirement",
       name: country.name,
+    },
+    directApply: true,
+    identifier: {
+      "@type": "PropertyValue",
+      name: "W-W",
+      value: `ww-${jobId || 0}`,
     },
   };
 
@@ -87,15 +104,16 @@ function parsePosted(p: string): number {
 export function OrganizationJsonLd() {
   const schema = {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "W-W World of Work",
-    url: "https://ww.jobs",
-    description: "Global job platform connecting talent with opportunities in 20+ countries",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: "https://ww.jobs/search?q={search_term_string}",
-      "query-input": "required name=search_term_string",
-    },
+    "@type": "ItemList",
+    name: "W-W World of Work - All Countries",
+    description: "Browse jobs across 20 countries worldwide",
+    numberOfItems: COUNTRIES.length,
+    itemListElement: COUNTRIES.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: `Jobs in ${c.name}`,
+      url: `https://ww.jobs/${c.code}`,
+    })),
   };
 
   return (
@@ -106,25 +124,53 @@ export function OrganizationJsonLd() {
   );
 }
 
-// Multi-country listing schema
-export function CountryListingJsonLd({ countryCode, countryName, jobCount }: {
+// Country page JSON-LD with all 8 jobs as ItemList
+export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs }: {
   countryCode: string;
   countryName: string;
   jobCount: number;
+  jobs?: Array<{ id: number; title: string; company: string; location: string; }>; 
 }) {
-  const schema = {
+  const country = COUNTRIES.find(c => c.code === countryCode);
+  const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: `Jobs in ${countryName}`,
-    numberOfItems: jobCount,
-    itemListElement: {
-      "@type": "ListItem",
-      position: 1,
-      item: {
-        "@type": "WebPage",
-        name: `${countryName} Jobs - W-W`,
-        url: `https://ww.jobs/${countryCode}`,
-      },
+    "@type": "CollectionPage",
+    name: `Jobs in ${countryName} - W-W World of Work`,
+    description: `Browse ${jobCount}+ job vacancies in ${countryName}. Top companies hiring now.`,
+    url: `https://ww.jobs/${countryCode}`,
+    about: {
+      "@type": "Thing",
+      name: `${countryName} Jobs`,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      name: `Top Jobs in ${countryName}`,
+      numberOfItems: jobCount,
+      itemListElement: jobs ? jobs.map((job, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "JobPosting",
+          title: job.title,
+          hiringOrganization: {
+            "@type": "Organization",
+            name: job.company,
+          },
+          jobLocation: {
+            "@type": "Place",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: job.location,
+              addressCountry: country?.code.toUpperCase() || countryCode.toUpperCase(),
+            },
+          },
+        },
+      })) : [],
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      name: "W-W World of Work",
+      url: "https://ww.jobs",
     },
   };
 

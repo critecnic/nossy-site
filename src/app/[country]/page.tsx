@@ -189,7 +189,7 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
 
   return (
     <div className="min-h-screen bg-gray-50" dir={dir}>
-      {countryCfg && <CountryListingJsonLd countryCode={countryCfg.code} countryName={countryCfg.name} jobCount={jobs.length} />}
+      {countryCfg && <CountryListingJsonLd countryCode={countryCfg.code} countryName={countryCfg.name} jobCount={countryCfg.jobCount} jobs={jobs} />}
 
       {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
@@ -293,7 +293,7 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4">{T.featuredCountries}</h2>
           <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-10 gap-2">
-            {COUNTRIES.filter(c => c.code !== countryCode).slice(0, 10).map((c) => (
+            {COUNTRIES.filter(c => c.code !== countryCode).map((c) => (
               <button key={c.code} onClick={() => router.push(`/${c.code}`)} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-sky-50 transition-colors">
                 <span className="text-2xl">{c.flag}</span>
                 <span className="text-[10px] font-medium text-gray-600 text-center leading-tight">{c.name}</span>
