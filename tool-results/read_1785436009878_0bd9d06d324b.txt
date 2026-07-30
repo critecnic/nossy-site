@@ -1,0 +1,1544 @@
+     1→import { NextResponse } from "next/server";
+     2→
+     3→export interface Job {
+     4→  id: number;
+     5→  title: string;
+     6→  company: string;
+     7→  companyUrl: string;
+     8→  location: string;
+     9→  country: string;
+    10→  countryName: string;
+    11→  lat: number;
+    12→  lng: number;
+    13→  salary: string;
+    14→  salaryMin: number;
+    15→  salaryMax: number;
+    16→  salaryCurrency: string;
+    17→  salaryPeriod: string;
+    18→  description: string;
+    19→  sector: string;
+    20→  posted: string;
+    21→  type: string;
+    22→  contactEmail: string;
+    23→}
+    24→
+    25→const jobs: Job[] = [
+    26→  // ========== INDIA ==========
+    27→  {
+    28→    id: 1, title: "Senior Software Engineer", company: "Tata Consultancy Services",
+    29→    companyUrl: "https://tataconsultancyservices.com/careers", location: "Mumbai, Maharashtra",
+    30→    country: "in", countryName: "India", lat: 19.076, lng: 72.8777,
+    31→    salary: "₹18,00,00 - 28,00,00/yr", salaryMin: 1800000, salaryMax: 2800000, salaryCurrency: "INR", salaryPeriod: "year",
+    32→    description: "Build enterprise-scale applications for global Fortune 500 clients. Work with microservices, cloud-native architecture on AWS/Azure. Lead a team of 6 engineers delivering critical banking and retail solutions.",
+    33→    sector: "Technology", posted: "1 day ago", type: "Full-time",
+    34→    contactEmail: "careers@tata.com"
+    35→  },
+    36→  {
+    37→    id: 2, title: "Data Scientist", company: "Infosys BPM",
+    38→    companyUrl: "https://infosysbpm.com/careers", location: "Bengaluru, Karnataka",
+    39→    country: "in", countryName: "India", lat: 12.9716, lng: 77.5946,
+    40→    salary: "₹15,00,00 - 22,00,00/yr", salaryMin: 1500000, salaryMax: 2200000, salaryCurrency: "INR", salaryPeriod: "year",
+    41→    description: "Analyze large datasets to build predictive models for banking and healthcare clients. Use Python, TensorFlow, and Spark. Present findings to C-level stakeholders across Asia-Pacific operations.",
+    42→    sector: "Data Science", posted: "2 days ago", type: "Full-time",
+    43→    contactEmail: "careers@infosys.com"
+    44→  },
+    45→  {
+    46→    id: 3, title: "Product Manager", company: "Flipkart",
+    47→    companyUrl: "https://flipkart.com/careers", location: "Bengaluru, Karnataka",
+    48→    country: "in", countryName: "India", lat: 12.9716, lng: 77.5946,
+    49→    salary: "₹22,00,00 - 35,00,00/yr", salaryMin: 2200000, salaryMax: 3500000, salaryCurrency: "INR", salaryPeriod: "year",
+    50→    description: "Own the product roadmap for Flipkart supply chain technology. Manage cross-functional teams of 15+ members. Drive user growth initiatives impacting 400M+ registered users across India.",
+    51→    sector: "Management", posted: "3 days ago", type: "Full-time",
+    52→    contactEmail: "careers@flipkart.com"
+    53→  },
+    54→  {
+    55→    id: 4, title: "UX Designer", company: "Wipro Design",
+    56→    companyUrl: "https://wiprodesign.com/careers", location: "Pune, Maharashtra",
+    57→    country: "in", countryName: "India", lat: 18.5204, lng: 73.8567,
+    58→    salary: "₹12,00,00 - 18,00,00/yr", salaryMin: 1200000, salaryMax: 1800000, salaryCurrency: "INR", salaryPeriod: "year",
+    59→    description: "Design intuitive user experiences for enterprise SaaS products used by millions. Conduct user research, create wireframes and prototypes, and collaborate with engineering teams to deliver pixel-perfect interfaces.",
+    60→    sector: "Design", posted: "4 days ago", type: "Full-time",
+    61→    contactEmail: "careers@wipro.com"
+    62→  },
+    63→  {
+    64→    id: 5, title: "Financial Analyst", company: "ICICI Bank",
+    65→    companyUrl: "https://icicibank.com/careers", location: "Mumbai, Maharashtra",
+    66→    country: "in", countryName: "India", lat: 19.076, lng: 72.8777,
+    67→    salary: "₹10,00,00 - 16,00,00/yr", salaryMin: 1000000, salaryMax: 1600000, salaryCurrency: "INR", salaryPeriod: "year",
+    68→    description: "Conduct financial modeling, risk assessment, and market research for retail banking products. Prepare investment presentations and support strategic planning for one of India largest private banks.",
+    69→    sector: "Finance", posted: "5 days ago", type: "Full-time",
+    70→    contactEmail: "careers@icici.com"
+    71→  },
+    72→  {
+    73→    id: 6, title: "Marketing Lead", company: "Zomato",
+    74→    companyUrl: "https://zomato.com/careers", location: "Gurugram, Haryana",
+    75→    country: "in", countryName: "India", lat: 28.4595, lng: 77.0266,
+    76→    salary: "₹14,00,00 - 22,00,00/yr", salaryMin: 1400000, salaryMax: 2200000, salaryCurrency: "INR", salaryPeriod: "year",
+    77→    description: "Lead digital marketing campaigns across India food delivery market. Manage a team of 12 specialists, oversee annual budget of 50 crore, and develop growth strategies for tier-2 city expansion.",
+    78→    sector: "Marketing", posted: "1 week ago", type: "Full-time",
+    79→    contactEmail: "careers@zomato.com"
+    80→  },
+    81→  {
+    82→    id: 7, title: "DevOps Engineer", company: "Razorpay",
+    83→    companyUrl: "https://razorpay.com/careers", location: "Bengaluru, Karnataka",
+    84→    country: "in", countryName: "India", lat: 12.9716, lng: 77.5946,
+    85→    salary: "₹16,00,00 - 24,00,00/yr", salaryMin: 1600000, salaryMax: 2400000, salaryCurrency: "INR", salaryPeriod: "year",
+    86→    description: "Manage CI/CD pipelines and cloud infrastructure on AWS and GCP. Automate deployment processes for payment systems handling 10M+ daily transactions with 99.99% uptime.",
+    87→    sector: "Technology", posted: "1 week ago", type: "Remote",
+    88→    contactEmail: "careers@razorpay.com"
+    89→  },
+    90→  {
+    91→    id: 8, title: "Sales Manager", company: "Reliance Retail",
+    92→    companyUrl: "https://relianceretail.com/careers", location: "Mumbai, Maharashtra",
+    93→    country: "in", countryName: "India", lat: 19.076, lng: 72.8777,
+    94→    salary: "₹11,00,00 - 18,00,00/yr", salaryMin: 1100000, salaryMax: 1800000, salaryCurrency: "INR", salaryPeriod: "year",
+    95→    description: "Drive B2B enterprise sales for India largest retail chain. Manage a pipeline of 200 crore+, negotiate contracts with key partners, and exceed quarterly revenue targets across western India.",
+    96→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+    97→    contactEmail: "careers@reliance.com"
+    98→  },
+    99→
+   100→  // ========== UNITED STATES ==========
+   101→  {
+   102→    id: 9, title: "Senior Software Engineer", company: "TechVision Corp",
+   103→    companyUrl: "https://techvisioncorp.com/careers", location: "San Francisco, CA",
+   104→    country: "us", countryName: "United States", lat: 37.7749, lng: -122.4194,
+   105→    salary: "$145,000 - 185,000/yr", salaryMin: 145000, salaryMax: 185000, salaryCurrency: "USD", salaryPeriod: "year",
+   106→    description: "Build scalable distributed systems powering next-gen cloud infrastructure. Work with microservices architecture, Kubernetes, and real-time data pipelines serving millions of users daily.",
+   107→    sector: "Technology", posted: "1 day ago", type: "Full-time",
+   108→    contactEmail: "careers@techvision.com"
+   109→  },
+   110→  {
+   111→    id: 10, title: "Product Designer", company: "InnovateUI Labs",
+   112→    companyUrl: "https://innovateuilabs.com/careers", location: "New York, NY",
+   113→    country: "us", countryName: "United States", lat: 40.7128, lng: -74.006,
+   114→    salary: "$110,000 - 140,000/yr", salaryMin: 110000, salaryMax: 140000, salaryCurrency: "USD", salaryPeriod: "year",
+   115→    description: "Design intuitive user experiences for enterprise SaaS products. Conduct user research, create wireframes and prototypes, and collaborate closely with engineering teams to deliver pixel-perfect interfaces.",
+   116→    sector: "Design", posted: "2 days ago", type: "Full-time",
+   117→    contactEmail: "careers@innovateui.com"
+   118→  },
+   119→  {
+   120→    id: 11, title: "Sales Executive", company: "MarketPro Global",
+   121→    companyUrl: "https://marketproglobal.com/careers", location: "Miami, FL",
+   122→    country: "us", countryName: "United States", lat: 25.7617, lng: -80.1918,
+   123→    salary: "$75,000 - 120,000/yr", salaryMin: 75000, salaryMax: 120000, salaryCurrency: "USD", salaryPeriod: "year",
+   124→    description: "Drive B2B enterprise sales across Latin American markets. Manage a pipeline of $5M+, negotiate contracts with C-suite executives, and exceed quarterly revenue targets consistently.",
+   125→    sector: "Sales", posted: "3 days ago", type: "Full-time",
+   126→    contactEmail: "careers@marketpro.com"
+   127→  },
+   128→  {
+   129→    id: 12, title: "Data Engineer", company: "DataFlow Systems",
+   130→    companyUrl: "https://dataflowsystems.com/careers", location: "Austin, TX",
+   131→    country: "us", countryName: "United States", lat: 30.2672, lng: -97.7431,
+   132→    salary: "$130,000 - 170,000/yr", salaryMin: 130000, salaryMax: 170000, salaryCurrency: "USD", salaryPeriod: "year",
+   133→    description: "Build and optimize data pipelines processing petabytes of information. Work with Apache Kafka, Spark, and Snowflake to deliver real-time analytics for Fortune 500 clients.",
+   134→    sector: "Data Science", posted: "4 days ago", type: "Full-time",
+   135→    contactEmail: "careers@dataflow.com"
+   136→  },
+   137→  {
+   138→    id: 13, title: "Marketing Director", company: "BrandWave Agency",
+   139→    companyUrl: "https://brandwaveagency.com/careers", location: "Chicago, IL",
+   140→    country: "us", countryName: "United States", lat: 41.8781, lng: -87.6298,
+   141→    salary: "$120,000 - 160,000/yr", salaryMin: 120000, salaryMax: 160000, salaryCurrency: "USD", salaryPeriod: "year",
+   142→    description: "Lead multi-channel marketing campaigns for major consumer brands. Manage a team of 20+ specialists, oversee $10M annual budget, and develop data-driven strategies that increased ROI by 35%.",
+   143→    sector: "Marketing", posted: "5 days ago", type: "Full-time",
+   144→    contactEmail: "careers@brandwave.com"
+   145→  },
+   146→  {
+   147→    id: 14, title: "HR Business Partner", company: "PeopleFirst Inc",
+   148→    companyUrl: "https://peoplefirstinc.com/careers", location: "Seattle, WA",
+   149→    country: "us", countryName: "United States", lat: 47.6062, lng: -122.3321,
+   150→    salary: "$95,000 - 130,000/yr", salaryMin: 95000, salaryMax: 130000, salaryCurrency: "USD", salaryPeriod: "year",
+   151→    description: "Partner with engineering leadership to drive talent strategy for a 2000+ employee tech company. Lead hiring programs, performance management, and employee engagement initiatives.",
+   152→    sector: "HR", posted: "1 week ago", type: "Full-time",
+   153→    contactEmail: "careers@peoplefirst.com"
+   154→  },
+   155→  {
+   156→    id: 15, title: "Healthcare Administrator", company: "MedCare Solutions",
+   157→    companyUrl: "https://medcaresolutions.com/careers", location: "Boston, MA",
+   158→    country: "us", countryName: "United States", lat: 42.3601, lng: -71.0589,
+   159→    salary: "$85,000 - 115,000/yr", salaryMin: 85000, salaryMax: 115000, salaryCurrency: "USD", salaryPeriod: "year",
+   160→    description: "Oversee operations for a network of 15 healthcare facilities across New England. Manage budgets of $50M+, ensure regulatory compliance, and implement process improvements.",
+   161→    sector: "Healthcare", posted: "1 week ago", type: "Remote",
+   162→    contactEmail: "careers@medcare.com"
+   163→  },
+   164→  {
+   165→    id: 16, title: "Mechanical Engineer", company: "AeroDynamics Corp",
+   166→    companyUrl: "https://aerodynamicscorp.com/careers", location: "Los Angeles, CA",
+   167→    country: "us", countryName: "United States", lat: 34.0522, lng: -118.2437,
+   168→    salary: "$105,000 - 145,000/yr", salaryMin: 105000, salaryMax: 145000, salaryCurrency: "USD", salaryPeriod: "year",
+   169→    description: "Design and test aerospace components for commercial aircraft. Use CAD software and simulation tools, collaborate with cross-functional teams on next-generation propulsion systems.",
+   170→    sector: "Engineering", posted: "2 weeks ago", type: "Hybrid",
+   171→    contactEmail: "careers@aerodynamics.com"
+   172→  },
+   173→
+   174→  // ========== CHINA ==========
+   175→  {
+   176→    id: 17, title: "Full-Stack Developer", company: "Tencent Cloud",
+   177→    companyUrl: "https://tencentcloud.com/careers", location: "Shenzhen, Guangdong",
+   178→    country: "cn", countryName: "China", lat: 22.5431, lng: 114.0579,
+   179→    salary: "¥35,00 - 55,00/yr", salaryMin: 350000, salaryMax: 550000, salaryCurrency: "CNY", salaryPeriod: "year",
+   180→    description: "Develop high-performance web applications serving 1B+ users. Work with React, Go, and distributed databases. Collaborate with international teams on AI-powered products.",
+   181→    sector: "Technology", posted: "1 day ago", type: "Full-time",
+   182→    contactEmail: "careers@tencent.com"
+   183→  },
+   184→  {
+   185→    id: 18, title: "AI Research Scientist", company: "Baidu Research",
+   186→    companyUrl: "https://baiduresearch.com/careers", location: "Beijing",
+   187→    country: "cn", countryName: "China", lat: 39.9042, lng: 116.4074,
+   188→    salary: "¥45,00 - 70,00/yr", salaryMin: 450000, salaryMax: 700000, salaryCurrency: "CNY", salaryPeriod: "year",
+   189→    description: "Conduct research in natural language processing and large language models. Publish papers at top AI conferences. Develop production-ready AI solutions for autonomous driving.",
+   190→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+   191→    contactEmail: "careers@baidu.com"
+   192→  },
+   193→  {
+   194→    id: 19, title: "Product Manager", company: "Alibaba Group",
+   195→    companyUrl: "https://alibabagroup.com/careers", location: "Hangzhou, Zhejiang",
+   196→    country: "cn", countryName: "China", lat: 30.2741, lng: 120.1551,
+   197→    salary: "¥40,00 - 65,00/yr", salaryMin: 400000, salaryMax: 650000, salaryCurrency: "CNY", salaryPeriod: "year",
+   198→    description: "Own the product roadmap for Taobao recommendation engine. Manage cross-functional teams of 20+ members and drive personalization features for 800M+ active users.",
+   199→    sector: "Management", posted: "3 days ago", type: "Full-time",
+   200→    contactEmail: "careers@alibaba.com"
+   201→  },
+   202→  {
+   203→    id: 20, title: "UX Researcher", company: "ByteDance",
+   204→    companyUrl: "https://bytedance.com/careers", location: "Beijing",
+   205→    country: "cn", countryName: "China", lat: 39.9042, lng: 116.4074,
+   206→    salary: "¥30,00 - 48,00/yr", salaryMin: 300000, salaryMax: 480000, salaryCurrency: "CNY", salaryPeriod: "year",
+   207→    description: "Plan and execute user research studies for TikTok and Douyin. Synthesize findings into actionable recommendations, create personas and journey maps for global short-video products.",
+   208→    sector: "Design", posted: "4 days ago", type: "Full-time",
+   209→    contactEmail: "careers@bytedance.com"
+   210→  },
+   211→  {
+   212→    id: 21, title: "Financial Controller", company: "Huawei Technologies",
+   213→    companyUrl: "https://huaweitechnologies.com/careers", location: "Shenzhen, Guangdong",
+   214→    country: "cn", countryName: "China", lat: 22.5431, lng: 114.0579,
+   215→    salary: "¥38,00 - 58,00/yr", salaryMin: 380000, salaryMax: 580000, salaryCurrency: "CNY", salaryPeriod: "year",
+   216→    description: "Oversee financial planning and analysis for the consumer electronics division. Manage budgets of 10B+ RMB, ensure compliance, and support strategic investment decisions.",
+   217→    sector: "Finance", posted: "5 days ago", type: "Full-time",
+   218→    contactEmail: "careers@huawei.com"
+   219→  },
+   220→  {
+   221→    id: 22, title: "Marketing Manager", company: "JD.com",
+   222→    companyUrl: "https://jdcom.com/careers", location: "Beijing",
+   223→    country: "cn", countryName: "China", lat: 39.9042, lng: 116.4074,
+   224→    salary: "¥28,00 - 42,00/yr", salaryMin: 280000, salaryMax: 420000, salaryCurrency: "CNY", salaryPeriod: "year",
+   225→    description: "Lead digital marketing campaigns for China largest e-commerce platform. Manage a team of 15 specialists, oversee annual campaigns during 618 and Double 11 shopping festivals.",
+   226→    sector: "Marketing", posted: "1 week ago", type: "Full-time",
+   227→    contactEmail: "careers@jdcom.com"
+   228→  },
+   229→  {
+   230→    id: 23, title: "Data Analyst", company: "Meituan",
+   231→    companyUrl: "https://meituan.com/careers", location: "Beijing",
+   232→    country: "cn", countryName: "China", lat: 39.9042, lng: 116.4074,
+   233→    salary: "¥25,00 - 40,00/yr", salaryMin: 250000, salaryMax: 400000, salaryCurrency: "CNY", salaryPeriod: "year",
+   234→    description: "Analyze user behavior data for food delivery and local services platform. Build dashboards, develop predictive models, and work with product teams to optimize conversion funnels.",
+   235→    sector: "Data Science", posted: "1 week ago", type: "Remote",
+   236→    contactEmail: "careers@meituan.com"
+   237→  },
+   238→  {
+   239→    id: 24, title: "Sales Director", company: "Xiaomi Corp",
+   240→    companyUrl: "https://xiaomicorp.com/careers", location: "Beijing",
+   241→    country: "cn", countryName: "China", lat: 39.9042, lng: 116.4074,
+   242→    salary: "¥35,00 - 55,00/yr", salaryMin: 350000, salaryMax: 550000, salaryCurrency: "CNY", salaryPeriod: "year",
+   243→    description: "Lead enterprise and government sales for IoT and smartphone products across Asia-Pacific. Manage a team of 30+ account managers and exceed annual revenue targets of 5B RMB.",
+   244→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+   245→    contactEmail: "careers@xiaomi.com"
+   246→  },
+   247→
+   248→  // ========== BRAZIL ==========
+   249→  {
+   250→    id: 25, title: "Data Scientist", company: "DataPulse Analytics",
+   251→    companyUrl: "https://datapulseanalytics.com/careers", location: "Sao Paulo, SP",
+   252→    country: "br", countryName: "Brazil", lat: -23.5505, lng: -46.6333,
+   253→    salary: "R$ 18,000 - 25,000/mo", salaryMin: 18000, salaryMax: 25000, salaryCurrency: "BRL", salaryPeriod: "month",
+   254→    description: "Analyze large datasets to extract actionable business insights. Build predictive models using Python, TensorFlow and Spark. Present findings to C-level stakeholders.",
+   255→    sector: "Data Science", posted: "1 day ago", type: "Full-time",
+   256→    contactEmail: "careers@datapulse.com"
+   257→  },
+   258→  {
+   259→    id: 26, title: "Backend Developer", company: "NexaSoft Technologies",
+   260→    companyUrl: "https://nexasofttechnologies.com/careers", location: "Rio de Janeiro, RJ",
+   261→    country: "br", countryName: "Brazil", lat: -22.9068, lng: -43.1729,
+   262→    salary: "R$ 14,000 - 20,000/mo", salaryMin: 14000, salaryMax: 20000, salaryCurrency: "BRL", salaryPeriod: "month",
+   263→    description: "Develop robust RESTful APIs and microservices using Node.js and PostgreSQL. Implement authentication systems, optimize database queries, and mentor junior developers.",
+   264→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+   265→    contactEmail: "careers@nexasoft.com"
+   266→  },
+   267→  {
+   268→    id: 27, title: "Product Manager", company: "Nubank",
+   269→    companyUrl: "https://nubank.com/careers", location: "Sao Paulo, SP",
+   270→    country: "br", countryName: "Brazil", lat: -23.5505, lng: -46.6333,
+   271→    salary: "R$ 22,000 - 35,000/mo", salaryMin: 22000, salaryMax: 35000, salaryCurrency: "BRL", salaryPeriod: "month",
+   272→    description: "Own the product roadmap for digital banking features serving 80M+ customers. Manage cross-functional teams and drive innovation in Latin America largest digital bank.",
+   273→    sector: "Management", posted: "3 days ago", type: "Full-time",
+   274→    contactEmail: "careers@nubank.com"
+   275→  },
+   276→  {
+   277→    id: 28, title: "UX Designer", company: "Concrete Solucoes",
+   278→    companyUrl: "https://concretesolucoes.com/careers", location: "Sao Paulo, SP",
+   279→    country: "br", countryName: "Brazil", lat: -23.5505, lng: -46.6333,
+   280→    salary: "R$ 12,000 - 18,000/mo", salaryMin: 12000, salaryMax: 18000, salaryCurrency: "BRL", salaryPeriod: "month",
+   281→    description: "Design user experiences for enterprise software and mobile apps. Conduct usability testing, create design systems, and collaborate with development teams on agile projects.",
+   282→    sector: "Design", posted: "4 days ago", type: "Full-time",
+   283→    contactEmail: "careers@concrete.com"
+   284→  },
+   285→  {
+   286→    id: 29, title: "Marketing Analyst", company: "Ambev",
+   287→    companyUrl: "https://ambev.com/careers", location: "Sao Paulo, SP",
+   288→    country: "br", countryName: "Brazil", lat: -23.5505, lng: -46.6333,
+   289→    salary: "R$ 8,000 - 13,000/mo", salaryMin: 8000, salaryMax: 13000, salaryCurrency: "BRL", salaryPeriod: "month",
+   290→    description: "Develop and execute marketing campaigns for Brazil largest beverage company. Analyze market trends, manage social media strategy, and support brand positioning across national markets.",
+   291→    sector: "Marketing", posted: "5 days ago", type: "Full-time",
+   292→    contactEmail: "careers@ambev.com"
+   293→  },
+   294→  {
+   295→    id: 30, title: "Financial Analyst", company: "Itau Unibanco",
+   296→    companyUrl: "https://itauunibanco.com/careers", location: "Sao Paulo, SP",
+   297→    country: "br", countryName: "Brazil", lat: -23.5505, lng: -46.6333,
+   298→    salary: "R$ 10,000 - 16,000/mo", salaryMin: 10000, salaryMax: 16000, salaryCurrency: "BRL", salaryPeriod: "month",
+   299→    description: "Conduct financial analysis and risk assessment for corporate banking division. Prepare credit reports, support loan structuring, and assist in portfolio management for top-tier clients.",
+   300→    sector: "Finance", posted: "1 week ago", type: "Full-time",
+   301→    contactEmail: "careers@itau.com"
+   302→  },
+   303→  {
+   304→    id: 31, title: "Sales Manager", company: "Magazine Luiza",
+   305→    companyUrl: "https://magazineluiza.com/careers", location: "Franca, SP",
+   306→    country: "br", countryName: "Brazil", lat: -20.5386, lng: -47.4027,
+   307→    salary: "R$ 9,000 - 15,000/mo", salaryMin: 9000, salaryMax: 15000, salaryCurrency: "BRL", salaryPeriod: "month",
+   308→    description: "Lead B2B sales operations for one of Brazil largest e-commerce retailers. Manage key accounts, negotiate enterprise contracts, and drive revenue growth in the wholesale channel.",
+   309→    sector: "Sales", posted: "1 week ago", type: "Remote",
+   310→    contactEmail: "careers@magazine.com"
+   311→  },
+   312→  {
+   313→    id: 32, title: "HR Specialist", company: "WEG S.A.",
+   314→    companyUrl: "https://wegsa.com/careers", location: "Jaragua do Sul, SC",
+   315→    country: "br", countryName: "Brazil", lat: -26.4834, lng: -49.0665,
+   316→    salary: "R$ 7,000 - 11,000/mo", salaryMin: 7000, salaryMax: 11000, salaryCurrency: "BRL", salaryPeriod: "month",
+   317→    description: "Manage recruitment and talent development programs for a global manufacturing company. Lead employer branding initiatives and implement performance management systems across 5 facilities.",
+   318→    sector: "HR", posted: "2 weeks ago", type: "Hybrid",
+   319→    contactEmail: "careers@weg.com"
+   320→  },
+   321→
+   322→  // ========== UNITED KINGDOM ==========
+   323→  {
+   324→    id: 33, title: "Financial Analyst", company: "CapitalEdge Partners",
+   325→    companyUrl: "https://capitaledgepartners.com/careers", location: "London",
+   326→    country: "gb", countryName: "United Kingdom", lat: 51.5074, lng: -0.1278,
+   327→    salary: "£65,000 - 85,000/yr", salaryMin: 65000, salaryMax: 85000, salaryCurrency: "GBP", salaryPeriod: "year",
+   328→    description: "Conduct financial modeling, valuation analysis, and market research for M&A transactions. Prepare investment presentations for institutional clients.",
+   329→    sector: "Finance", posted: "1 day ago", type: "Full-time",
+   330→    contactEmail: "careers@capitaledge.com"
+   331→  },
+   332→  {
+   333→    id: 34, title: "DevOps Engineer", company: "Barclays Technology",
+   334→    companyUrl: "https://barclaystechnology.com/careers", location: "Manchester",
+   335→    country: "gb", countryName: "United Kingdom", lat: 53.4808, lng: -2.2426,
+   336→    salary: "£55,000 - 75,000/yr", salaryMin: 55000, salaryMax: 75000, salaryCurrency: "GBP", salaryPeriod: "year",
+   337→    description: "Manage CI/CD pipelines and cloud infrastructure on AWS. Automate deployment processes for banking applications, ensure 99.99% uptime for critical financial services.",
+   338→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+   339→    contactEmail: "careers@barclays.com"
+   340→  },
+   341→  {
+   342→    id: 35, title: "Product Designer", company: "BBC Digital",
+   343→    companyUrl: "https://bbcdigital.com/careers", location: "London",
+   344→    country: "gb", countryName: "United Kingdom", lat: 51.5074, lng: -0.1278,
+   345→    salary: "£50,000 - 70,000/yr", salaryMin: 50000, salaryMax: 70000, salaryCurrency: "GBP", salaryPeriod: "year",
+   346→    description: "Design digital experiences for BBC streaming and news platforms. Conduct user research, create accessible interfaces, and work with content teams to serve 40M+ weekly users.",
+   347→    sector: "Design", posted: "3 days ago", type: "Full-time",
+   348→    contactEmail: "careers@bbc.com"
+   349→  },
+   350→  {
+   351→    id: 36, title: "Marketing Manager", company: "Unilever UK",
+   352→    companyUrl: "https://unileveruk.com/careers", location: "London",
+   353→    country: "gb", countryName: "United Kingdom", lat: 51.5074, lng: -0.1278,
+   354→    salary: "£58,000 - 78,000/yr", salaryMin: 58000, salaryMax: 78000, salaryCurrency: "GBP", salaryPeriod: "year",
+   355→    description: "Lead brand marketing campaigns for consumer goods across UK and Ireland. Manage a team of 10 specialists, oversee budget of 20M GBP annual, and develop omnichannel strategies.",
+   356→    sector: "Marketing", posted: "4 days ago", type: "Full-time",
+   357→    contactEmail: "careers@unilever.com"
+   358→  },
+   359→  {
+   360→    id: 37, title: "Data Scientist", company: "Tesco Analytics",
+   361→    companyUrl: "https://tescoanalytics.com/careers", location: "London",
+   362→    country: "gb", countryName: "United Kingdom", lat: 51.5074, lng: -0.1278,
+   363→    salary: "£60,000 - 82,000/yr", salaryMin: 60000, salaryMax: 82000, salaryCurrency: "GBP", salaryPeriod: "year",
+   364→    description: "Build machine learning models for customer personalization and demand forecasting. Analyze purchasing patterns of 25M+ Clubcard members to optimize retail operations.",
+   365→    sector: "Data Science", posted: "5 days ago", type: "Full-time",
+   366→    contactEmail: "careers@tesco.com"
+   367→  },
+   368→  {
+   369→    id: 38, title: "Software Engineer", company: "Deloitte Digital",
+   370→    companyUrl: "https://deloittedigital.com/careers", location: "Edinburgh",
+   371→    country: "gb", countryName: "United Kingdom", lat: 55.9533, lng: -3.1883,
+   372→    salary: "£52,000 - 72,000/yr", salaryMin: 52000, salaryMax: 72000, salaryCurrency: "GBP", salaryPeriod: "year",
+   373→    description: "Build custom software solutions for government and financial services clients. Work with modern tech stack including React, Node.js, and cloud platforms.",
+   374→    sector: "Technology", posted: "1 week ago", type: "Full-time",
+   375→    contactEmail: "careers@deloitte.com"
+   376→  },
+   377→  {
+   378→    id: 39, title: "HR Director", company: "Vodafone UK",
+   379→    companyUrl: "https://vodafoneuk.com/careers", location: "Newbury",
+   380→    country: "gb", countryName: "United Kingdom", lat: 51.3984, lng: -1.3175,
+   381→    salary: "£70,000 - 95,000/yr", salaryMin: 70000, salaryMax: 95000, salaryCurrency: "GBP", salaryPeriod: "year",
+   382→    description: "Lead people strategy for Vodafone UK operations with 10,000+ employees. Drive talent acquisition, diversity initiatives, and organizational development programs.",
+   383→    sector: "HR", posted: "1 week ago", type: "Remote",
+   384→    contactEmail: "careers@vodafone.com"
+   385→  },
+   386→  {
+   387→    id: 40, title: "Healthcare Consultant", company: "NHS Digital",
+   388→    companyUrl: "https://nhsdigital.com/careers", location: "Leeds",
+   389→    country: "gb", countryName: "United Kingdom", lat: 53.7965, lng: -1.5479,
+   390→    salary: "£48,000 - 68,000/yr", salaryMin: 48000, salaryMax: 68000, salaryCurrency: "GBP", salaryPeriod: "year",
+   391→    description: "Consult on digital transformation projects for the National Health Service. Analyze healthcare data, implement EHR systems, and improve patient care delivery across trusts.",
+   392→    sector: "Healthcare", posted: "2 weeks ago", type: "Hybrid",
+   393→    contactEmail: "careers@nhs.com"
+   394→  },
+   395→
+   396→  // ========== GERMANY ==========
+   397→  {
+   398→    id: 41, title: "UX Researcher", company: "SAP Design",
+   399→    companyUrl: "https://sapdesign.com/careers", location: "Berlin",
+   400→    country: "de", countryName: "Germany", lat: 52.52, lng: 13.405,
+   401→    salary: "€52,000 - 68,000/yr", salaryMin: 52000, salaryMax: 68000, salaryCurrency: "EUR", salaryPeriod: "year",
+   402→    description: "Plan and execute qualitative and quantitative user research studies for enterprise software. Synthesize findings into actionable recommendations for B2B SaaS products.",
+   403→    sector: "Design", posted: "1 day ago", type: "Full-time",
+   404→    contactEmail: "careers@sap.com"
+   405→  },
+   406→  {
+   407→    id: 42, title: "Mechanical Engineer", company: "BMW Group",
+   408→    companyUrl: "https://bmwgroup.com/careers", location: "Munich, Bavaria",
+   409→    country: "de", countryName: "Germany", lat: 48.1351, lng: 11.582,
+   410→    salary: "€58,000 - 78,000/yr", salaryMin: 58000, salaryMax: 78000, salaryCurrency: "EUR", salaryPeriod: "year",
+   411→    description: "Design and test components for electric vehicle powertrains. Use CAD software and simulation tools. Collaborate with cross-functional teams on next-generation EV platforms.",
+   412→    sector: "Engineering", posted: "2 days ago", type: "Full-time",
+   413→    contactEmail: "careers@bmw.com"
+   414→  },
+   415→  {
+   416→    id: 43, title: "Software Developer", company: "SAP SE",
+   417→    companyUrl: "https://sapse.com/careers", location: "Walldorf, Baden-Wuerttemberg",
+   418→    country: "de", countryName: "Germany", lat: 49.2963, lng: 8.6555,
+   419→    salary: "€55,000 - 75,000/yr", salaryMin: 55000, salaryMax: 75000, salaryCurrency: "EUR", salaryPeriod: "year",
+   420→    description: "Develop enterprise resource planning modules serving 400,000+ customers worldwide. Work with ABAP, JavaScript, and HANA database for business-critical applications.",
+   421→    sector: "Technology", posted: "3 days ago", type: "Full-time",
+   422→    contactEmail: "careers@sap.com"
+   423→  },
+   424→  {
+   425→    id: 44, title: "Data Analyst", company: "Siemens AG",
+   426→    companyUrl: "https://siemensag.com/careers", location: "Munich, Bavaria",
+   427→    country: "de", countryName: "Germany", lat: 48.1351, lng: 11.582,
+   428→    salary: "€50,000 - 70,000/yr", salaryMin: 50000, salaryMax: 70000, salaryCurrency: "EUR", salaryPeriod: "year",
+   429→    description: "Analyze industrial IoT data from smart factories across Europe. Build dashboards, develop predictive maintenance models, and optimize manufacturing processes.",
+   430→    sector: "Data Science", posted: "4 days ago", type: "Full-time",
+   431→    contactEmail: "careers@siemens.com"
+   432→  },
+   433→  {
+   434→    id: 45, title: "Marketing Specialist", company: "Adidas AG",
+   435→    companyUrl: "https://adidasag.com/careers", location: "Herzogenaurach, Bavaria",
+   436→    country: "de", countryName: "Germany", lat: 49.5686, lng: 10.8876,
+   437→    salary: "€48,000 - 65,000/yr", salaryMin: 48000, salaryMax: 65000, salaryCurrency: "EUR", salaryPeriod: "year",
+   438→    description: "Execute digital marketing campaigns for DACH region. Manage social media, influencer partnerships, and e-commerce marketing for key product launches.",
+   439→    sector: "Marketing", posted: "5 days ago", type: "Full-time",
+   440→    contactEmail: "careers@adidas.com"
+   441→  },
+   442→  {
+   443→    id: 46, title: "Financial Controller", company: "Deutsche Bank",
+   444→    companyUrl: "https://deutschebank.com/careers", location: "Frankfurt, Hesse",
+   445→    country: "de", countryName: "Germany", lat: 50.1109, lng: 8.6821,
+   446→    salary: "€65,000 - 88,000/yr", salaryMin: 65000, salaryMax: 88000, salaryCurrency: "EUR", salaryPeriod: "year",
+   447→    description: "Oversee financial reporting and compliance for the investment banking division. Manage budgets, prepare regulatory filings, and support audit processes.",
+   448→    sector: "Finance", posted: "1 week ago", type: "Full-time",
+   449→    contactEmail: "careers@deutsche.com"
+   450→  },
+   451→  {
+   452→    id: 47, title: "Sales Manager", company: "Bosch Group",
+   453→    companyUrl: "https://boschgroup.com/careers", location: "Stuttgart, Baden-Wuerttemberg",
+   454→    country: "de", countryName: "Germany", lat: 48.7758, lng: 9.1829,
+   455→    salary: "€56,000 - 76,000/yr", salaryMin: 56000, salaryMax: 76000, salaryCurrency: "EUR", salaryPeriod: "year",
+   456→    description: "Manage B2B sales for industrial technology solutions across Central Europe. Lead a team of 15 account managers, negotiate contracts with automotive OEMs.",
+   457→    sector: "Sales", posted: "1 week ago", type: "Remote",
+   458→    contactEmail: "careers@bosch.com"
+   459→  },
+   460→  {
+   461→    id: 48, title: "HR Manager", company: "Allianz SE",
+   462→    companyUrl: "https://allianzse.com/careers", location: "Munich, Bavaria",
+   463→    country: "de", countryName: "Germany", lat: 48.1351, lng: 11.582,
+   464→    salary: "€52,000 - 72,000/yr", salaryMin: 52000, salaryMax: 72000, salaryCurrency: "EUR", salaryPeriod: "year",
+   465→    description: "Lead talent management and organizational development for 150,000+ employee insurance group. Drive employer branding, training programs, and international mobility initiatives.",
+   466→    sector: "HR", posted: "2 weeks ago", type: "Hybrid",
+   467→    contactEmail: "careers@allianz.com"
+   468→  },
+   469→
+   470→  // ========== FRANCE ==========
+   471→  {
+   472→    id: 49, title: "DevOps Engineer", company: "CloudNine Systems",
+   473→    companyUrl: "https://cloudninesystems.com/careers", location: "Paris",
+   474→    country: "fr", countryName: "France", lat: 48.8566, lng: 2.3522,
+   475→    salary: "€60,000 - 80,000/yr", salaryMin: 60000, salaryMax: 80000, salaryCurrency: "EUR", salaryPeriod: "year",
+   476→    description: "Manage CI/CD pipelines and cloud infrastructure on AWS and GCP. Automate deployment processes and ensure 99.99% uptime for critical production services.",
+   477→    sector: "Technology", posted: "1 day ago", type: "Full-time",
+   478→    contactEmail: "careers@cloudnine.com"
+   479→  },
+   480→  {
+   481→    id: 50, title: "AI/ML Engineer", company: "DeepCore AI",
+   482→    companyUrl: "https://deepcoreai.com/careers", location: "Lyon",
+   483→    country: "fr", countryName: "France", lat: 45.764, lng: 4.8357,
+   484→    salary: "€55,000 - 75,000/yr", salaryMin: 55000, salaryMax: 75000, salaryCurrency: "EUR", salaryPeriod: "year",
+   485→    description: "Design and deploy machine learning models for NLP and computer vision applications. Optimize model inference for edge devices and collaborate with research teams.",
+   486→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+   487→    contactEmail: "careers@deepcore.com"
+   488→  },
+   489→  {
+   490→    id: 51, title: "Product Manager", company: "Ubisoft",
+   491→    companyUrl: "https://ubisoft.com/careers", location: "Montreuil",
+   492→    country: "fr", countryName: "France", lat: 48.8645, lng: 2.4429,
+   493→    salary: "€52,000 - 72,000/yr", salaryMin: 52000, salaryMax: 72000, salaryCurrency: "EUR", salaryPeriod: "year",
+   494→    description: "Own the product roadmap for Ubisoft mobile gaming division. Manage cross-functional teams and drive features for games with 50M+ monthly active players.",
+   495→    sector: "Management", posted: "3 days ago", type: "Full-time",
+   496→    contactEmail: "careers@ubisoft.com"
+   497→  },
+   498→  {
+   499→    id: 52, title: "UX Designer", company: "Airbus",
+   500→    companyUrl: "https://airbus.com/careers", location: "Toulouse",
+   501→    country: "fr", countryName: "France", lat: 43.6047, lng: 1.4442,
+   502→    salary: "€48,000 - 65,000/yr", salaryMin: 48000, salaryMax: 65000, salaryCurrency: "EUR", salaryPeriod: "year",
+   503→    description: "Design user interfaces for aircraft cockpit systems and maintenance platforms. Ensure compliance with aviation safety standards and collaborate with engineers.",
+   504→    sector: "Design", posted: "4 days ago", type: "Full-time",
+   505→    contactEmail: "careers@airbus.com"
+   506→  },
+   507→  {
+   508→    id: 53, title: "Marketing Manager", company: "LOreal",
+   509→    companyUrl: "https://loreal.com/careers", location: "Paris",
+   510→    country: "fr", countryName: "France", lat: 48.8566, lng: 2.3522,
+   511→    salary: "€50,000 - 70,000/yr", salaryMin: 50000, salaryMax: 70000, salaryCurrency: "EUR", salaryPeriod: "year",
+   512→    description: "Lead digital marketing strategy for luxury beauty brands across France and Benelux. Manage a team of 8, oversee budget of 15M EUR, and develop influencer strategies.",
+   513→    sector: "Marketing", posted: "5 days ago", type: "Full-time",
+   514→    contactEmail: "careers@loreal.com"
+   515→  },
+   516→  {
+   517→    id: 54, title: "Financial Analyst", company: "BNP Paribas",
+   518→    companyUrl: "https://bnpparibas.com/careers", location: "Paris",
+   519→    country: "fr", countryName: "France", lat: 48.8566, lng: 2.3522,
+   520→    salary: "€55,000 - 75,000/yr", salaryMin: 55000, salaryMax: 75000, salaryCurrency: "EUR", salaryPeriod: "year",
+   521→    description: "Conduct financial analysis for corporate banking clients. Prepare credit assessments, support loan structuring for mid-cap companies, and manage risk portfolios.",
+   522→    sector: "Finance", posted: "1 week ago", type: "Full-time",
+   523→    contactEmail: "careers@bnp.com"
+   524→  },
+   525→  {
+   526→    id: 55, title: "Data Scientist", company: "Orange Telecom",
+   527→    companyUrl: "https://orangetelecom.com/careers", location: "Paris",
+   528→    country: "fr", countryName: "France", lat: 48.8566, lng: 2.3522,
+   529→    salary: "€58,000 - 78,000/yr", salaryMin: 58000, salaryMax: 78000, salaryCurrency: "EUR", salaryPeriod: "year",
+   530→    description: "Build predictive models for customer churn and network optimization. Analyze data from 30M+ subscribers to improve service quality and reduce operational costs.",
+   531→    sector: "Data Science", posted: "1 week ago", type: "Remote",
+   532→    contactEmail: "careers@orange.com"
+   533→  },
+   534→  {
+   535→    id: 56, title: "Sales Executive", company: "Schneider Electric",
+   536→    companyUrl: "https://schneiderelectric.com/careers", location: "Grenoble",
+   537→    country: "fr", countryName: "France", lat: 45.1885, lng: 5.7245,
+   538→    salary: "€45,000 - 65,000/yr", salaryMin: 45000, salaryMax: 65000, salaryCurrency: "EUR", salaryPeriod: "year",
+   539→    description: "Drive enterprise sales for energy management solutions across Southern Europe. Manage key accounts, negotiate contracts, and achieve annual targets of 20M EUR.",
+   540→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+   541→    contactEmail: "careers@schneider.com"
+   542→  },
+   543→
+   544→  // ========== JAPAN ==========
+   545→  {
+   546→    id: 57, title: "Frontend Engineer", company: "Sony Interactive",
+   547→    companyUrl: "https://sonyinteractive.com/careers", location: "Tokyo",
+   548→    country: "jp", countryName: "Japan", lat: 35.6762, lng: 139.6503,
+   549→    salary: "¥700M - 1,000M/yr", salaryMin: 7000000, salaryMax: 10000000, salaryCurrency: "JPY", salaryPeriod: "year",
+   550→    description: "Build high-performance web interfaces for PlayStation Network services. Work with React, TypeScript, and WebGL. Optimize for performance across 100M+ active users.",
+   551→    sector: "Technology", posted: "1 day ago", type: "Full-time",
+   552→    contactEmail: "careers@sony.com"
+   553→  },
+   554→  {
+   555→    id: 58, title: "Marketing Manager", company: "Toyota Motor Corp",
+   556→    companyUrl: "https://toyotamotorcorp.com/careers", location: "Nagoya, Aichi",
+   557→    country: "jp", countryName: "Japan", lat: 35.1815, lng: 136.9066,
+   558→    salary: "¥850M - 1,200M/yr", salaryMin: 8500000, salaryMax: 12000000, salaryCurrency: "JPY", salaryPeriod: "year",
+   559→    description: "Lead digital marketing campaigns for Toyota EV lineup across Asia-Pacific. Manage a team of 12 specialists, oversee 500M JPY annual budget.",
+   560→    sector: "Marketing", posted: "2 days ago", type: "Full-time",
+   561→    contactEmail: "careers@toyota.com"
+   562→  },
+   563→  {
+   564→    id: 59, title: "Data Scientist", company: "Rakuten",
+   565→    companyUrl: "https://rakuten.com/careers", location: "Tokyo",
+   566→    country: "jp", countryName: "Japan", lat: 35.6762, lng: 139.6503,
+   567→    salary: "¥800M - 1,100M/yr", salaryMin: 8000000, salaryMax: 11000000, salaryCurrency: "JPY", salaryPeriod: "year",
+   568→    description: "Build recommendation systems for Japan largest e-commerce ecosystem. Analyze data from 100M+ members to optimize personalization and increase conversion rates.",
+   569→    sector: "Data Science", posted: "3 days ago", type: "Full-time",
+   570→    contactEmail: "careers@rakuten.com"
+   571→  },
+   572→  {
+   573→    id: 60, title: "Mechanical Engineer", company: "Mitsubishi Heavy Industries",
+   574→    companyUrl: "https://mitsubishiheavyindustries.com/careers", location: "Yokohama",
+   575→    country: "jp", countryName: "Japan", lat: 35.4437, lng: 139.638,
+   576→    salary: "¥600M - 850M/yr", salaryMin: 6000000, salaryMax: 8500000, salaryCurrency: "JPY", salaryPeriod: "year",
+   577→    description: "Design components for industrial machinery and defense systems. Use advanced simulation tools, manage testing protocols, and collaborate with international engineering teams.",
+   578→    sector: "Engineering", posted: "4 days ago", type: "Full-time",
+   579→    contactEmail: "careers@mitsubishi.com"
+   580→  },
+   581→  {
+   582→    id: 61, title: "UX Designer", company: "LINE Corp",
+   583→    companyUrl: "https://linecorp.com/careers", location: "Tokyo",
+   584→    country: "jp", countryName: "Japan", lat: 35.6762, lng: 139.6503,
+   585→    salary: "¥750M - 1,050M/yr", salaryMin: 7500000, salaryMax: 10500000, salaryCurrency: "JPY", salaryPeriod: "year",
+   586→    description: "Design messaging and fintech features for LINE app with 90M+ Japanese users. Conduct user research, create prototypes, and iterate based on A/B testing results.",
+   587→    sector: "Design", posted: "5 days ago", type: "Full-time",
+   588→    contactEmail: "careers@line.com"
+   589→  },
+   590→  {
+   591→    id: 62, title: "Financial Analyst", company: "Nomura Securities",
+   592→    companyUrl: "https://nomurasecurities.com/careers", location: "Tokyo",
+   593→    country: "jp", countryName: "Japan", lat: 35.6762, lng: 139.6503,
+   594→    salary: "¥900M - 1,300M/yr", salaryMin: 9000000, salaryMax: 13000000, salaryCurrency: "JPY", salaryPeriod: "year",
+   595→    description: "Conduct equity research and financial modeling for Japanese and Asian markets. Prepare investment reports for institutional clients and support IPO processes.",
+   596→    sector: "Finance", posted: "1 week ago", type: "Full-time",
+   597→    contactEmail: "careers@nomura.com"
+   598→  },
+   599→  {
+   600→    id: 63, title: "HR Business Partner", company: "SoftBank Group",
+   601→    companyUrl: "https://softbankgroup.com/careers", location: "Tokyo",
+   602→    country: "jp", countryName: "Japan", lat: 35.6762, lng: 139.6503,
+   603→    salary: "¥700M - 950M/yr", salaryMin: 7000000, salaryMax: 9500000, salaryCurrency: "JPY", salaryPeriod: "year",
+   604→    description: "Partner with technology leadership on talent strategy for SoftBank portfolio companies. Drive recruitment programs for AI and robotics divisions across Japan.",
+   605→    sector: "HR", posted: "1 week ago", type: "Remote",
+   606→    contactEmail: "careers@softbank.com"
+   607→  },
+   608→  {
+   609→    id: 64, title: "Sales Director", company: "Nintendo",
+   610→    companyUrl: "https://nintendo.com/careers", location: "Kyoto",
+   611→    country: "jp", countryName: "Japan", lat: 35.0116, lng: 135.7681,
+   612→    salary: "¥800M - 1,200M/yr", salaryMin: 8000000, salaryMax: 12000000, salaryCurrency: "JPY", salaryPeriod: "year",
+   613→    description: "Lead sales operations for gaming hardware and software across Asia-Pacific. Manage distribution partnerships, achieve annual revenue targets of 500B JPY.",
+   614→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+   615→    contactEmail: "careers@nintendo.com"
+   616→  },
+   617→
+   618→  // ========== CANADA ==========
+   619→  {
+   620→    id: 65, title: "Project Manager", company: "BuildRight Consulting",
+   621→    companyUrl: "https://buildrightconsulting.com/careers", location: "Toronto, ON",
+   622→    country: "ca", countryName: "Canada", lat: 43.6532, lng: -79.3832,
+   623→    salary: "C$ 85,000 - 110,000/yr", salaryMin: 85000, salaryMax: 110000, salaryCurrency: "CAD", salaryPeriod: "year",
+   624→    description: "Oversee large-scale IT implementation projects from initiation to delivery. Manage cross-functional teams of 20+ members using Agile methodologies.",
+   625→    sector: "Management", posted: "1 day ago", type: "Full-time",
+   626→    contactEmail: "careers@buildright.com"
+   627→  },
+   628→  {
+   629→    id: 66, title: "Healthcare Data Analyst", company: "Maple Health Tech",
+   630→    companyUrl: "https://maplehealthtech.com/careers", location: "Vancouver, BC",
+   631→    country: "ca", countryName: "Canada", lat: 49.2827, lng: -123.1207,
+   632→    salary: "C$ 70,000 - 95,000/yr", salaryMin: 70000, salaryMax: 95000, salaryCurrency: "CAD", salaryPeriod: "year",
+   633→    description: "Analyze healthcare data to improve patient outcomes across British Columbia. Build dashboards, develop predictive models for hospital resource planning.",
+   634→    sector: "Healthcare", posted: "2 days ago", type: "Full-time",
+   635→    contactEmail: "careers@maple.com"
+   636→  },
+   637→  {
+   638→    id: 67, title: "Software Developer", company: "Shopify",
+   639→    companyUrl: "https://shopify.com/careers", location: "Ottawa, ON",
+   640→    country: "ca", countryName: "Canada", lat: 45.4215, lng: -75.6972,
+   641→    salary: "C$ 90,000 - 130,000/yr", salaryMin: 90000, salaryMax: 130000, salaryCurrency: "CAD", salaryPeriod: "year",
+   642→    description: "Build e-commerce platform features serving 2M+ merchants worldwide. Work with React, Ruby on Rails, and distributed systems at massive scale.",
+   643→    sector: "Technology", posted: "3 days ago", type: "Full-time",
+   644→    contactEmail: "careers@shopify.com"
+   645→  },
+   646→  {
+   647→    id: 68, title: "Marketing Specialist", company: "Bell Media",
+   648→    companyUrl: "https://bellmedia.com/careers", location: "Toronto, ON",
+   649→    country: "ca", countryName: "Canada", lat: 43.6532, lng: -79.3832,
+   650→    salary: "C$ 60,000 - 82,000/yr", salaryMin: 60000, salaryMax: 82000, salaryCurrency: "CAD", salaryPeriod: "year",
+   651→    description: "Execute multi-channel marketing campaigns for Canada largest telecom. Manage digital advertising, content strategy, and brand partnerships.",
+   652→    sector: "Marketing", posted: "4 days ago", type: "Full-time",
+   653→    contactEmail: "careers@bell.com"
+   654→  },
+   655→  {
+   656→    id: 69, title: "Financial Advisor", company: "RBC Wealth Management",
+   657→    companyUrl: "https://rbcwealthmanagement.com/careers", location: "Toronto, ON",
+   658→    country: "ca", countryName: "Canada", lat: 43.6532, lng: -79.3832,
+   659→    salary: "C$ 75,000 - 110,000/yr", salaryMin: 75000, salaryMax: 110000, salaryCurrency: "CAD", salaryPeriod: "year",
+   660→    description: "Provide financial planning and investment advice to high-net-worth clients. Manage portfolios of 50M+ CAD and develop tailored wealth strategies.",
+   661→    sector: "Finance", posted: "5 days ago", type: "Full-time",
+   662→    contactEmail: "careers@rbc.com"
+   663→  },
+   664→  {
+   665→    id: 70, title: "UX Researcher", company: "Collabora",
+   666→    companyUrl: "https://collabora.com/careers", location: "Montreal, QC",
+   667→    country: "ca", countryName: "Canada", lat: 45.5017, lng: -73.5673,
+   668→    salary: "C$ 65,000 - 88,000/yr", salaryMin: 65000, salaryMax: 88000, salaryCurrency: "CAD", salaryPeriod: "year",
+   669→    description: "Conduct user research for open-source software products. Plan usability studies, create personas, and deliver insights for global developer communities.",
+   670→    sector: "Design", posted: "1 week ago", type: "Full-time",
+   671→    contactEmail: "careers@collabora.com"
+   672→  },
+   673→  {
+   674→    id: 71, title: "Data Engineer", company: "TD Bank",
+   675→    companyUrl: "https://tdbank.com/careers", location: "Toronto, ON",
+   676→    country: "ca", countryName: "Canada", lat: 43.6532, lng: -79.3832,
+   677→    salary: "C$ 88,000 - 120,000/yr", salaryMin: 88000, salaryMax: 120000, salaryCurrency: "CAD", salaryPeriod: "year",
+   678→    description: "Build data pipelines for banking analytics and fraud detection systems. Work with Apache Spark, Kafka, and cloud data warehouses.",
+   679→    sector: "Data Science", posted: "1 week ago", type: "Remote",
+   680→    contactEmail: "careers@td.com"
+   681→  },
+   682→  {
+   683→    id: 72, title: "Sales Manager", company: "Lululemon",
+   684→    companyUrl: "https://lululemon.com/careers", location: "Vancouver, BC",
+   685→    country: "ca", countryName: "Canada", lat: 49.2827, lng: -123.1207,
+   686→    salary: "C$ 70,000 - 95,000/yr", salaryMin: 70000, salaryMax: 95000, salaryCurrency: "CAD", salaryPeriod: "year",
+   687→    description: "Lead enterprise and franchise sales for athletic apparel across North America. Manage key accounts, develop wholesale strategies, and expand retail partnerships.",
+   688→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+   689→    contactEmail: "careers@lululemon.com"
+   690→  },
+   691→
+   692→  // ========== AUSTRALIA ==========
+   693→  {
+   694→    id: 73, title: "Mining Engineer", company: "BHP Group",
+   695→    companyUrl: "https://bhpgroup.com/careers", location: "Perth, WA",
+   696→    country: "au", countryName: "Australia", lat: -31.9505, lng: 115.8605,
+   697→    salary: "A$ 120,000 - 160,000/yr", salaryMin: 120000, salaryMax: 160000, salaryCurrency: "AUD", salaryPeriod: "year",
+   698→    description: "Plan and optimize mining operations across Western Australia. Use advanced simulation software, manage drilling schedules, and implement safety protocols.",
+   699→    sector: "Engineering", posted: "1 day ago", type: "Full-time",
+   700→    contactEmail: "careers@bhp.com"
+   701→  },
+   702→  {
+   703→    id: 74, title: "Full-Stack Developer", company: "Atlassian",
+   704→    companyUrl: "https://atlassian.com/careers", location: "Sydney, NSW",
+   705→    country: "au", countryName: "Australia", lat: -33.8688, lng: 151.2093,
+   706→    salary: "A$ 130,000 - 170,000/yr", salaryMin: 130000, salaryMax: 170000, salaryCurrency: "AUD", salaryPeriod: "year",
+   707→    description: "Build collaboration tools used by 250K+ organizations worldwide. Work with React, Node.js, and microservices. Ship features to millions of users.",
+   708→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+   709→    contactEmail: "careers@atlassian.com"
+   710→  },
+   711→  {
+   712→    id: 75, title: "Marketing Director", company: "Qantas Airways",
+   713→    companyUrl: "https://qantasairways.com/careers", location: "Sydney, NSW",
+   714→    country: "au", countryName: "Australia", lat: -33.8688, lng: 151.2093,
+   715→    salary: "A$ 110,000 - 150,000/yr", salaryMin: 110000, salaryMax: 150000, salaryCurrency: "AUD", salaryPeriod: "year",
+   716→    description: "Lead brand marketing for Australia flagship airline. Manage a team of 15, oversee 30M AUD budget, and drive loyalty program growth for 12M+ members.",
+   717→    sector: "Marketing", posted: "3 days ago", type: "Full-time",
+   718→    contactEmail: "careers@qantas.com"
+   719→  },
+   720→  {
+   721→    id: 76, title: "Financial Analyst", company: "Commonwealth Bank",
+   722→    companyUrl: "https://commonwealthbank.com/careers", location: "Sydney, NSW",
+   723→    country: "au", countryName: "Australia", lat: -33.8688, lng: 151.2093,
+   724→    salary: "A$ 95,000 - 130,000/yr", salaryMin: 95000, salaryMax: 130000, salaryCurrency: "AUD", salaryPeriod: "year",
+   725→    description: "Conduct financial analysis for retail and institutional banking products. Prepare risk assessments, support loan approvals, and develop forecasting models.",
+   726→    sector: "Finance", posted: "4 days ago", type: "Full-time",
+   727→    contactEmail: "careers@commonwealth.com"
+   728→  },
+   729→  {
+   730→    id: 77, title: "UX Designer", company: "Canva",
+   731→    companyUrl: "https://canva.com/careers", location: "Sydney, NSW",
+   732→    country: "au", countryName: "Australia", lat: -33.8688, lng: 151.2093,
+   733→    salary: "A$ 100,000 - 140,000/yr", salaryMin: 100000, salaryMax: 140000, salaryCurrency: "AUD", salaryPeriod: "year",
+   734→    description: "Design features for the world leading online design platform with 170M+ monthly users. Conduct user research, create prototypes, and A/B test new features.",
+   735→    sector: "Design", posted: "5 days ago", type: "Full-time",
+   736→    contactEmail: "careers@canva.com"
+   737→  },
+   738→  {
+   739→    id: 78, title: "Data Scientist", company: "CSIRO",
+   740→    companyUrl: "https://csiro.com/careers", location: "Melbourne, VIC",
+   741→    country: "au", countryName: "Australia", lat: -37.8136, lng: 144.9631,
+   742→    salary: "A$ 105,000 - 145,000/yr", salaryMin: 105000, salaryMax: 145000, salaryCurrency: "AUD", salaryPeriod: "year",
+   743→    description: "Apply machine learning to environmental and agricultural research. Build predictive models for climate change impact, crop yield optimization, and resource management.",
+   744→    sector: "Data Science", posted: "1 week ago", type: "Full-time",
+   745→    contactEmail: "careers@csiro.com"
+   746→  },
+   747→  {
+   748→    id: 79, title: "HR Manager", company: "Telstra",
+   749→    companyUrl: "https://telstra.com/careers", location: "Melbourne, VIC",
+   750→    country: "au", countryName: "Australia", lat: -37.8136, lng: 144.9631,
+   751→    salary: "A$ 90,000 - 120,000/yr", salaryMin: 90000, salaryMax: 120000, salaryCurrency: "AUD", salaryPeriod: "year",
+   752→    description: "Lead people operations for Australia largest telecommunications company. Drive talent acquisition, employee engagement, and organizational transformation initiatives.",
+   753→    sector: "HR", posted: "1 week ago", type: "Remote",
+   754→    contactEmail: "careers@telstra.com"
+   755→  },
+   756→  {
+   757→    id: 80, title: "Sales Executive", company: "Wesfarmers",
+   758→    companyUrl: "https://wesfarmers.com/careers", location: "Perth, WA",
+   759→    country: "au", countryName: "Australia", lat: -31.9505, lng: 115.8605,
+   760→    salary: "A$ 85,000 - 115,000/yr", salaryMin: 85000, salaryMax: 115000, salaryCurrency: "AUD", salaryPeriod: "year",
+   761→    description: "Drive B2B sales for retail conglomerate spanning hardware, chemicals, and supermarkets. Manage key accounts and develop strategic partnerships across ANZ.",
+   762→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+   763→    contactEmail: "careers@wesfarmers.com"
+   764→  },
+   765→
+   766→  // ========== MEXICO ==========
+   767→  {
+   768→    id: 81, title: "Manufacturing Engineer", company: "Grupo Bimbo",
+   769→    companyUrl: "https://grupobimbo.com/careers", location: "Mexico City, CDMX",
+   770→    country: "mx", countryName: "Mexico", lat: 19.4326, lng: -99.1332,
+   771→    salary: "MX$ 35,000 - 55,000/mo", salaryMin: 35000, salaryMax: 55000, salaryCurrency: "MXN", salaryPeriod: "month",
+   772→    description: "Optimize production lines across 200+ manufacturing facilities in Latin America. Implement Lean Six Sigma methodologies and improve throughput.",
+   773→    sector: "Engineering", posted: "1 day ago", type: "Full-time",
+   774→    contactEmail: "careers@grupo.com"
+   775→  },
+   776→  {
+   777→    id: 82, title: "Software Developer", company: "Rappi",
+   778→    companyUrl: "https://rappi.com/careers", location: "Mexico City, CDMX",
+   779→    country: "mx", countryName: "Mexico", lat: 19.4326, lng: -99.1332,
+   780→    salary: "MX$ 30,000 - 48,000/mo", salaryMin: 30000, salaryMax: 48000, salaryCurrency: "MXN", salaryPeriod: "month",
+   781→    description: "Build delivery platform features serving 30M+ users across Latin America. Work with React Native, Node.js, and real-time tracking systems.",
+   782→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+   783→    contactEmail: "careers@rappi.com"
+   784→  },
+   785→  {
+   786→    id: 83, title: "Marketing Manager", company: "Grupo Modelo",
+   787→    companyUrl: "https://grupomodelo.com/careers", location: "Mexico City, CDMX",
+   788→    country: "mx", countryName: "Mexico", lat: 19.4326, lng: -99.1332,
+   789→    salary: "MX$ 28,000 - 42,000/mo", salaryMin: 28000, salaryMax: 42000, salaryCurrency: "MXN", salaryPeriod: "month",
+   790→    description: "Lead marketing campaigns for Mexico largest beverage brands. Manage a team of 10, oversee 200M MXN annual budget, and drive market share growth.",
+   791→    sector: "Marketing", posted: "3 days ago", type: "Full-time",
+   792→    contactEmail: "careers@grupo.com"
+   793→  },
+   794→  {
+   795→    id: 84, title: "Financial Analyst", company: "Banorte",
+   796→    companyUrl: "https://banorte.com/careers", location: "Mexico City, CDMX",
+   797→    country: "mx", countryName: "Mexico", lat: 19.4326, lng: -99.1332,
+   798→    salary: "MX$ 25,000 - 40,000/mo", salaryMin: 25000, salaryMax: 40000, salaryCurrency: "MXN", salaryPeriod: "month",
+   799→    description: "Conduct financial analysis for commercial banking products. Prepare credit risk assessments, support corporate lending decisions, and manage portfolio analytics.",
+   800→    sector: "Finance", posted: "4 days ago", type: "Full-time",
+   801→    contactEmail: "careers@banorte.com"
+   802→  },
+   803→  {
+   804→    id: 85, title: "Data Scientist", company: "Kueski",
+   805→    companyUrl: "https://kueski.com/careers", location: "Mexico City, CDMX",
+   806→    country: "mx", countryName: "Mexico", lat: 19.4326, lng: -99.1332,
+   807→    salary: "MX$ 35,000 - 52,000/mo", salaryMin: 35000, salaryMax: 52000, salaryCurrency: "MXN", salaryPeriod: "month",
+   808→    description: "Build credit scoring models and fraud detection systems for fintech platform. Analyze alternative data sources to serve underbanked populations in Mexico.",
+   809→    sector: "Data Science", posted: "5 days ago", type: "Full-time",
+   810→    contactEmail: "careers@kueski.com"
+   811→  },
+   812→  {
+   813→    id: 86, title: "UX Designer", company: "Softtek",
+   814→    companyUrl: "https://softtek.com/careers", location: "Monterrey, NL",
+   815→    country: "mx", countryName: "Mexico", lat: 25.6866, lng: -100.3161,
+   816→    salary: "MX$ 22,000 - 35,000/mo", salaryMin: 22000, salaryMax: 35000, salaryCurrency: "MXN", salaryPeriod: "month",
+   817→    description: "Design enterprise software interfaces for Fortune 500 clients. Create design systems, conduct usability testing, and collaborate with development teams.",
+   818→    sector: "Design", posted: "1 week ago", type: "Full-time",
+   819→    contactEmail: "careers@softtek.com"
+   820→  },
+   821→  {
+   822→    id: 87, title: "Sales Director", company: "FEMSA",
+   823→    companyUrl: "https://femsa.com/careers", location: "Monterrey, NL",
+   824→    country: "mx", countryName: "Mexico", lat: 25.6866, lng: -100.3161,
+   825→    salary: "MX$ 38,000 - 58,000/mo", salaryMin: 38000, salaryMax: 58000, salaryCurrency: "MXN", salaryPeriod: "month",
+   826→    description: "Lead commercial operations for convenience store chain OXXO across Latin America. Manage distribution partnerships, expand franchise network, and drive revenue.",
+   827→    sector: "Sales", posted: "1 week ago", type: "Remote",
+   828→    contactEmail: "careers@femsa.com"
+   829→  },
+   830→  {
+   831→    id: 88, title: "HR Manager", company: "CEMEX",
+   832→    companyUrl: "https://cemex.com/careers", location: "Monterrey, NL",
+   833→    country: "mx", countryName: "Mexico", lat: 25.6866, lng: -100.3161,
+   834→    salary: "MX$ 28,000 - 42,000/mo", salaryMin: 28000, salaryMax: 42000, salaryCurrency: "MXN", salaryPeriod: "month",
+   835→    description: "Manage talent development for global building materials company. Lead recruitment, training programs, and employee engagement across 10+ Mexican facilities.",
+   836→    sector: "HR", posted: "2 weeks ago", type: "Hybrid",
+   837→    contactEmail: "careers@cemex.com"
+   838→  },
+   839→
+   840→  // ========== INDONESIA ==========
+   841→  {
+   842→    id: 89, title: "Mobile Developer", company: "Gojek",
+   843→    companyUrl: "https://gojek.com/careers", location: "Jakarta",
+   844→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   845→    salary: "Rp 25,000,000 - 40,000,000/mo", salaryMin: 25000000, salaryMax: 40000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   846→    description: "Build super-app features serving 190M+ users across Southeast Asia. Work with React Native and Kotlin. Implement real-time tracking and payment integration.",
+   847→    sector: "Technology", posted: "1 day ago", type: "Full-time",
+   848→    contactEmail: "careers@gojek.com"
+   849→  },
+   850→  {
+   851→    id: 90, title: "Data Analyst", company: "Tokopedia",
+   852→    companyUrl: "https://tokopedia.com/careers", location: "Jakarta",
+   853→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   854→    salary: "Rp 22,000,000 - 35,000,000/mo", salaryMin: 22000000, salaryMax: 35000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   855→    description: "Analyze e-commerce data for Indonesia largest marketplace. Build dashboards, develop recommendation algorithms, and optimize seller performance metrics.",
+   856→    sector: "Data Science", posted: "2 days ago", type: "Full-time",
+   857→    contactEmail: "careers@tokopedia.com"
+   858→  },
+   859→  {
+   860→    id: 91, title: "Product Manager", company: "Traveloka",
+   861→    companyUrl: "https://traveloka.com/careers", location: "Jakarta",
+   862→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   863→    salary: "Rp 30,000,000 - 48,000,000/mo", salaryMin: 30000000, salaryMax: 48000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   864→    description: "Own the product roadmap for travel booking platform. Manage cross-functional teams and drive features serving 60M+ monthly active users across 6 countries.",
+   865→    sector: "Management", posted: "3 days ago", type: "Full-time",
+   866→    contactEmail: "careers@traveloka.com"
+   867→  },
+   868→  {
+   869→    id: 92, title: "Marketing Specialist", company: "Bukalapak",
+   870→    companyUrl: "https://bukalapak.com/careers", location: "Jakarta",
+   871→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   872→    salary: "Rp 18,000,000 - 28,000,000/mo", salaryMin: 18000000, salaryMax: 28000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   873→    description: "Execute digital marketing campaigns for Indonesia e-commerce platform. Manage social media, performance marketing, and brand partnerships.",
+   874→    sector: "Marketing", posted: "4 days ago", type: "Full-time",
+   875→    contactEmail: "careers@bukalapak.com"
+   876→  },
+   877→  {
+   878→    id: 93, title: "Financial Analyst", company: "Bank Mandiri",
+   879→    companyUrl: "https://bankmandiri.com/careers", location: "Jakarta",
+   880→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   881→    salary: "Rp 20,000,000 - 32,000,000/mo", salaryMin: 20000000, salaryMax: 32000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   882→    description: "Conduct financial analysis for Indonesia largest bank. Prepare credit assessments, support corporate lending, and develop financial forecasting models.",
+   883→    sector: "Finance", posted: "5 days ago", type: "Full-time",
+   884→    contactEmail: "careers@bank.com"
+   885→  },
+   886→  {
+   887→    id: 94, title: "UX Designer", company: "Shopee Indonesia",
+   888→    companyUrl: "https://shopeeindonesia.com/careers", location: "Jakarta",
+   889→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   890→    salary: "Rp 20,000,000 - 32,000,000/mo", salaryMin: 20000000, salaryMax: 32000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   891→    description: "Design shopping and payment features for Southeast Asia leading e-commerce app. Conduct user research, create prototypes, and optimize conversion funnels.",
+   892→    sector: "Design", posted: "1 week ago", type: "Full-time",
+   893→    contactEmail: "careers@shopee.com"
+   894→  },
+   895→  {
+   896→    id: 95, title: "Backend Engineer", company: "Dana",
+   897→    companyUrl: "https://dana.com/careers", location: "Jakarta",
+   898→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   899→    salary: "Rp 25,000,000 - 40,000,000/mo", salaryMin: 25000000, salaryMax: 40000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   900→    description: "Build payment and financial services infrastructure for Indonesia leading digital wallet. Work with microservices architecture handling millions of daily transactions.",
+   901→    sector: "Technology", posted: "1 week ago", type: "Remote",
+   902→    contactEmail: "careers@dana.com"
+   903→  },
+   904→  {
+   905→    id: 96, title: "Sales Manager", company: "Unilever Indonesia",
+   906→    companyUrl: "https://unileverindonesia.com/careers", location: "Jakarta",
+   907→    country: "id", countryName: "Indonesia", lat: -6.2088, lng: 106.8456,
+   908→    salary: "Rp 22,000,000 - 35,000,000/mo", salaryMin: 22000000, salaryMax: 35000000, salaryCurrency: "IDR", salaryPeriod: "month",
+   909→    description: "Lead sales operations for FMCG products across Indonesian archipelago. Manage distribution networks, key accounts, and achieve annual revenue targets.",
+   910→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+   911→    contactEmail: "careers@unilever.com"
+   912→  },
+   913→
+   914→  // ========== SOUTH KOREA ==========
+   915→  {
+   916→    id: 97, title: "Semiconductor Engineer", company: "Samsung Electronics",
+   917→    companyUrl: "https://samsungelectronics.com/careers", location: "Suwon, Gyeonggi",
+   918→    country: "kr", countryName: "South Korea", lat: 37.2636, lng: 127.0286,
+   919→    salary: "₩6,000M - 9,000M/yr", salaryMin: 60000000, salaryMax: 90000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   920→    description: "Design and test next-generation semiconductor chips for mobile and data center applications. Work with cutting-edge lithography processes.",
+   921→    sector: "Engineering", posted: "1 day ago", type: "Full-time",
+   922→    contactEmail: "careers@samsung.com"
+   923→  },
+   924→  {
+   925→    id: 98, title: "Software Engineer", company: "Kakao Corp",
+   926→    companyUrl: "https://kakaocorp.com/careers", location: "Jeonju",
+   927→    country: "kr", countryName: "South Korea", lat: 35.8242, lng: 127.148,
+   928→    salary: "₩5,000M - 7,500M/yr", salaryMin: 50000000, salaryMax: 75000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   929→    description: "Build features for Korea super-app ecosystem with 50M+ users. Work with microservices, React Native, and large-scale distributed systems.",
+   930→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+   931→    contactEmail: "careers@kakao.com"
+   932→  },
+   933→  {
+   934→    id: 99, title: "Product Manager", company: "Coupang",
+   935→    companyUrl: "https://coupang.com/careers", location: "Seoul",
+   936→    country: "kr", countryName: "South Korea", lat: 37.5665, lng: 126.978,
+   937→    salary: "₩6,500M - 9,500M/yr", salaryMin: 65000000, salaryMax: 95000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   938→    description: "Own the product roadmap for Korea leading e-commerce platform. Drive logistics optimization, same-day delivery features, and membership growth.",
+   939→    sector: "Management", posted: "3 days ago", type: "Full-time",
+   940→    contactEmail: "careers@coupang.com"
+   941→  },
+   942→  {
+   943→    id: 100, title: "Data Scientist", company: "Naver Corp",
+   944→    companyUrl: "https://navercorp.com/careers", location: "Seongnam",
+   945→    country: "kr", countryName: "South Korea", lat: 37.4386, lng: 127.1378,
+   946→    salary: "₩5,500M - 8,000M/yr", salaryMin: 55000000, salaryMax: 80000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   947→    description: "Build AI-powered search and recommendation systems for Korea largest portal. Develop NLP models for Korean language processing and content personalization.",
+   948→    sector: "Data Science", posted: "4 days ago", type: "Full-time",
+   949→    contactEmail: "careers@naver.com"
+   950→  },
+   951→  {
+   952→    id: 101, title: "Marketing Manager", company: "LG Electronics",
+   953→    companyUrl: "https://lgelectronics.com/careers", location: "Seoul",
+   954→    country: "kr", countryName: "South Korea", lat: 37.5665, lng: 126.978,
+   955→    salary: "₩4,800M - 7,000M/yr", salaryMin: 48000000, salaryMax: 70000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   956→    description: "Lead global marketing campaigns for consumer electronics. Manage a team of 15, oversee 50B KRW budget, and develop brand strategies for global markets.",
+   957→    sector: "Marketing", posted: "5 days ago", type: "Full-time",
+   958→    contactEmail: "careers@lg.com"
+   959→  },
+   960→  {
+   961→    id: 102, title: "Financial Analyst", company: "Shinhan Bank",
+   962→    companyUrl: "https://shinhanbank.com/careers", location: "Seoul",
+   963→    country: "kr", countryName: "South Korea", lat: 37.5665, lng: 126.978,
+   964→    salary: "₩5,200M - 7,800M/yr", salaryMin: 52000000, salaryMax: 78000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   965→    description: "Conduct financial analysis for Korea second-largest bank. Prepare risk assessments, support corporate banking decisions, and manage portfolio analytics.",
+   966→    sector: "Finance", posted: "1 week ago", type: "Full-time",
+   967→    contactEmail: "careers@shinhan.com"
+   968→  },
+   969→  {
+   970→    id: 103, title: "UX Designer", company: "NCSoft",
+   971→    companyUrl: "https://ncsoft.com/careers", location: "Pangyo",
+   972→    country: "kr", countryName: "South Korea", lat: 37.3944, lng: 127.1112,
+   973→    salary: "₩4,500M - 6,800M/yr", salaryMin: 45000000, salaryMax: 68000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   974→    description: "Design game UI/UX for MMORPG titles with millions of global players. Create immersive interfaces, conduct playtesting, and iterate on player feedback.",
+   975→    sector: "Design", posted: "1 week ago", type: "Remote",
+   976→    contactEmail: "careers@ncsoft.com"
+   977→  },
+   978→  {
+   979→    id: 104, title: "HR Director", company: "Hyundai Motor",
+   980→    companyUrl: "https://hyundaimotor.com/careers", location: "Seoul",
+   981→    country: "kr", countryName: "South Korea", lat: 37.5665, lng: 126.978,
+   982→    salary: "₩6,000M - 8,500M/yr", salaryMin: 60000000, salaryMax: 85000000, salaryCurrency: "KRW", salaryPeriod: "year",
+   983→    description: "Lead people strategy for Korea largest automotive group with 70,000+ employees. Drive talent acquisition, leadership development, and global mobility programs.",
+   984→    sector: "HR", posted: "2 weeks ago", type: "Hybrid",
+   985→    contactEmail: "careers@hyundai.com"
+   986→  },
+   987→
+   988→  // ========== SAUDI ARABIA ==========
+   989→  {
+   990→    id: 105, title: "Infrastructure Project Manager", company: "NEOM",
+   991→    companyUrl: "https://neom.com/careers", location: "Riyadh",
+   992→    country: "sa", countryName: "Saudi Arabia", lat: 24.7136, lng: 46.6753,
+   993→    salary: "SAR 35,000 - 55,000/mo", salaryMin: 35000, salaryMax: 55000, salaryCurrency: "SAR", salaryPeriod: "month",
+   994→    description: "Lead mega-infrastructure projects as part of Vision 2030. Manage multi-billion riyal construction programs and coordinate with international contractors.",
+   995→    sector: "Management", posted: "1 day ago", type: "Full-time",
+   996→    contactEmail: "careers@neom.com"
+   997→  },
+   998→  {
+   999→    id: 106, title: "Software Engineer", company: "STC Solutions",
+  1000→    companyUrl: "https://stcsolutions.com/careers", location: "Riyadh",
+  1001→    country: "sa", countryName: "Saudi Arabia", lat: 24.7136, lng: 46.6753,
+  1002→    salary: "SAR 25,000 - 40,000/mo", salaryMin: 25000, salaryMax: 40000, salaryCurrency: "SAR", salaryPeriod: "month",
+  1003→    description: "Build digital transformation solutions for Saudi Arabia telecom sector. Work with cloud platforms, API development, and 5G network applications.",
+  1004→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+  1005→    contactEmail: "careers@stc.com"
+  1006→  },
+  1007→  {
+  1008→    id: 107, title: "Financial Analyst", company: "Saudi Aramco",
+  1009→    companyUrl: "https://saudiaramco.com/careers", location: "Dhahran",
+  1010→    country: "sa", countryName: "Saudi Arabia", lat: 26.3927, lng: 49.9777,
+  1011→    salary: "SAR 30,000 - 48,000/mo", salaryMin: 30000, salaryMax: 48000, salaryCurrency: "SAR", salaryPeriod: "month",
+  1012→    description: "Conduct financial analysis for the world largest oil company. Prepare investment appraisals, support capital allocation decisions, and manage financial planning.",
+  1013→    sector: "Finance", posted: "3 days ago", type: "Full-time",
+  1014→    contactEmail: "careers@saudi.com"
+  1015→  },
+  1016→  {
+  1017→    id: 108, title: "Marketing Manager", company: "Almarai",
+  1018→    companyUrl: "https://almarai.com/careers", location: "Riyadh",
+  1019→    country: "sa", countryName: "Saudi Arabia", lat: 24.7136, lng: 46.6753,
+  1020→    salary: "SAR 22,000 - 35,000/mo", salaryMin: 22000, salaryMax: 35000, salaryCurrency: "SAR", salaryPeriod: "month",
+  1021→    description: "Lead marketing for Saudi Arabia largest food and beverage company. Manage brand campaigns, oversee digital transformation of marketing channels.",
+  1022→    sector: "Marketing", posted: "4 days ago", type: "Full-time",
+  1023→    contactEmail: "careers@almarai.com"
+  1024→  },
+  1025→  {
+  1026→    id: 109, title: "Mechanical Engineer", company: "SABIC",
+  1027→    companyUrl: "https://sabic.com/careers", location: "Riyadh",
+  1028→    country: "sa", countryName: "Saudi Arabia", lat: 24.7136, lng: 46.6753,
+  1029→    salary: "SAR 28,000 - 42,000/mo", salaryMin: 28000, salaryMax: 42000, salaryCurrency: "SAR", salaryPeriod: "month",
+  1030→    description: "Design and optimize chemical processing equipment for petrochemical operations. Ensure compliance with international safety and environmental standards.",
+  1031→    sector: "Engineering", posted: "5 days ago", type: "Full-time",
+  1032→    contactEmail: "careers@sabic.com"
+  1033→  },
+  1034→  {
+  1035→    id: 110, title: "Data Scientist", company: "Noon",
+  1036→    companyUrl: "https://noon.com/careers", location: "Riyadh",
+  1037→    country: "sa", countryName: "Saudi Arabia", lat: 24.7136, lng: 46.6753,
+  1038→    salary: "SAR 30,000 - 45,000/mo", salaryMin: 30000, salaryMax: 45000, salaryCurrency: "SAR", salaryPeriod: "month",
+  1039→    description: "Build recommendation and search algorithms for e-commerce platform. Analyze customer behavior data to optimize product discovery and conversion.",
+  1040→    sector: "Data Science", posted: "1 week ago", type: "Full-time",
+  1041→    contactEmail: "careers@noon.com"
+  1042→  },
+  1043→  {
+  1044→    id: 111, title: "HR Manager", company: "Pfizer Saudi",
+  1045→    companyUrl: "https://pfizersaudi.com/careers", location: "Jeddah",
+  1046→    country: "sa", countryName: "Saudi Arabia", lat: 21.4858, lng: 39.1925,
+  1047→    salary: "SAR 20,000 - 32,000/mo", salaryMin: 20000, salaryMax: 32000, salaryCurrency: "SAR", salaryPeriod: "month",
+  1048→    description: "Manage talent acquisition and development for pharmaceutical operations. Drive Saudi nationalization programs and implement performance management systems.",
+  1049→    sector: "HR", posted: "1 week ago", type: "Remote",
+  1050→    contactEmail: "careers@pfizer.com"
+  1051→  },
+  1052→  {
+  1053→    id: 112, title: "Sales Executive", company: "Emaar EC",
+  1054→    companyUrl: "https://emaarec.com/careers", location: "Riyadh",
+  1055→    country: "sa", countryName: "Saudi Arabia", lat: 24.7136, lng: 46.6753,
+  1056→    salary: "SAR 25,000 - 40,000/mo", salaryMin: 25000, salaryMax: 40000, salaryCurrency: "SAR", salaryPeriod: "month",
+  1057→    description: "Drive real estate sales for luxury developments in Riyadh and Jeddah. Manage key accounts, negotiate high-value contracts, and achieve annual sales targets.",
+  1058→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+  1059→    contactEmail: "careers@emaar.com"
+  1060→  },
+  1061→
+  1062→  // ========== UAE ==========
+  1063→  {
+  1064→    id: 113, title: "FinTech Product Manager", company: "Careem",
+  1065→    companyUrl: "https://careem.com/careers", location: "Dubai",
+  1066→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1067→    salary: "AED 35,000 - 55,000/mo", salaryMin: 35000, salaryMax: 55000, salaryCurrency: "AED", salaryPeriod: "month",
+  1068→    description: "Lead product strategy for Careem Pay, the region leading super-app payment platform. Define roadmap, manage a team of 10 product managers.",
+  1069→    sector: "Finance", posted: "1 day ago", type: "Full-time",
+  1070→    contactEmail: "careers@careem.com"
+  1071→  },
+  1072→  {
+  1073→    id: 114, title: "Software Developer", company: "Dubai Electricity",
+  1074→    companyUrl: "https://dubaielectricity.com/careers", location: "Dubai",
+  1075→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1076→    salary: "AED 25,000 - 40,000/mo", salaryMin: 25000, salaryMax: 40000, salaryCurrency: "AED", salaryPeriod: "month",
+  1077→    description: "Build smart city applications for Dubai utility services. Work with IoT platforms, real-time monitoring dashboards, and AI-powered analytics.",
+  1078→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+  1079→    contactEmail: "careers@dubai.com"
+  1080→  },
+  1081→  {
+  1082→    id: 115, title: "Marketing Director", company: "Emirates Airlines",
+  1083→    companyUrl: "https://emiratesairlines.com/careers", location: "Dubai",
+  1084→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1085→    salary: "AED 40,000 - 65,000/mo", salaryMin: 40000, salaryMax: 65000, salaryCurrency: "AED", salaryPeriod: "month",
+  1086→    description: "Lead global marketing for one of the world most iconic airlines. Manage a team of 25, oversee 500M AED budget, and drive brand campaigns globally.",
+  1087→    sector: "Marketing", posted: "3 days ago", type: "Full-time",
+  1088→    contactEmail: "careers@emirates.com"
+  1089→  },
+  1090→  {
+  1091→    id: 116, title: "Financial Controller", company: "Emirates NBD",
+  1092→    companyUrl: "https://emiratesnbd.com/careers", location: "Dubai",
+  1093→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1094→    salary: "AED 30,000 - 48,000/mo", salaryMin: 30000, salaryMax: 48000, salaryCurrency: "AED", salaryPeriod: "month",
+  1095→    description: "Oversee financial reporting for the UAE largest banking group. Manage budgets, regulatory compliance, and strategic financial planning.",
+  1096→    sector: "Finance", posted: "4 days ago", type: "Full-time",
+  1097→    contactEmail: "careers@emirates.com"
+  1098→  },
+  1099→  {
+  1100→    id: 117, title: "UX Designer", company: "Careem",
+  1101→    companyUrl: "https://careem.com/careers", location: "Dubai",
+  1102→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1103→    salary: "AED 22,000 - 35,000/mo", salaryMin: 22000, salaryMax: 35000, salaryCurrency: "AED", salaryPeriod: "month",
+  1104→    description: "Design super-app experiences for ride-hailing, delivery, and payments. Conduct user research, create prototypes, and optimize for diverse Middle Eastern markets.",
+  1105→    sector: "Design", posted: "5 days ago", type: "Full-time",
+  1106→    contactEmail: "careers@careem.com"
+  1107→  },
+  1108→  {
+  1109→    id: 118, title: "Data Engineer", company: "Majid Al Futtaim",
+  1110→    companyUrl: "https://majidalfuttaim.com/careers", location: "Dubai",
+  1111→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1112→    salary: "AED 28,000 - 42,000/mo", salaryMin: 28000, salaryMax: 42000, salaryCurrency: "AED", salaryPeriod: "month",
+  1113→    description: "Build data pipelines for retail and entertainment conglomerate. Develop analytics solutions for 30M+ customers across malls and hotels.",
+  1114→    sector: "Data Science", posted: "1 week ago", type: "Full-time",
+  1115→    contactEmail: "careers@majid.com"
+  1116→  },
+  1117→  {
+  1118→    id: 119, title: "Sales Manager", company: "Chalhoub Group",
+  1119→    companyUrl: "https://chalhoubgroup.com/careers", location: "Dubai",
+  1120→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1121→    salary: "AED 25,000 - 40,000/mo", salaryMin: 25000, salaryMax: 40000, salaryCurrency: "AED", salaryPeriod: "month",
+  1122→    description: "Lead luxury retail sales across the Middle East. Manage relationships with 300+ luxury brands, develop wholesale strategies, and drive revenue growth.",
+  1123→    sector: "Sales", posted: "1 week ago", type: "Remote",
+  1124→    contactEmail: "careers@chalhoub.com"
+  1125→  },
+  1126→  {
+  1127→    id: 120, title: "HR Business Partner", company: "DP World",
+  1128→    companyUrl: "https://dpworld.com/careers", location: "Dubai",
+  1129→    country: "ae", countryName: "UAE", lat: 25.2048, lng: 55.2708,
+  1130→    salary: "AED 25,000 - 38,000/mo", salaryMin: 25000, salaryMax: 38000, salaryCurrency: "AED", salaryPeriod: "month",
+  1131→    description: "Partner with operations leadership on talent strategy for global ports operator. Drive recruitment for 50,000+ employee workforce across 40 countries.",
+  1132→    sector: "HR", posted: "2 weeks ago", type: "Hybrid",
+  1133→    contactEmail: "careers@dp.com"
+  1134→  },
+  1135→
+  1136→  // ========== SPAIN ==========
+  1137→  {
+  1138→    id: 121, title: "Marketing Manager", company: "GrowthHub Digital",
+  1139→    companyUrl: "https://growthhubdigital.com/careers", location: "Madrid",
+  1140→    country: "es", countryName: "Spain", lat: 40.4168, lng: -3.7038,
+  1141→    salary: "€55,000 - 72,000/yr", salaryMin: 55000, salaryMax: 72000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1142→    description: "Lead multi-channel marketing campaigns across EMEA markets. Manage a team of 8 marketing specialists and develop brand strategies.",
+  1143→    sector: "Marketing", posted: "1 day ago", type: "Full-time",
+  1144→    contactEmail: "careers@growthhub.com"
+  1145→  },
+  1146→  {
+  1147→    id: 122, title: "Mobile Developer", company: "AppForge Studio",
+  1148→    companyUrl: "https://appforgestudio.com/careers", location: "Barcelona",
+  1149→    country: "es", countryName: "Spain", lat: 41.3874, lng: 2.1686,
+  1150→    salary: "€48,000 - 65,000/yr", salaryMin: 48000, salaryMax: 65000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1151→    description: "Build cross-platform mobile applications using React Native and Swift. Implement push notifications, offline sync, and biometric authentication.",
+  1152→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+  1153→    contactEmail: "careers@appforge.com"
+  1154→  },
+  1155→  {
+  1156→    id: 123, title: "Data Scientist", company: "Telefonica",
+  1157→    companyUrl: "https://telefonica.com/careers", location: "Madrid",
+  1158→    country: "es", countryName: "Spain", lat: 40.4168, lng: -3.7038,
+  1159→    salary: "€52,000 - 70,000/yr", salaryMin: 52000, salaryMax: 70000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1160→    description: "Build machine learning models for telecommunications fraud detection and customer analytics. Analyze data from 350M+ global customers.",
+  1161→    sector: "Data Science", posted: "3 days ago", type: "Full-time",
+  1162→    contactEmail: "careers@telefonica.com"
+  1163→  },
+  1164→  {
+  1165→    id: 124, title: "Financial Analyst", company: "Santander Bank",
+  1166→    companyUrl: "https://santanderbank.com/careers", location: "Madrid",
+  1167→    country: "es", countryName: "Spain", lat: 40.4168, lng: -3.7038,
+  1168→    salary: "€45,000 - 62,000/yr", salaryMin: 45000, salaryMax: 62000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1169→    description: "Conduct financial analysis for one of Europe largest banks. Prepare credit risk assessments, support corporate lending, and manage portfolio analytics.",
+  1170→    sector: "Finance", posted: "4 days ago", type: "Full-time",
+  1171→    contactEmail: "careers@santander.com"
+  1172→  },
+  1173→  {
+  1174→    id: 125, title: "Product Manager", company: "Glovo",
+  1175→    companyUrl: "https://glovo.com/careers", location: "Barcelona",
+  1176→    country: "es", countryName: "Spain", lat: 41.3874, lng: 2.1686,
+  1177→    salary: "€55,000 - 75,000/yr", salaryMin: 55000, salaryMax: 75000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1178→    description: "Own the product roadmap for food delivery platform operating in 25+ countries. Manage cross-functional teams and drive growth initiatives.",
+  1179→    sector: "Management", posted: "5 days ago", type: "Full-time",
+  1180→    contactEmail: "careers@glovo.com"
+  1181→  },
+  1182→  {
+  1183→    id: 126, title: "UX Designer", company: "Zara",
+  1184→    companyUrl: "https://zara.com/careers", location: "A Coruna",
+  1185→    country: "es", countryName: "Spain", lat: 43.3623, lng: -8.4115,
+  1186→    salary: "€40,000 - 58,000/yr", salaryMin: 40000, salaryMax: 58000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1187→    description: "Design e-commerce and in-store digital experiences for the world largest fashion retailer. Create responsive designs for 50M+ monthly online visitors.",
+  1188→    sector: "Design", posted: "1 week ago", type: "Full-time",
+  1189→    contactEmail: "careers@zara.com"
+  1190→  },
+  1191→  {
+  1192→    id: 127, title: "Software Engineer", company: "Globant",
+  1193→    companyUrl: "https://globant.com/careers", location: "Madrid",
+  1194→    country: "es", countryName: "Spain", lat: 40.4168, lng: -3.7038,
+  1195→    salary: "€48,000 - 68,000/yr", salaryMin: 48000, salaryMax: 68000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1196→    description: "Build digital solutions for enterprise clients across industries. Work with modern tech stacks including cloud, AI, and agile development practices.",
+  1197→    sector: "Technology", posted: "1 week ago", type: "Remote",
+  1198→    contactEmail: "careers@globant.com"
+  1199→  },
+  1200→  {
+  1201→    id: 128, title: "Sales Executive", company: "Mahou San Miguel",
+  1202→    companyUrl: "https://mahousanmiguel.com/careers", location: "Madrid",
+  1203→    country: "es", countryName: "Spain", lat: 40.4168, lng: -3.7038,
+  1204→    salary: "€42,000 - 58,000/yr", salaryMin: 42000, salaryMax: 58000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1205→    description: "Drive B2B sales for Spain largest beverage company. Manage key accounts, negotiate distribution agreements, and expand market presence nationally.",
+  1206→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+  1207→    contactEmail: "careers@mahou.com"
+  1208→  },
+  1209→
+  1210→  // ========== ITALY ==========
+  1211→  {
+  1212→    id: 129, title: "Fashion E-Commerce Manager", company: "YOOX NET-A-PORTER",
+  1213→    companyUrl: "https://yooxnet-a-porter.com/careers", location: "Milan, Lombardy",
+  1214→    country: "it", countryName: "Italy", lat: 45.4642, lng: 9.19,
+  1215→    salary: "€50,000 - 70,000/yr", salaryMin: 50000, salaryMax: 70000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1216→    description: "Manage the luxury e-commerce platform for the Italian market. Optimize conversion funnels and collaborate with fashion brands on exclusive launches.",
+  1217→    sector: "Marketing", posted: "1 day ago", type: "Full-time",
+  1218→    contactEmail: "careers@yoox.com"
+  1219→  },
+  1220→  {
+  1221→    id: 130, title: "Software Developer", company: "Deliveroo Italy",
+  1222→    companyUrl: "https://deliverooitaly.com/careers", location: "Milan, Lombardy",
+  1223→    country: "it", countryName: "Italy", lat: 45.4642, lng: 9.19,
+  1224→    salary: "€42,000 - 58,000/yr", salaryMin: 42000, salaryMax: 58000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1225→    description: "Build delivery platform features serving Italian market. Work with real-time logistics systems, payment integration, and restaurant management tools.",
+  1226→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+  1227→    contactEmail: "careers@deliveroo.com"
+  1228→  },
+  1229→  {
+  1230→    id: 131, title: "Financial Analyst", company: "UniCredit",
+  1231→    companyUrl: "https://unicredit.com/careers", location: "Milan, Lombardy",
+  1232→    country: "it", countryName: "Italy", lat: 45.4642, lng: 9.19,
+  1233→    salary: "€48,000 - 68,000/yr", salaryMin: 48000, salaryMax: 68000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1234→    description: "Conduct financial analysis for one of Europe largest banking groups. Prepare risk assessments, support investment banking, and manage portfolio analytics.",
+  1235→    sector: "Finance", posted: "3 days ago", type: "Full-time",
+  1236→    contactEmail: "careers@unicredit.com"
+  1237→  },
+  1238→  {
+  1239→    id: 132, title: "UX Designer", company: "Ferrari",
+  1240→    companyUrl: "https://ferrari.com/careers", location: "Maranello, Emilia-Romagna",
+  1241→    country: "it", countryName: "Italy", lat: 44.5314, lng: 10.8658,
+  1242→    salary: "€45,000 - 62,000/yr", salaryMin: 45000, salaryMax: 62000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1243→    description: "Design digital experiences for Ferrari online sales and brand platforms. Create premium user interfaces that reflect the luxury brand identity.",
+  1244→    sector: "Design", posted: "4 days ago", type: "Full-time",
+  1245→    contactEmail: "careers@ferrari.com"
+  1246→  },
+  1247→  {
+  1248→    id: 133, title: "Data Scientist", company: "Enel",
+  1249→    companyUrl: "https://enel.com/careers", location: "Rome, Lazio",
+  1250→    country: "it", countryName: "Italy", lat: 41.9028, lng: 12.4964,
+  1251→    salary: "€50,000 - 70,000/yr", salaryMin: 50000, salaryMax: 70000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1252→    description: "Build predictive models for energy consumption and renewable energy optimization. Analyze data from 70M+ customers across 30 countries.",
+  1253→    sector: "Data Science", posted: "5 days ago", type: "Full-time",
+  1254→    contactEmail: "careers@enel.com"
+  1255→  },
+  1256→  {
+  1257→    id: 134, title: "Mechanical Engineer", company: "Leonardo S.p.A.",
+  1258→    companyUrl: "https://leonardospa.com/careers", location: "Rome, Lazio",
+  1259→    country: "it", countryName: "Italy", lat: 41.9028, lng: 12.4964,
+  1260→    salary: "€46,000 - 65,000/yr", salaryMin: 46000, salaryMax: 65000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1261→    description: "Design aerospace and defense systems. Use advanced CAD and simulation tools for helicopter and aircraft component development.",
+  1262→    sector: "Engineering", posted: "1 week ago", type: "Full-time",
+  1263→    contactEmail: "careers@leonardo.com"
+  1264→  },
+  1265→  {
+  1266→    id: 135, title: "HR Manager", company: "Luxeottica",
+  1267→    companyUrl: "https://luxeottica.com/careers", location: "Milan, Lombardy",
+  1268→    country: "it", countryName: "Italy", lat: 45.4642, lng: 9.19,
+  1269→    salary: "€42,000 - 58,000/yr", salaryMin: 42000, salaryMax: 58000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1270→    description: "Lead talent management for global eyewear manufacturer. Drive recruitment, training programs, and organizational development across European operations.",
+  1271→    sector: "HR", posted: "1 week ago", type: "Remote",
+  1272→    contactEmail: "careers@luxeottica.com"
+  1273→  },
+  1274→  {
+  1275→    id: 136, title: "Sales Manager", company: "Barilla Group",
+  1276→    companyUrl: "https://barillagroup.com/careers", location: "Parma, Emilia-Romagna",
+  1277→    country: "it", countryName: "Italy", lat: 44.8015, lng: 10.3279,
+  1278→    salary: "€40,000 - 56,000/yr", salaryMin: 40000, salaryMax: 56000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1279→    description: "Lead commercial operations for Italy largest food company. Manage distribution networks, key accounts, and export sales across 100+ countries.",
+  1280→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+  1281→    contactEmail: "careers@barilla.com"
+  1282→  },
+  1283→
+  1284→  // ========== PORTUGAL ==========
+  1285→  {
+  1286→    id: 137, title: "Customer Success Manager", company: "Remote Portugal",
+  1287→    companyUrl: "https://remoteportugal.com/careers", location: "Lisbon",
+  1288→    country: "pt", countryName: "Portugal", lat: 38.7223, lng: -9.1393,
+  1289→    salary: "€35,000 - 48,000/yr", salaryMin: 35000, salaryMax: 48000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1290→    description: "Manage enterprise client relationships for a leading remote work platform. Drive product adoption, reduce churn, and expand accounts across EMEA.",
+  1291→    sector: "Management", posted: "1 day ago", type: "Full-time",
+  1292→    contactEmail: "careers@remote.com"
+  1293→  },
+  1294→  {
+  1295→    id: 138, title: "Software Engineer", company: "OutSystems",
+  1296→    companyUrl: "https://outsystems.com/careers", location: "Lisbon",
+  1297→    country: "pt", countryName: "Portugal", lat: 38.7223, lng: -9.1393,
+  1298→    salary: "€38,000 - 55,000/yr", salaryMin: 38000, salaryMax: 55000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1299→    description: "Build low-code platform features used by Fortune 500 companies. Work with React, Java, and cloud-native architecture serving millions of developers.",
+  1300→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+  1301→    contactEmail: "careers@outsystems.com"
+  1302→  },
+  1303→  {
+  1304→    id: 139, title: "Data Analyst", company: "Worten",
+  1305→    companyUrl: "https://worten.com/careers", location: "Lisbon",
+  1306→    country: "pt", countryName: "Portugal", lat: 38.7223, lng: -9.1393,
+  1307→    salary: "€28,000 - 40,000/yr", salaryMin: 28000, salaryMax: 40000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1308→    description: "Analyze retail data for Portugal largest electronics retailer. Build dashboards, develop demand forecasting models, and optimize inventory management.",
+  1309→    sector: "Data Science", posted: "3 days ago", type: "Full-time",
+  1310→    contactEmail: "careers@worten.com"
+  1311→  },
+  1312→  {
+  1313→    id: 140, title: "UX Designer", company: "Farfetch",
+  1314→    companyUrl: "https://farfetch.com/careers", location: "Porto",
+  1315→    country: "pt", countryName: "Portugal", lat: 41.1579, lng: -8.6291,
+  1316→    salary: "€32,000 - 46,000/yr", salaryMin: 32000, salaryMax: 46000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1317→    description: "Design luxury fashion e-commerce experiences for global platform. Create responsive designs, conduct A/B testing, and optimize for mobile-first shopping.",
+  1318→    sector: "Design", posted: "4 days ago", type: "Full-time",
+  1319→    contactEmail: "careers@farfetch.com"
+  1320→  },
+  1321→  {
+  1322→    id: 141, title: "Marketing Specialist", company: "Super Bock Group",
+  1323→    companyUrl: "https://superbockgroup.com/careers", location: "Lisbon",
+  1324→    country: "pt", countryName: "Portugal", lat: 38.7223, lng: -9.1393,
+  1325→    salary: "€26,000 - 38,000/yr", salaryMin: 26000, salaryMax: 38000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1326→    description: "Execute marketing campaigns for Portugal leading beverage brand. Manage digital marketing, event sponsorships, and brand partnerships.",
+  1327→    sector: "Marketing", posted: "5 days ago", type: "Full-time",
+  1328→    contactEmail: "careers@super.com"
+  1329→  },
+  1330→  {
+  1331→    id: 142, title: "Financial Analyst", company: "Caixa Geral de Depositos",
+  1332→    companyUrl: "https://caixageraldedepositos.com/careers", location: "Lisbon",
+  1333→    country: "pt", countryName: "Portugal", lat: 38.7223, lng: -9.1393,
+  1334→    salary: "€30,000 - 42,000/yr", salaryMin: 30000, salaryMax: 42000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1335→    description: "Conduct financial analysis for Portugal largest bank. Prepare credit assessments, support corporate lending, and develop financial forecasting models.",
+  1336→    sector: "Finance", posted: "1 week ago", type: "Full-time",
+  1337→    contactEmail: "careers@caixa.com"
+  1338→  },
+  1339→  {
+  1340→    id: 143, title: "DevOps Engineer", company: "Talkdesk",
+  1341→    companyUrl: "https://talkdesk.com/careers", location: "Lisbon",
+  1342→    country: "pt", countryName: "Portugal", lat: 38.7223, lng: -9.1393,
+  1343→    salary: "€36,000 - 52,000/yr", salaryMin: 36000, salaryMax: 52000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1344→    description: "Manage cloud infrastructure and CI/CD pipelines for cloud contact center platform. Automate deployments and ensure high availability for enterprise clients.",
+  1345→    sector: "Technology", posted: "1 week ago", type: "Remote",
+  1346→    contactEmail: "careers@talkdesk.com"
+  1347→  },
+  1348→  {
+  1349→    id: 144, title: "HR Specialist", company: "Vodafone Portugal",
+  1350→    companyUrl: "https://vodafoneportugal.com/careers", location: "Lisbon",
+  1351→    country: "pt", countryName: "Portugal", lat: 38.7223, lng: -9.1393,
+  1352→    salary: "€25,000 - 36,000/yr", salaryMin: 25000, salaryMax: 36000, salaryCurrency: "EUR", salaryPeriod: "year",
+  1353→    description: "Manage recruitment and employee development programs. Lead employer branding initiatives and support organizational change management.",
+  1354→    sector: "HR", posted: "2 weeks ago", type: "Hybrid",
+  1355→    contactEmail: "careers@vodafone.com"
+  1356→  },
+  1357→
+  1358→  // ========== NIGERIA ==========
+  1359→  {
+  1360→    id: 145, title: "Fintech Software Developer", company: "Flutterwave",
+  1361→    companyUrl: "https://flutterwave.com/careers", location: "Lagos",
+  1362→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1363→    salary: "NGN 12M - 20M/yr", salaryMin: 12000000, salaryMax: 20000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1364→    description: "Build payment processing infrastructure serving 30+ African countries. Work with Java, Go, and distributed systems. Handle millions of transactions daily.",
+  1365→    sector: "Finance", posted: "1 day ago", type: "Full-time",
+  1366→    contactEmail: "careers@flutterwave.com"
+  1367→  },
+  1368→  {
+  1369→    id: 146, title: "Product Manager", company: "Jumia",
+  1370→    companyUrl: "https://jumia.com/careers", location: "Lagos",
+  1371→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1372→    salary: "NGN 10M - 16M/yr", salaryMin: 10000000, salaryMax: 16000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1373→    description: "Own the product roadmap for Africa largest e-commerce platform. Manage cross-functional teams and drive features serving 30M+ monthly active users.",
+  1374→    sector: "Management", posted: "2 days ago", type: "Full-time",
+  1375→    contactEmail: "careers@jumia.com"
+  1376→  },
+  1377→  {
+  1378→    id: 147, title: "Data Analyst", company: "Interswitch",
+  1379→    companyUrl: "https://interswitch.com/careers", location: "Lagos",
+  1380→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1381→    salary: "NGN 8M - 14M/yr", salaryMin: 8000000, salaryMax: 14000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1382→    description: "Analyze transaction data for Africa largest payment processing company. Build dashboards, develop fraud detection models, and optimize payment flows.",
+  1383→    sector: "Data Science", posted: "3 days ago", type: "Full-time",
+  1384→    contactEmail: "careers@interswitch.com"
+  1385→  },
+  1386→  {
+  1387→    id: 148, title: "Software Engineer", company: "Andela",
+  1388→    companyUrl: "https://andela.com/careers", location: "Lagos",
+  1389→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1390→    salary: "NGN 10M - 18M/yr", salaryMin: 10000000, salaryMax: 18000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1391→    description: "Build talent marketplace platform connecting African developers with global companies. Work with React, Node.js, and AI-powered matching algorithms.",
+  1392→    sector: "Technology", posted: "4 days ago", type: "Full-time",
+  1393→    contactEmail: "careers@andela.com"
+  1394→  },
+  1395→  {
+  1396→    id: 149, title: "Marketing Manager", company: "Dangote Group",
+  1397→    companyUrl: "https://dangotegroup.com/careers", location: "Lagos",
+  1398→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1399→    salary: "NGN 9M - 15M/yr", salaryMin: 9000000, salaryMax: 15000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1400→    description: "Lead marketing for Africa largest conglomerate. Manage brand campaigns across FMCG, cement, and sugar divisions. Oversee multi-million dollar budgets.",
+  1401→    sector: "Marketing", posted: "5 days ago", type: "Full-time",
+  1402→    contactEmail: "careers@dangote.com"
+  1403→  },
+  1404→  {
+  1405→    id: 150, title: "Financial Analyst", company: "Access Bank",
+  1406→    companyUrl: "https://accessbank.com/careers", location: "Lagos",
+  1407→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1408→    salary: "NGN 7M - 12M/yr", salaryMin: 7000000, salaryMax: 12000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1409→    description: "Conduct financial analysis for Africa largest bank by customer base. Prepare credit assessments, support corporate lending decisions.",
+  1410→    sector: "Finance", posted: "1 week ago", type: "Full-time",
+  1411→    contactEmail: "careers@access.com"
+  1412→  },
+  1413→  {
+  1414→    id: 151, title: "UX Designer", company: "Paystack",
+  1415→    companyUrl: "https://paystack.com/careers", location: "Lagos",
+  1416→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1417→    salary: "NGN 8M - 13M/yr", salaryMin: 8000000, salaryMax: 13000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1418→    description: "Design payment and merchant dashboard experiences serving 60,000+ businesses. Create intuitive interfaces for diverse African markets with varying tech literacy.",
+  1419→    sector: "Design", posted: "1 week ago", type: "Remote",
+  1420→    contactEmail: "careers@paystack.com"
+  1421→  },
+  1422→  {
+  1423→    id: 152, title: "Sales Director", company: "MTN Nigeria",
+  1424→    companyUrl: "https://mtnnigeria.com/careers", location: "Lagos",
+  1425→    country: "ng", countryName: "Nigeria", lat: 6.5244, lng: 3.3792,
+  1426→    salary: "NGN 11M - 18M/yr", salaryMin: 11000000, salaryMax: 18000000, salaryCurrency: "NGN", salaryPeriod: "year",
+  1427→    description: "Lead enterprise sales for Nigeria largest telecom. Manage key accounts, drive B2B revenue growth, and expand market share across Nigerian states.",
+  1428→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+  1429→    contactEmail: "careers@mtn.com"
+  1430→  },
+  1431→
+  1432→  // ========== TURKEY ==========
+  1433→  {
+  1434→    id: 153, title: "Game Developer", company: "Peak Games",
+  1435→    companyUrl: "https://peakgames.com/careers", location: "Istanbul",
+  1436→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1437→    salary: "₺ 60,000 - 95,000/mo", salaryMin: 60000, salaryMax: 95000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1438→    description: "Develop casual mobile games with millions of daily active players. Work with Unity and C#, implement real-time multiplayer features.",
+  1439→    sector: "Technology", posted: "1 day ago", type: "Full-time",
+  1440→    contactEmail: "careers@peak.com"
+  1441→  },
+  1442→  {
+  1443→    id: 154, title: "Software Engineer", company: "Trendyol",
+  1444→    companyUrl: "https://trendyol.com/careers", location: "Istanbul",
+  1445→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1446→    salary: "₺ 55,000 - 85,000/mo", salaryMin: 55000, salaryMax: 85000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1447→    description: "Build e-commerce platform features for Turkey largest online shopping destination. Work with microservices, React, and distributed systems.",
+  1448→    sector: "Technology", posted: "2 days ago", type: "Full-time",
+  1449→    contactEmail: "careers@trendyol.com"
+  1450→  },
+  1451→  {
+  1452→    id: 155, title: "Product Manager", company: "Getir",
+  1453→    companyUrl: "https://getir.com/careers", location: "Istanbul",
+  1454→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1455→    salary: "₺ 65,000 - 100,000/mo", salaryMin: 65000, salaryMax: 100000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1456→    description: "Own the product roadmap for quick commerce delivery app. Manage cross-functional teams and drive growth across 9 countries.",
+  1457→    sector: "Management", posted: "3 days ago", type: "Full-time",
+  1458→    contactEmail: "careers@getir.com"
+  1459→  },
+  1460→  {
+  1461→    id: 156, title: "Marketing Manager", company: "Turkcell",
+  1462→    companyUrl: "https://turkcell.com/careers", location: "Istanbul",
+  1463→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1464→    salary: "₺ 45,000 - 70,000/mo", salaryMin: 45000, salaryMax: 70000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1465→    description: "Lead marketing campaigns for Turkey leading mobile operator. Manage digital transformation, 5G launch campaigns, and brand partnerships.",
+  1466→    sector: "Marketing", posted: "4 days ago", type: "Full-time",
+  1467→    contactEmail: "careers@turkcell.com"
+  1468→  },
+  1469→  {
+  1470→    id: 157, title: "Financial Analyst", company: "Is Bankasi",
+  1471→    companyUrl: "https://isbankasi.com/careers", location: "Istanbul",
+  1472→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1473→    salary: "₺ 40,000 - 62,000/mo", salaryMin: 40000, salaryMax: 62000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1474→    description: "Conduct financial analysis for one of Turkey largest private banks. Prepare risk assessments, support corporate lending, and manage portfolio analytics.",
+  1475→    sector: "Finance", posted: "5 days ago", type: "Full-time",
+  1476→    contactEmail: "careers@is.com"
+  1477→  },
+  1478→  {
+  1479→    id: 158, title: "Data Scientist", company: "Garanti BBVA",
+  1480→    companyUrl: "https://garantibbva.com/careers", location: "Istanbul",
+  1481→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1482→    salary: "₺ 50,000 - 78,000/mo", salaryMin: 50000, salaryMax: 78000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1483→    description: "Build machine learning models for credit scoring and customer analytics. Analyze data from 20M+ customers to optimize banking products and services.",
+  1484→    sector: "Data Science", posted: "1 week ago", type: "Full-time",
+  1485→    contactEmail: "careers@garanti.com"
+  1486→  },
+  1487→  {
+  1488→    id: 159, title: "UX Designer", company: "Yemeksepeti",
+  1489→    companyUrl: "https://yemeksepeti.com/careers", location: "Istanbul",
+  1490→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1491→    salary: "₺ 38,000 - 58,000/mo", salaryMin: 38000, salaryMax: 58000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1492→    description: "Design food delivery app experiences for 30M+ users. Conduct user research, create prototypes, and optimize ordering flows for Turkish market.",
+  1493→    sector: "Design", posted: "1 week ago", type: "Remote",
+  1494→    contactEmail: "careers@yemeksepeti.com"
+  1495→  },
+  1496→  {
+  1497→    id: 160, title: "Sales Executive", company: "Eczacibasi Group",
+  1498→    companyUrl: "https://eczacibasigroup.com/careers", location: "Istanbul",
+  1499→    country: "tr", countryName: "Turkey", lat: 41.0082, lng: 28.9784,
+  1500→    salary: "₺ 42,000 - 65,000/mo", salaryMin: 42000, salaryMax: 65000, salaryCurrency: "TRY", salaryPeriod: "month",
+  1501→    description: "Drive B2B sales for building materials and consumer products conglomerate. Manage key accounts and develop strategic partnerships across Turkey.",
+  1502→    sector: "Sales", posted: "2 weeks ago", type: "Hybrid",
+  1503→    contactEmail: "careers@eczacibasi.com"
+  1504→  },
+  1505→
+  1506→];
+  1507→
+  1508→export async function GET(request: Request) {
+  1509→  const { searchParams } = new URL(request.url);
+  1510→  const sector = searchParams.get("sector")?.toLowerCase() || "";
+  1511→  const location = searchParams.get("location")?.toLowerCase() || "";
+  1512→  const search = searchParams.get("search")?.toLowerCase() || "";
+  1513→  const country = searchParams.get("country")?.toLowerCase() || "";
+  1514→
+  1515→  let filtered = [...jobs];
+  1516→
+  1517→  if (country) {
+  1518→    filtered = filtered.filter((j) => j.country === country);
+  1519→  }
+  1520→  if (sector) {
+  1521→    filtered = filtered.filter(
+  1522→      (j) => j.title.toLowerCase().includes(sector) || j.sector.toLowerCase().includes(sector)
+  1523→    );
+  1524→  }
+  1525→  if (location) {
+  1526→    filtered = filtered.filter(
+  1527→      (j) => j.location.toLowerCase().includes(location) || j.countryName.toLowerCase().includes(location)
+  1528→    );
+  1529→  }
+  1530→  if (search) {
+  1531→    filtered = filtered.filter(
+  1532→      (j) =>
+  1533→        j.title.toLowerCase().includes(search) ||
+  1534→        j.company.toLowerCase().includes(search) ||
+  1535→        j.description.toLowerCase().includes(search) ||
+  1536→        j.sector.toLowerCase().includes(search) ||
+  1537→        j.location.toLowerCase().includes(search) ||
+  1538→        j.countryName.toLowerCase().includes(search)
+  1539→    );
+  1540→  }
+  1541→
+  1542→  return NextResponse.json(filtered);
+  1543→}
+  1544→
