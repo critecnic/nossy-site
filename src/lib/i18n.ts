@@ -68,7 +68,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "Jobs in",
     "countryPageSub": "Browse the best job opportunities with local salary information",
     "featuredCountries": "Featured Countries",
-  },
+  
+    "countryNotFound": "Country not found",
+    "goBackGlobal": "Go back to Global",
+},
   "pt-br": {
     "heroTitle": "Encontre Seu Emprego dos Sonhos no Mundo Todo",
     "heroSub": "Conecte-se com as melhores empresas do globo. Sua próxima carreira começa aqui.",
@@ -121,7 +124,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "Vagas em",
     "countryPageSub": "Navegue as melhores oportunidades com informação de salário local",
     "featuredCountries": "Países em Destaque",
-  },
+  
+    "countryNotFound": "País não encontrado",
+    "goBackGlobal": "Voltar ao Global",
+},
   "pt-pt": {
     "heroTitle": "Encontre o Emprego dos Seus Sonhos no Mundo",
     "heroSub": "Ligue-se às melhores empresas do globo. A sua próxima carreira começa aqui.",
@@ -174,7 +180,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "Vagas em",
     "countryPageSub": "Navegue as melhores oportunidades com informação salarial local",
     "featuredCountries": "Países em Destaque",
-  },
+  
+    "countryNotFound": "País não encontrado",
+    "goBackGlobal": "Voltar ao Global",
+},
   "es": {
     "heroTitle": "Encuentra tu Trabajo Ideal en el Mundo",
     "heroSub": "Conéctate con las mejores empresas del mundo. Tu siguiente paso profesional comienza aquí.",
@@ -227,7 +236,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "Empleos en",
     "countryPageSub": "Navega las mejores oportunidades con información salarial local",
     "featuredCountries": "Países Destacados",
-  },
+  
+    "countryNotFound": "País no encontrado",
+    "goBackGlobal": "Volver a Global",
+},
   "fr": {
     "heroTitle": "Trouvez Votre Emploi de Rêve dans le Monde",
     "heroSub": "Connectez-vous avec les meilleures entreprises au monde. Votre prochaine carrière commence ici.",
@@ -280,7 +292,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "Emplois en",
     "countryPageSub": "Parcourez les meilleures offres avec informations salariales locales",
     "featuredCountries": "Pays en Vedette",
-  },
+  
+    "countryNotFound": "Pays non trouvé",
+    "goBackGlobal": "Retour à l'accueil",
+},
   "zh": {
     "heroTitle": "在全球寻找您的理想工作",
     "heroSub": "与全球顶尖企业建立联系。您的下一个职业发展从这里开始。",
@@ -333,7 +348,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "职位 -",
     "countryPageSub": "浏览最佳工作机会，查看当地薪资信息",
     "featuredCountries": "热门国家",
-  },
+  
+    "countryNotFound": "未找到该国家",
+    "goBackGlobal": "返回全球首页",
+},
   "ja": {
     "heroTitle": "世界中の夢の仕事を見つけよう",
     "heroSub": "世界中のトップ企業とつながろう。次のキャリアはここから始まります。",
@@ -386,7 +404,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "求人 -",
     "countryPageSub": "現地の給与情報とともにベストな求人を閲覧",
     "featuredCountries": "注目の国",
-  },
+  
+    "countryNotFound": "国が見つかりません",
+    "goBackGlobal": "グローバルに戻る",
+},
   "ar": {
     "heroTitle": "اعثر على وظيفة أحلامك حول العالم",
     "heroSub": "تواصل مع أفضل الشركات حول العالم. خطوتك المهنية التالية تبدأ هنا.",
@@ -439,7 +460,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "وظائف في",
     "countryPageSub": "تصفح أفضل الفرص مع معلومات الرواتب المحلية",
     "featuredCountries": "الدول المميزة",
-  },
+  
+    "countryNotFound": "الدولة غير موجودة",
+    "goBackGlobal": "العودة للرئيسية",
+},
   "de": {
     "heroTitle": "Finden Sie Ihren Traumjob weltweit",
     "heroSub": "Verbinden Sie sich mit Top-Unternehmen weltweit. Ihr nächster Karriereschritt beginnt hier.",
@@ -492,7 +516,10 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "Stellen in",
     "countryPageSub": "Durchsuchen Sie die besten Möglichkeiten mit lokalen Gehaltsinformationen",
     "featuredCountries": "Empfohlene Länder",
-  },
+  
+    "countryNotFound": "Land nicht gefunden",
+    "goBackGlobal": "Zurück zur Übersicht",
+},
   "hi": {
     "heroTitle": "दुनिया भर में अपना सपनों का काम खोजें",
     "heroSub": "दुनिया भर की शीर्ष कंपनियों से जुड़ें। आपका अगला करियर कदम यहीं से शुरू होता है।",
@@ -545,6 +572,82 @@ const t: Record<Lang, Record<string, string>> = {
     "countryPageTitle": "नौकरियां -",
     "countryPageSub": "स्थानीय वेतन जानकारी के साथ सर्वोत्तम अवसर ब्राउज़ करें",
     "featuredCountries": "विशेष देश",
+  
+    "countryNotFound": "देश नहीं मिला",
+    "goBackGlobal": "वैश्विक पर वापस",
+},
+};
+
+export const countryNames: Record<Lang, Record<string, string>> = {
+  "en": {
+    "in": "India", "us": "United States", "cn": "China", "br": "Brazil",
+    "gb": "United Kingdom", "de": "Germany", "fr": "France", "jp": "Japan",
+    "ca": "Canada", "au": "Australia", "mx": "Mexico", "id": "Indonesia",
+    "kr": "South Korea", "sa": "Saudi Arabia", "ae": "UAE", "es": "Spain",
+    "it": "Italy", "pt": "Portugal", "ng": "Nigeria", "tr": "Turkey",
+  },
+  "pt-br": {
+    "in": "Índia", "us": "Estados Unidos", "cn": "China", "br": "Brasil",
+    "gb": "Reino Unido", "de": "Alemanha", "fr": "França", "jp": "Japão",
+    "ca": "Canadá", "au": "Austrália", "mx": "México", "id": "Indonésia",
+    "kr": "Coreia do Sul", "sa": "Arábia Saudita", "ae": "Emirados Árabes", "es": "Espanha",
+    "it": "Itália", "pt": "Portugal", "ng": "Nigéria", "tr": "Turquia",
+  },
+  "pt-pt": {
+    "in": "Índia", "us": "Estados Unidos", "cn": "China", "br": "Brasil",
+    "gb": "Reino Unido", "de": "Alemanha", "fr": "França", "jp": "Japão",
+    "ca": "Canadá", "au": "Austrália", "mx": "México", "id": "Indonésia",
+    "kr": "Coreia do Sul", "sa": "Arábia Saudita", "ae": "Emirados Árabes", "es": "Espanha",
+    "it": "Itália", "pt": "Portugal", "ng": "Nigéria", "tr": "Turquia",
+  },
+  "es": {
+    "in": "India", "us": "Estados Unidos", "cn": "China", "br": "Brasil",
+    "gb": "Reino Unido", "de": "Alemania", "fr": "Francia", "jp": "Japón",
+    "ca": "Canadá", "au": "Australia", "mx": "México", "id": "Indonesia",
+    "kr": "Corea del Sur", "sa": "Arabia Saudita", "ae": "Emiratos Árabes", "es": "España",
+    "it": "Italia", "pt": "Portugal", "ng": "Nigeria", "tr": "Turquía",
+  },
+  "fr": {
+    "in": "Inde", "us": "États-Unis", "cn": "Chine", "br": "Brésil",
+    "gb": "Royaume-Uni", "de": "Allemagne", "fr": "France", "jp": "Japon",
+    "ca": "Canada", "au": "Australie", "mx": "Mexique", "id": "Indonésie",
+    "kr": "Corée du Sud", "sa": "Arabie Saoudite", "ae": "Émirats Arabes Unis", "es": "Espagne",
+    "it": "Italie", "pt": "Portugal", "ng": "Nigéria", "tr": "Turquie",
+  },
+  "zh": {
+    "in": "印度", "us": "美国", "cn": "中国", "br": "巴西",
+    "gb": "英国", "de": "德国", "fr": "法国", "jp": "日本",
+    "ca": "加拿大", "au": "澳大利亚", "mx": "墨西哥", "id": "印度尼西亚",
+    "kr": "韩国", "sa": "沙特阿拉伯", "ae": "阿联酋", "es": "西班牙",
+    "it": "意大利", "pt": "葡萄牙", "ng": "尼日利亚", "tr": "土耳其",
+  },
+  "ja": {
+    "in": "インド", "us": "アメリカ", "cn": "中国", "br": "ブラジル",
+    "gb": "イギリス", "de": "ドイツ", "fr": "フランス", "jp": "日本",
+    "ca": "カナダ", "au": "オーストラリア", "mx": "メキシコ", "id": "インドネシア",
+    "kr": "韓国", "sa": "サウジアラビア", "ae": "UAE", "es": "スペイン",
+    "it": "イタリア", "pt": "ポルトガル", "ng": "ナイジェリア", "tr": "トルコ",
+  },
+  "ar": {
+    "in": "الهند", "us": "الولايات المتحدة", "cn": "الصين", "br": "البرازيل",
+    "gb": "المملكة المتحدة", "de": "ألمانيا", "fr": "فرنسا", "jp": "اليابان",
+    "ca": "كندا", "au": "أستراليا", "mx": "المكسيك", "id": "إندونيسيا",
+    "kr": "كوريا الجنوبية", "sa": "المملكة العربية السعودية", "ae": "الإمارات", "es": "إسبانيا",
+    "it": "إيطاليا", "pt": "البرتغال", "ng": "نيجيريا", "tr": "تركيا",
+  },
+  "de": {
+    "in": "Indien", "us": "Vereinigte Staaten", "cn": "China", "br": "Brasilien",
+    "gb": "Vereinigtes Königreich", "de": "Deutschland", "fr": "Frankreich", "jp": "Japan",
+    "ca": "Kanada", "au": "Australien", "mx": "Mexiko", "id": "Indonesien",
+    "kr": "Südkorea", "sa": "Saudi-Arabien", "ae": "VAE", "es": "Spanien",
+    "it": "Italien", "pt": "Portugal", "ng": "Nigeria", "tr": "Türkei",
+  },
+  "hi": {
+    "in": "भारत", "us": "संयुक्त राज्य", "cn": "चीन", "br": "ब्राज़ील",
+    "gb": "यूनाइटेड किंगडम", "de": "जर्मनी", "fr": "फ्रांस", "jp": "जापान",
+    "ca": "कनाडा", "au": "ऑस्ट्रेलिया", "mx": "मेक्सिको", "id": "इंडोनेशिया",
+    "kr": "दक्षिण कोरिया", "sa": "सऊदी अरब", "ae": "संयुक्त अरब अमीरात", "es": "स्पेन",
+    "it": "इटली", "pt": "पुर्तगाल", "ng": "नाइजीरिया", "tr": "तुर्की",
   },
 };
 

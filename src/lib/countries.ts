@@ -211,7 +211,13 @@ export function getCountry(code: string): CountryConfig | undefined {
 
 export function getCountryName(code: string, lang?: string): string {
   const c = getCountry(code);
-  return c ? c.name : code;
+  if (!c) return code;
+  if (lang) {
+    const { countryNames } = require('./i18n');
+    const translated = countryNames[lang as keyof typeof countryNames]?.[code];
+    if (translated) return translated;
+  }
+  return c.name;
 }
 
 export const TOTAL_JOBS = COUNTRIES.reduce((sum, c) => sum + c.jobCount, 0);

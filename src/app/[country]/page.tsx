@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { COUNTRIES, getCountry, type CountryConfig } from "@/lib/countries";
-import { LANGUAGES, sectorNames, default as i18n } from "@/lib/i18n";
+import { LANGUAGES, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { JobJsonLd, CountryListingJsonLd } from "@/components/JsonLd";
 
@@ -180,8 +180,8 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">\uD83C\uDF0D</div>
-          <h1 className="text-2xl font-bold text-gray-900">Country not found</h1>
-          <button onClick={() => router.push("/")} className="mt-4 text-sky-600 hover:underline">Go back to Global</button>
+          <h1 className="text-2xl font-bold text-gray-900">{T.countryNotFound}</h1>
+          <button onClick={() => router.push("/")} className="mt-4 text-sky-600 hover:underline">{T.goBackGlobal}</button>
         </div>
       </div>
     );
@@ -200,7 +200,7 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
             </button>
             <span className="text-gray-300">|</span>
             <WWLogo size={28} />
-            <span className="text-sm font-bold text-gray-900">{countryCfg.flag} {countryCfg.name}</span>
+            <span className="text-sm font-bold text-gray-900">{countryCfg.flag} {countryNames[lang]?.[countryCode] || countryCfg.name}</span>
           </div>
           <LanguageDropdown lang={lang} setLang={setLang} />
         </div>
@@ -214,7 +214,7 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 text-center">
           <div className="text-6xl mb-4">{countryCfg.flag}</div>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
-            {T.countryPageTitle} {countryCfg.name}
+            {T.countryPageTitle} {countryNames[lang]?.[countryCode] || countryCfg.name}
           </h1>
           <p className="text-gray-300 mb-6">{T.countryPageSub}</p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
@@ -252,7 +252,7 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
       {/* JOBS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-800">{T.topJobs} - {countryCfg.name}</h2>
+          <h2 className="text-lg font-bold text-gray-800">{T.topJobs} - {countryNames[lang]?.[countryCode] || countryCfg.name}</h2>
           <div className="flex items-center gap-2">
             {loading && (
               <div className="flex items-center gap-1.5 text-xs text-sky-500">
@@ -296,7 +296,7 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
             {COUNTRIES.filter(c => c.code !== countryCode).map((c) => (
               <button key={c.code} onClick={() => router.push(`/${c.code}`)} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-sky-50 transition-colors">
                 <span className="text-2xl">{c.flag}</span>
-                <span className="text-[10px] font-medium text-gray-600 text-center leading-tight">{c.name}</span>
+                <span className="text-[10px] font-medium text-gray-600 text-center leading-tight">{countryNames[lang]?.[c.code] || c.name}</span>
                 <span className="text-[9px] text-gray-400">{c.jobCount.toLocaleString()}</span>
               </button>
             ))}

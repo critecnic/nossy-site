@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { COUNTRIES, TOTAL_JOBS, getCountry, type CountryConfig } from "@/lib/countries";
-import { LANGUAGES, sectorNames, default as i18n } from "@/lib/i18n";
+import { LANGUAGES, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 
@@ -130,8 +130,9 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
   );
 }
 
-function CountryCard({ country, T, onClick }: { country: CountryConfig; T: Record<string, string>; onClick: () => void }) {
+function CountryCard({ country, T, onClick, lang }: { country: CountryConfig; T: Record<string, string>; onClick: () => void; lang: Lang }) {
   const [hovered, setHovered] = useState(false);
+  const localName = countryNames[lang]?.[country.code] || country.name;
   return (
     <button
       onClick={onClick}
@@ -143,7 +144,7 @@ function CountryCard({ country, T, onClick }: { country: CountryConfig; T: Recor
         {country.flag}
       </div>
       <div className="flex flex-col items-center">
-        <span className="text-sm font-bold text-gray-800 leading-tight">{country.name}</span>
+        <span className="text-sm font-bold text-gray-800 leading-tight">{localName}</span>
         <span className="mt-1 flex items-center gap-1 text-xs text-gray-500">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
           {country.jobCount.toLocaleString()} {T.openPositions}
@@ -288,7 +289,7 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {COUNTRIES.map((country) => (
-            <CountryCard key={country.code} country={country} T={T} onClick={() => handleCountryClick(country.code)} />
+            <CountryCard key={country.code} country={country} T={T} onClick={() => handleCountryClick(country.code)} lang={lang} />
           ))}
         </div>
       </section>
