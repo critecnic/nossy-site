@@ -13,6 +13,7 @@ interface Job {
   salary: string; salaryMin: number; salaryMax: number;
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
+  contactEmail: string;
 }
 
 function WWLogo({ size = 40 }: { size?: number }) {
@@ -46,7 +47,7 @@ const SECTORS = [
 ];
 
 function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlighted: boolean }) {
-  const [revealed, setRevealed] = useState(false);
+  const [contactRevealed, setContactRevealed] = useState(false);
   const T = i18n[lang];
   const sd = SECTORS.find((s) => s.key === job.sector);
   const sName = sectorNames[lang]?.[job.sector] || job.sector;
@@ -60,17 +61,7 @@ function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlight
           <span className="text-xs text-gray-400">{T.posted} {job.posted}</span>
         </div>
         <h3 className="mb-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-sky-600">{job.title}</h3>
-        <div className="relative my-3">
-          <p className={`text-sm text-gray-600 transition-all duration-300 ${!revealed ? "blur-[4px] select-none" : ""}`}>{job.company}</p>
-          {!revealed && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[1px]">
-              <button onClick={() => setRevealed(true)} className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-amber-600 hover:shadow-lg hover:scale-105 active:scale-95">
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
-                {T.unlock}
-              </button>
-            </div>
-          )}
-        </div>
+        <p className="my-2 text-sm font-medium text-gray-700">{job.company}</p>
         <div className="flex items-center gap-3 text-sm text-gray-500">
           <span className="flex items-center gap-1">
             {countryCfg?.flag || ""}
@@ -83,6 +74,23 @@ function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlight
         <div className="mt-4 flex items-center justify-between">
           <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"} px-3 py-1 text-xs font-medium text-white`}>{sd?.icon} {sName}</span>
           <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800 transition-colors">{T.viewDetails} &rarr;</a>
+        </div>
+        {/* CONTACT - PAYWALL */}
+        <div className="mt-4 border-t border-gray-100 pt-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-400">{T.contactInfo}</span>
+            {!contactRevealed ? (
+              <button onClick={() => setContactRevealed(true)} className="flex items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-sky-600 hover:shadow-md hover:scale-105 active:scale-95">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                {T.unlock}
+              </button>
+            ) : (
+              <span className="text-xs font-medium text-sky-600 truncate max-w-[180px]">{job.contactEmail}</span>
+            )}
+          </div>
+          {!contactRevealed && (
+            <p className="mt-1.5 text-[10px] text-gray-300">{T.contactLocked}</p>
+          )}
         </div>
       </div>
     </article>
