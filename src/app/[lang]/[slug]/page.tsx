@@ -19,6 +19,20 @@ interface Job {
   paywall: boolean;
 }
 
+const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Remote", "Internship", "Freelance"];
+
+const SECTORS = [
+  { key: "Technology", icon: "\uD83D\uDCBB", color: "from-blue-500 to-cyan-400" },
+  { key: "Finance", icon: "\uD83D\uDCB0", color: "from-emerald-500 to-green-400" },
+  { key: "Design", icon: "\uD83C\uDFA8", color: "from-purple-500 to-pink-400" },
+  { key: "Marketing", icon: "\uD83D\uDCE3", color: "from-orange-500 to-amber-400" },
+  { key: "Data Science", icon: "\uD83D\uDCCA", color: "from-indigo-500 to-violet-400" },
+  { key: "Sales", icon: "\uD83D\uDCC8", color: "from-red-500 to-rose-400" },
+  { key: "Management", icon: "\uD83D\uDC65", color: "from-teal-500 to-emerald-400" },
+  { key: "Healthcare", icon: "\uD83E\uDEBA", color: "from-pink-500 to-red-400" },
+  { key: "Engineering", icon: "\uD83D\uDD27", color: "from-slate-500 to-gray-400" },
+];
+
 function WWLogo({ size = 40 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
@@ -37,17 +51,14 @@ function WWLogo({ size = 40 }: { size?: number }) {
   );
 }
 
-const SECTORS = [
-  { key: "Technology", icon: "\uD83D\uDCBB", color: "from-blue-500 to-cyan-400" },
-  { key: "Finance", icon: "\uD83D\uDCB0", color: "from-emerald-500 to-green-400" },
-  { key: "Design", icon: "\uD83C\uDFA8", color: "from-purple-500 to-pink-400" },
-  { key: "Marketing", icon: "\uD83D\uDCE3", color: "from-orange-500 to-amber-400" },
-  { key: "Data Science", icon: "\uD83D\uDCCA", color: "from-indigo-500 to-violet-400" },
-  { key: "Sales", icon: "\uD83D\uDCC8", color: "from-red-500 to-rose-400" },
-  { key: "Management", icon: "\uD83D\uDC65", color: "from-teal-500 to-emerald-400" },
-  { key: "Healthcare", icon: "\uD83E\uDEBA", color: "from-pink-500 to-red-400" },
-  { key: "Engineering", icon: "\uD83D\uDD27", color: "from-slate-500 to-gray-400" },
-];
+const TYPE_KEYS: Record<string, string> = {
+  "Full-time": "fullTime",
+  "Part-time": "partTime",
+  "Contract": "contract",
+  "Remote": "remote",
+  "Internship": "internship",
+  "Freelance": "freelance",
+};
 
 function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlighted: boolean }) {
   const T = i18n[lang];
@@ -80,12 +91,7 @@ function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlight
         {job.paywall && (
           <PaywallContact
             contactEmail={job.contactEmail}
-            companyData={{
-              company: job.company,
-              companyUrl: job.companyUrl,
-              location: job.location,
-              salary: job.salary,
-            }}
+            companyData={{ company: job.company, companyUrl: job.companyUrl, location: job.location, salary: job.salary }}
             jobId={`home-${job.id}`}
             lang={lang}
           />
@@ -177,6 +183,8 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
   const lang = resolved?.lang || "en";
   const slug = resolved?.slug || "";
   const [selCountry, setSelCountry] = useState("");
+  const [selType, setSelType] = useState("");
+  const [selSector, setSelSector] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [nlName, setNlName] = useState("");
@@ -193,12 +201,14 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
     try {
       const p = new URLSearchParams();
       if (country) p.set("country", country);
+      if (selType && selType !== "all") p.set("type", selType);
+      if (selSector && selSector !== "all") p.set("sector", selSector);
       const r = await fetch(`/api/jobs?${p.toString()}`);
       const data = await r.json();
       setJobs(data);
     } catch { setJobs([]); }
     setLoading(false);
-  }, []);
+  }, [selType, selSector]);
 
   useEffect(() => { fetchJobs(selCountry); }, [fetchJobs, selCountry]);
 
@@ -206,8 +216,8 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
     router.push(`/${lang}/${slug}/${code}`);
   };
 
-  const clearFilters = () => { setSelCountry(""); };
-  const hasFilters = !!selCountry;
+  const clearFilters = () => { setSelCountry(""); setSelType(""); setSelSector(""); };
+  const hasFilters = !!selCountry || !!selType || !!selSector;
 
   if (!resolved) {
     return (
@@ -224,16 +234,25 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
     <div className="min-h-screen bg-gray-50" dir={dir}>
       <OrganizationJsonLd />
 
-      {/* HEADER - no language dropdown since language is in URL */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <WWLogo size={32} />
             <span className="hidden sm:block text-lg font-bold tracking-tight text-gray-900">W-W</span>
           </div>
-          <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm">
-            <span className="text-lg leading-none">{LANGUAGES.find((l) => l.code === lang)?.flag}</span>
-            <span className="hidden sm:inline text-xs font-semibold text-gray-600">{LANGUAGES.find((l) => l.code === lang)?.name}</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push(`/${lang}/${slug}/company/post`)}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-600 transition-all"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+              {T.postJob}
+            </button>
+            <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm">
+              <span className="text-lg leading-none">{LANGUAGES.find((l) => l.code === lang)?.flag}</span>
+              <span className="hidden sm:inline text-xs font-semibold text-gray-600">{LANGUAGES.find((l) => l.code === lang)?.name}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -278,12 +297,61 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
         </div>
       </section>
 
+      {/* FILTER SECTION - Type & Sector */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-4">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          {/* Job Type Filter */}
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">{T.filterByType}</h3>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelType("")}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!selType ? "bg-sky-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >{T.allTypes}</button>
+              {JOB_TYPES.map((t) => {
+                const tKey = TYPE_KEYS[t];
+                const label = T[tKey] || t;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setSelType(selType === t ? "" : t)}
+                    className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selType === t ? "bg-sky-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  >{label}</button>
+                );
+              })}
+            </div>
+          </div>
+          {/* Sector/Function Filter */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-700 mb-3">{T.filterBySector}</h3>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelSector("")}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!selSector ? "bg-indigo-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >{T.allFunctions}</button>
+              {SECTORS.map((s) => {
+                const sName = sectorNames[lang]?.[s.key] || s.key;
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => setSelSector(selSector === s.key ? "" : s.key)}
+                    className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selSector === s.key ? "bg-gradient-to-r " + s.color + " text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  >{s.icon} {sName}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FILTER CHIPS */}
       {hasFilters && (
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-gray-400">{T.filterChip}</span>
             {selCountry && (() => { const c = COUNTRIES.find(x => x.code === selCountry); return c ? <FilterChip label={`${c.flag} ${c.name}`} onRemove={() => setSelCountry("")} /> : null; })()}
+            {selType && <FilterChip label={T[TYPE_KEYS[selType]] || selType} onRemove={() => setSelType("")} />}
+            {selSector && <FilterChip label={sectorNames[lang]?.[selSector] || selSector} onRemove={() => setSelSector("")} />}
             <button onClick={clearFilters} className="ml-auto text-xs font-medium text-red-500 hover:text-red-600">{T.clearFilters}</button>
           </div>
         </div>
@@ -291,7 +359,10 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
 
       {/* JOBS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-16">
-        <div className="mb-6 flex items-center justify-end">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-gray-800">{T.jobsHeader}</h2>
+          </div>
           <div className="flex items-center gap-2">
             {loading && (
               <div className="flex items-center gap-1.5 text-xs text-sky-500">
@@ -323,9 +394,41 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {jobs.map((job, i) => <JobCard key={`${job.id}-${selCountry}`} job={job} index={i} lang={lang} highlighted={false} />)}
+            {jobs.map((job, i) => <JobCard key={`${job.id}-${selCountry}-${selType}-${selSector}`} job={job} index={i} lang={lang} highlighted={false} />)}
           </div>
         )}
+      </section>
+
+      {/* FOR COMPANIES CTA */}
+      <section className="bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 py-14">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">{T.forCompanies}</h2>
+          <p className="mb-8 text-sky-100 max-w-xl mx-auto">{T.companyRegisterSub}</p>
+          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+            <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
+              <div className="text-3xl mb-2">\uD83D\uDD17</div>
+              <h3 className="font-bold text-white text-sm">{T.benefit1Title}</h3>
+              <p className="text-xs text-sky-100 mt-1">{T.benefit1Desc}</p>
+            </div>
+            <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
+              <div className="text-3xl mb-2">\uD83C\uDF0D</div>
+              <h3 className="font-bold text-white text-sm">{T.benefit2Title}</h3>
+              <p className="text-xs text-sky-100 mt-1">{T.benefit2Desc}</p>
+            </div>
+            <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
+              <div className="text-3xl mb-2">\uD83D\uDCAC</div>
+              <h3 className="font-bold text-white text-sm">{T.benefit3Title}</h3>
+              <p className="text-xs text-sky-100 mt-1">{T.benefit3Desc}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push(`/${lang}/${slug}/company/post`)}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-sky-600 shadow-lg hover:bg-sky-50 transition-all active:scale-[0.98]"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            {T.registerAndPost}
+          </button>
+        </div>
       </section>
 
       {/* NEWSLETTER */}
@@ -343,7 +446,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
             </div>
           ) : (
             <div className="rounded-2xl bg-white/10 border border-sky-400/30 px-6 py-8 backdrop-blur-sm">
-              <div className="mb-3 text-4xl">✅</div>
+              <div className="mb-3 text-4xl">&#10003;</div>
               <p className="text-lg font-semibold text-white">{T.subscribed}</p>
             </div>
           )}

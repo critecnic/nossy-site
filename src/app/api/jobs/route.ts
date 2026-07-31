@@ -1685,9 +1685,62 @@ export const jobs: Job[] = [
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const country = searchParams.get("country");
-  let filtered = jobs;
+  const type = searchParams.get("type");
+  const sector = searchParams.get("sector");
+  let filtered = [...jobs, ...companyJobs];
   if (country) {
-    filtered = jobs.filter(j => j.country === country);
+    filtered = filtered.filter(j => j.country === country);
+  }
+  if (type && type !== "all") {
+    filtered = filtered.filter(j => j.type.toLowerCase() === type.toLowerCase());
+  }
+  if (sector && sector !== "all") {
+    filtered = filtered.filter(j => j.sector === sector);
   }
   return NextResponse.json(filtered);
+}
+
+// In-memory store for company-submitted jobs
+const companyJobs: Job[] = [];
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const {
+      companyName, companyUrl, companyEmail,
+      title, location, country, countryName,
+      salary, salaryMin, salaryMax, salaryCurrency, salaryPeriod,
+      description, sector, type, remote
+    } = body;
+
+    if (!companyName || !title || !location || !country || !description || !sector || !type) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const newJob: Job = {
+      id: jobs.length + companyJobs.length + 1,
+      title,
+      company: companyName,
+      companyUrl: companyUrl || "",
+      location,
+      country,
+      countryName: countryName || country,
+      lat: 0, lng: 0,
+      salary: salary || "Negotiable",
+      salaryMin: salaryMin || 0,
+      salaryMax: salaryMax || 0,
+      salaryCurrency: salaryCurrency || "USD",
+      salaryPeriod: salaryPeriod || "month",
+      description,
+      sector,
+      type: type === "remote" ? "Remote" : type,
+      contactEmail: companyEmail || "",
+      paywall: false,
+    };
+
+    companyJobs.push(newJob);
+    return NextResponse.json({ success: true, job: newJob }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 }
