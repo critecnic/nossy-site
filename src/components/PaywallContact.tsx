@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { countryNames } from "@/lib/i18n";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import type { Lang } from "@/lib/i18n";
 
 /* ====================================================================
@@ -12,11 +11,36 @@ import type { Lang } from "@/lib/i18n";
    • Checkout: pop-up PayPal sobre a página (sem redirecionar)
    • Liberação instantânea via onApprove + localStorage
    • Troque NEXT_PUBLIC_PAYPAL_CLIENT_ID no .env pelo seu Client ID
+   • SDK carregado apenas UMA VEZ (global) por todas as instâncias
    ==================================================================== */
 
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "SEU_CLIENT_ID_AQUI";
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
+const IS_PLACEHOLDER = !PAYPAL_CLIENT_ID || PAYPAL_CLIENT_ID === "SEU_CLIENT_ID_AQUI";
 const PRICE = "7.00";
 const CURRENCY = "USD";
+
+// Global singleton: load SDK once for all instances
+let sdkLoadPromise: Promise<boolean> | null = null;
+function loadPayPalSdkOnce(): Promise<boolean> {
+  if (sdkLoadPromise) return sdkLoadPromise;
+  if (IS_PLACEHOLDER) {
+    sdkLoadPromise = Promise.resolve(false);
+    return sdkLoadPromise;
+  }
+  sdkLoadPromise = new Promise((resolve) => {
+    if (typeof window !== "undefined" && (window as Record<string, unknown>).paypal) {
+      resolve(true);
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=${CURRENCY}&intent=capture`;
+    s.async = true;
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+  return sdkLoadPromise;
+}
 
 interface PaywallContactProps {
   contactEmail: string;
@@ -53,23 +77,26 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
 
   // Check localStorage on mount
   useEffect(() => {
-    const key = `ww_paid_${jobId}`;
-    if (localStorage.getItem(key)) setUnlocked(true);
+    try {
+      const key = `ww_paid_${jobId}`;
+      if (localStorage.getItem(key)) setUnlocked(true);
+    } catch { /* ignore */ }
   }, [jobId]);
 
-  // Load PayPal SDK dynamically
+  // Load PayPal SDK once (global singleton)
   useEffect(() => {
-    if (unlocked || sdkReady) return;
-
-    const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=${CURRENCY}&intent=capture`;
-    script.async = true;
-    script.onload = () => setSdkReady(true);
-    script.onerror = () => setPaypalError("PayPal SDK could not be loaded");
-    document.head.appendChild(script);
-
-    return () => { document.head.removeChild(script); };
-  }, [unlocked, sdkReady]);
+    if (unlocked) return;
+    let cancelled = false;
+    loadPayPalSdkOnce().then((ready) => {
+      if (!cancelled) {
+        setSdkReady(ready);
+        if (!ready && !IS_PLACEHOLDER) {
+          setPaypalError("PayPal SDK could not be loaded");
+        }
+      }
+    });
+    return () => { cancelled = true; };
+  }, [unlocked]);
 
   // Render PayPal buttons
   useEffect(() => {
@@ -78,11 +105,13 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
     const container = btnContainerRef.current;
     container.innerHTML = "";
 
-    // @ts-ignore — PayPal global
-    if (typeof window.paypal === "undefined") return;
+    const pp = (window as Record<string, unknown>).paypal as Record<string, unknown> | undefined;
+    if (!pp || typeof pp !== "object") return;
 
-    // @ts-ignore
-    window.paypal.Buttons({
+    const Buttons = (pp.Buttons as unknown) as new (opts: Record<string, unknown>) => { render: (el: HTMLElement) => void };
+    if (typeof Buttons !== "function") return;
+
+    Buttons({
       style: {
         layout: "vertical",
         color: "gold",
@@ -94,46 +123,44 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
         setLoading(true);
         setPaypalError("");
         try {
-          // @ts-ignore
-          const res = await window.paypal.request({
-            method: "POST",
-            url: "/api/paypal/create-order",
-            body: JSON.stringify({ jobId, price: PRICE, currency: CURRENCY }),
-          });
-          return res.id;
-        } catch {
-          // Fallback client-side order (sem backend)
-          // Quando o backend estiver pronto, remova este fallback
-          try {
-            // @ts-ignore
-            const res = await fetch(`https://api-m.paypal.com/v2/checkout/orders`, {
+          const req = (pp as Record<string, unknown>).request as ((opts: Record<string, unknown>) => Promise<{id: string}>) | undefined;
+          if (typeof req === "function") {
+            const res = await req({
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Basic ${btoa(PAYPAL_CLIENT_ID + ":")}`,
-              },
-              body: JSON.stringify({
-                intent: "CAPTURE",
-                purchase_units: [{
-                  amount: { currency_code: CURRENCY, value: PRICE },
-                  description: `W-W Job Access - ${jobId}`,
-                }],
-              }),
+              url: "/api/paypal/create-order",
+              body: JSON.stringify({ jobId, price: PRICE, currency: CURRENCY }),
             });
-            const data = await res.json();
-            if (data.id) return data.id;
-            throw new Error("No order ID");
-          } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : "Payment error";
-            setPaypalError(msg);
-            setLoading(false);
-            return "ERROR";
+            return res.id;
           }
+        } catch { /* fallback below */ }
+
+        try {
+          const res = await fetch(`https://api-m.paypal.com/v2/checkout/orders`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${btoa(PAYPAL_CLIENT_ID + ":")}`,
+            },
+            body: JSON.stringify({
+              intent: "CAPTURE",
+              purchase_units: [{
+                amount: { currency_code: CURRENCY, value: PRICE },
+                description: `W-W Job Access - ${jobId}`,
+              }],
+            }),
+          });
+          const data = await res.json();
+          if (data.id) return data.id;
+          throw new Error("No order ID");
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : "Payment error";
+          setPaypalError(msg);
+          setLoading(false);
+          return "ERROR";
         }
       },
       onApprove: async (data: { orderID: string }) => {
         try {
-          // Try server-side capture first
           try {
             const res = await fetch("/api/paypal/capture", {
               method: "POST",
@@ -149,7 +176,6 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
             }
           } catch { /* fallback below */ }
 
-          // Fallback client-side capture
           const res = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${data.orderID}/capture`, {
             method: "POST",
             headers: {
@@ -222,7 +248,6 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
   /* ── LOCKED STATE (PAYWALL) ─────────────────────────────────────── */
   return (
     <div className="mt-4 border-t border-amber-200 bg-amber-50/60 -mx-5 -mb-5 px-5 pb-5 pt-4 rounded-b-xl">
-      {/* Warning icon + message */}
       <div className="flex items-start gap-3 mb-4">
         <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-amber-100">
           <svg className="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -232,10 +257,15 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
         <p className="text-sm text-amber-800 leading-relaxed">{text.title}</p>
       </div>
 
-      {/* PayPal Button Container */}
-      <div ref={btnContainerRef} className="min-h-[44px]" />
+      {/* PayPal Button or Placeholder */}
+      {!IS_PLACEHOLDER ? (
+        <div ref={btnContainerRef} className="min-h-[44px]" />
+      ) : (
+        <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-amber-300 bg-amber-100/50 py-3">
+          <span className="text-sm font-medium text-amber-700">💳 PayPal — {text.btn}</span>
+        </div>
+      )}
 
-      {/* Loading spinner */}
       {loading && !paypalError && (
         <div className="flex items-center justify-center gap-2 mt-2">
           <svg className="h-4 w-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24">
@@ -246,12 +276,10 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
         </div>
       )}
 
-      {/* Error message */}
       {paypalError && (
         <p className="mt-2 text-xs text-red-500">{paypalError}</p>
       )}
 
-      {/* Hidden data placeholders (visually blocked) */}
       <div className="mt-3 space-y-1.5 opacity-30">
         <div className="h-4 w-48 rounded bg-gray-300" />
         <div className="h-4 w-36 rounded bg-gray-300" />

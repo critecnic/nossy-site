@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { COUNTRIES, getCountry, type CountryConfig } from "@/lib/countries";
-import { LANGUAGES, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
+import { LANGUAGES, LANG_SLUGS, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { JobJsonLd, CountryListingJsonLd } from "@/components/JsonLd";
 import PaywallContact from "@/components/PaywallContact";
@@ -81,16 +81,10 @@ function JobCardWithSchema({ job, lang, countryCfg }: { job: Job; lang: Lang; co
           <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"} px-3 py-1 text-xs font-medium text-white`}>{sd?.icon} {sName}</span>
           <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800">{T.viewDetails} &rarr;</a>
         </div>
-        {/* PAYPAL PAYWALL - only for jobs marked by admin */}
         {job.paywall && (
           <PaywallContact
             contactEmail={job.contactEmail}
-            companyData={{
-              company: job.company,
-              companyUrl: job.companyUrl,
-              location: job.location,
-              salary: job.salary,
-            }}
+            companyData={{ company: job.company, companyUrl: job.companyUrl, location: job.location, salary: job.salary }}
             jobId={`job-${job.id}`}
             lang={lang}
           />
@@ -100,55 +94,30 @@ function JobCardWithSchema({ job, lang, countryCfg }: { job: Job; lang: Lang; co
   );
 }
 
-function LanguageDropdown({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const current = LANGUAGES.find((l) => l.code === lang)!;
-  useEffect(() => {
-    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-  return (
-    <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm hover:border-sky-300">
-        <span className="text-lg leading-none">{current.flag}</span>
-        <span className="hidden sm:inline text-xs font-semibold text-gray-600">{current.name}</span>
-        <svg className={`h-3 w-3 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-      </button>
-      {open && (
-        <div className="absolute right-0 mt-1 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-xl z-50">
-          {LANGUAGES.map((l) => (
-            <button key={l.code} onClick={() => { setLang(l.code); setOpen(false); }}
-              className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-sky-50 ${l.code === lang ? "bg-sky-50 text-sky-700 font-semibold" : "text-gray-700"}`}>
-              <span>{l.flag}</span><span className="font-medium">{l.name}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function CountryPage({ params }: { params: Promise<{ country: string }> }) {
+export default function LangSlugCountryPage({ params }: { params: Promise<{ lang: string; slug: string; country: string }> }) {
   const router = useRouter();
-  const [lang, setLang] = useState<Lang>("en");
-  const [countryCode, setCountryCode] = useState("");
+  const [resolved, setResolved] = useState<{ lang: Lang; slug: string; countryCode: string } | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterPulse, setFilterPulse] = useState(false);
-  const T = i18n[lang];
-  const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr";
 
   useEffect(() => {
-    params.then(p => {
-      const code = p.country.toLowerCase();
-      setCountryCode(code);
-      if (!getCountry(code)) router.push("/");
+    params.then((p) => {
+      const langCode = p.lang as Lang;
+      const expectedSlug = LANG_SLUGS[langCode];
+      if (!expectedSlug || p.slug !== expectedSlug) {
+        router.replace(`/${langCode}/${expectedSlug}/${p.country}`);
+      } else {
+        setResolved({ lang: langCode, slug: p.slug, countryCode: p.country.toLowerCase() });
+      }
     });
   }, [params, router]);
 
+  const lang = resolved?.lang || "en";
+  const countryCode = resolved?.countryCode || "";
   const countryCfg = getCountry(countryCode);
+  const T = i18n[lang];
+  const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr";
 
   const fetchJobs = useCallback(async () => {
     if (!countryCode) return;
@@ -171,47 +140,54 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
     }
   }, [fetchJobs, countryCode]);
 
+  if (!resolved) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <WWLogo size={48} /><div className="mt-4 text-sm text-gray-400">Loading...</div>
+      </div>
+    );
+  }
+
   if (!countryCfg) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">\uD83C\uDF0D</div>
           <h1 className="text-2xl font-bold text-gray-900">{T.countryNotFound}</h1>
-          <button onClick={() => router.push("/")} className="mt-4 text-sky-600 hover:underline">{T.goBackGlobal}</button>
+          <button onClick={() => router.push(`/${lang}/${resolved.slug}`)} className="mt-4 text-sky-600 hover:underline">{T.goBackGlobal}</button>
         </div>
       </div>
     );
   }
 
+  const countryLocalName = countryNames[lang]?.[countryCode] || countryCfg.name;
+
   return (
     <div className="min-h-screen bg-gray-50" dir={dir}>
       {countryCfg && <CountryListingJsonLd countryCode={countryCfg.code} countryName={countryCfg.name} jobCount={countryCfg.jobCount} jobs={jobs} />}
 
-      {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push("/")} className="text-sm font-medium text-sky-600 hover:text-sky-800 transition-colors">
-              {T.backToGlobal}
-            </button>
+            <button onClick={() => router.push(`/${lang}/${resolved.slug}`)} className="text-sm font-medium text-sky-600 hover:text-sky-800 transition-colors">{T.backToGlobal}</button>
             <span className="text-gray-300">|</span>
             <WWLogo size={28} />
-            <span className="text-sm font-bold text-gray-900">{countryCfg.flag} {countryNames[lang]?.[countryCode] || countryCfg.name}</span>
+            <span className="text-sm font-bold text-gray-900">{countryCfg.flag} {countryLocalName}</span>
           </div>
-          <LanguageDropdown lang={lang} setLang={setLang} />
+          <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm">
+            <span className="text-lg leading-none">{LANGUAGES.find((l) => l.code === lang)?.flag}</span>
+            <span className="hidden sm:inline text-xs font-semibold text-gray-600">{LANGUAGES.find((l) => l.code === lang)?.name}</span>
+          </div>
         </div>
       </header>
 
-      {/* COUNTRY HERO */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 sm:py-16">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-sky-500/10 blur-3xl" />
         </div>
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 text-center">
           <div className="text-6xl mb-4">{countryCfg.flag}</div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
-            {T.countryPageTitle} {countryNames[lang]?.[countryCode] || countryCfg.name}
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">{T.countryPageTitle} {countryLocalName}</h1>
           <p className="text-gray-300 mb-6">{T.countryPageSub}</p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
             <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
@@ -227,10 +203,9 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
         </div>
       </section>
 
-      {/* JOBS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-800">{T.topJobs} - {countryNames[lang]?.[countryCode] || countryCfg.name}</h2>
+          <h2 className="text-lg font-bold text-gray-800">{T.topJobs} - {countryLocalName}</h2>
           <div className="flex items-center gap-2">
             {loading && (
               <div className="flex items-center gap-1.5 text-xs text-sky-500">
@@ -243,13 +218,7 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
         </div>
         {loading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[1,2,3].map((i) => (
-              <div key={i} className="rounded-xl border border-gray-100 bg-white p-5">
-                <div className="h-5 w-20 rounded-full bg-gray-100 mb-3 animate-pulse" />
-                <div className="h-6 w-3/4 rounded bg-gray-100 mb-2 animate-pulse" />
-                <div className="h-4 w-1/2 rounded bg-gray-100 mb-4 animate-pulse" />
-              </div>
-            ))}
+            {[1,2,3].map((i) => (<div key={i} className="rounded-xl border border-gray-100 bg-white p-5"><div className="h-5 w-20 rounded-full bg-gray-100 mb-3 animate-pulse" /><div className="h-6 w-3/4 rounded bg-gray-100 mb-2 animate-pulse" /><div className="h-4 w-1/2 rounded bg-gray-100 mb-4 animate-pulse" /></div>))}
           </div>
         ) : jobs.length === 0 ? (
           <div className="flex flex-col items-center py-20 text-center">
@@ -259,20 +228,17 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {jobs.map((job) => (
-              <JobCardWithSchema key={job.id} job={job} lang={lang} countryCfg={countryCfg} />
-            ))}
+            {jobs.map((job) => (<JobCardWithSchema key={job.id} job={job} lang={lang} countryCfg={countryCfg} />))}
           </div>
         )}
       </section>
 
-      {/* OTHER COUNTRIES */}
       <section className="bg-white border-t border-gray-100 py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4">{T.featuredCountries}</h2>
           <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-10 gap-2">
             {COUNTRIES.filter(c => c.code !== countryCode).map((c) => (
-              <button key={c.code} onClick={() => router.push(`/${c.code}`)} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-sky-50 transition-colors">
+              <button key={c.code} onClick={() => router.push(`/${lang}/${resolved.slug}/${c.code}`)} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-sky-50 transition-colors">
                 <span className="text-2xl">{c.flag}</span>
                 <span className="text-[10px] font-medium text-gray-600 text-center leading-tight">{countryNames[lang]?.[c.code] || c.name}</span>
                 <span className="text-[9px] text-gray-400">{c.jobCount.toLocaleString()}</span>
@@ -282,7 +248,6 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="border-t border-gray-200 bg-gray-50 py-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2">

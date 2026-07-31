@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { COUNTRIES, TOTAL_JOBS, getCountry, type CountryConfig } from "@/lib/countries";
-import { LANGUAGES, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
+import { LANGUAGES, LANG_SLUGS, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 import PaywallContact from "@/components/PaywallContact";
@@ -76,7 +77,6 @@ function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlight
           <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"} px-3 py-1 text-xs font-medium text-white`}>{sd?.icon} {sName}</span>
           <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800 transition-colors">{T.viewDetails} &rarr;</a>
         </div>
-        {/* PAYPAL PAYWALL - only for jobs marked by admin */}
         {job.paywall && (
           <PaywallContact
             contactEmail={job.contactEmail}
@@ -158,46 +158,24 @@ function CountryCard({ country, T, onClick, lang }: { country: CountryConfig; T:
   );
 }
 
-function LanguageDropdown({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-  const current = LANGUAGES.find((l) => l.code === lang)!;
-  useEffect(() => {
-    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-  const filtered = LANGUAGES.filter((l) => l.name.toLowerCase().includes(search.toLowerCase()));
-  return (
-    <div ref={ref} className="relative">
-      <button onClick={() => { setOpen(!open); setSearch(""); }} className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm transition-all hover:border-sky-300 hover:shadow-sm">
-        <span className="text-lg leading-none">{current.flag}</span>
-        <span className="hidden sm:inline text-xs font-semibold text-gray-600">{current.name}</span>
-        <svg className={`h-3 w-3 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-      </button>
-      {open && (
-        <div className="absolute right-0 mt-1 w-52 rounded-xl border border-gray-200 bg-white py-1 shadow-xl z-50">
-          <div className="px-2 pb-1">
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={i18n[lang].searchLang} className="w-full rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5 text-sm outline-none focus:border-sky-300" autoFocus />
-          </div>
-          <div className="max-h-56 overflow-y-auto">
-            {filtered.map((l) => (
-              <button key={l.code} onClick={() => { setLang(l.code); setOpen(false); setSearch(""); }}
-                className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-sky-50 ${l.code === lang ? "bg-sky-50 text-sky-700 font-semibold" : "text-gray-700"}`}>
-                <span className="text-base leading-none">{l.flag}</span>
-                <span className="font-medium">{l.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+export default function LangSlugPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
+  const router = useRouter();
+  const [resolved, setResolved] = useState<{ lang: Lang; slug: string } | null>(null);
 
-export default function HomePage() {
-  const [lang, setLang] = useState<Lang>("en");
+  useEffect(() => {
+    params.then((p) => {
+      const langCode = p.lang as Lang;
+      const expectedSlug = LANG_SLUGS[langCode];
+      if (!expectedSlug || p.slug !== expectedSlug) {
+        router.replace(`/${langCode}/${expectedSlug}`);
+      } else {
+        setResolved({ lang: langCode, slug: p.slug });
+      }
+    });
+  }, [params, router]);
+
+  const lang = resolved?.lang || "en";
+  const slug = resolved?.slug || "";
   const [selCountry, setSelCountry] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,24 +203,38 @@ export default function HomePage() {
   useEffect(() => { fetchJobs(selCountry); }, [fetchJobs, selCountry]);
 
   const handleCountryClick = (code: string) => {
-    window.location.assign(`/${code}`);
+    router.push(`/${lang}/${slug}/${code}`);
   };
 
   const clearFilters = () => { setSelCountry(""); };
   const hasFilters = !!selCountry;
 
+  if (!resolved) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <WWLogo size={48} />
+          <div className="mt-4 text-sm text-gray-400">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50" dir={dir}>
       <OrganizationJsonLd />
 
-      {/* HEADER */}
+      {/* HEADER - no language dropdown since language is in URL */}
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <WWLogo size={32} />
             <span className="hidden sm:block text-lg font-bold tracking-tight text-gray-900">W-W</span>
           </div>
-          <LanguageDropdown lang={lang} setLang={setLang} />
+          <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm">
+            <span className="text-lg leading-none">{LANGUAGES.find((l) => l.code === lang)?.flag}</span>
+            <span className="hidden sm:inline text-xs font-semibold text-gray-600">{LANGUAGES.find((l) => l.code === lang)?.name}</span>
+          </div>
         </div>
       </header>
 
@@ -324,7 +316,7 @@ export default function HomePage() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-4 text-5xl">🔍</div>
+            <div className="mb-4 text-5xl">\uD83D\uDD0D</div>
             <h3 className="text-lg font-semibold text-gray-700">{T.noJobs}</h3>
             <p className="mt-2 text-sm text-gray-500 max-w-xs">{T.noJobsSub}</p>
             {hasFilters && <button onClick={clearFilters} className="mt-5 rounded-xl bg-sky-500 px-6 py-2.5 text-sm font-medium text-white shadow-md hover:bg-sky-600 transition-all">{T.clearFilters}</button>}
