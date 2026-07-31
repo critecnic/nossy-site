@@ -16,6 +16,7 @@ interface Job {
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
   contactEmail: string;
+  paywall: boolean;
 }
 
 const SECTORS = [
@@ -80,18 +81,20 @@ function JobCardWithSchema({ job, lang, countryCfg }: { job: Job; lang: Lang; co
           <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"} px-3 py-1 text-xs font-medium text-white`}>{sd?.icon} {sName}</span>
           <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800">{T.viewDetails} &rarr;</a>
         </div>
-        {/* PAYPAL PAYWALL - CONTACT & COMPANY DATA */}
-        <PaywallContact
-          contactEmail={job.contactEmail}
-          companyData={{
-            company: job.company,
-            companyUrl: job.companyUrl,
-            location: job.location,
-            salary: job.salary,
-          }}
-          jobId={`job-${job.id}`}
-          lang={lang}
-        />
+        {/* PAYPAL PAYWALL - only for jobs marked by admin */}
+        {job.paywall && (
+          <PaywallContact
+            contactEmail={job.contactEmail}
+            companyData={{
+              company: job.company,
+              companyUrl: job.companyUrl,
+              location: job.location,
+              salary: job.salary,
+            }}
+            jobId={`job-${job.id}`}
+            lang={lang}
+          />
+        )}
       </div>
     </article>
   );
@@ -133,7 +136,6 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
   const [countryCode, setCountryCode] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selSector, setSelSector] = useState("");
   const [filterPulse, setFilterPulse] = useState(false);
   const T = i18n[lang];
   const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr";
@@ -154,13 +156,12 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
     try {
       const p = new URLSearchParams();
       p.set("country", countryCode);
-      if (selSector) p.set("sector", selSector);
       const r = await fetch(`/api/jobs?${p.toString()}`);
       const data = await r.json();
       setJobs(data);
     } catch { setJobs([]); }
     setLoading(false);
-  }, [countryCode, selSector]);
+  }, [countryCode]);
 
   useEffect(() => {
     if (countryCode) {
@@ -222,24 +223,6 @@ export default function CountryPage({ params }: { params: Promise<{ country: str
               <span className="text-sky-300">{T.salaryLocal}:</span>
               <span className="text-white font-semibold">{countryCfg.currency.symbol} ({countryCfg.currency.code})</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTORS FILTER */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            <button onClick={() => setSelSector("")} className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all ${!selSector ? "bg-slate-800 text-white shadow-md" : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-sky-300"}`}>{T.allSectors}</button>
-            {SECTORS.map((s) => {
-              const sName = sectorNames[lang]?.[s.key] || s.key;
-              const active = selSector === s.key;
-              return (
-                <button key={s.key} onClick={() => setSelSector(active ? "" : s.key)} className={`flex-shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105 active:scale-95 ${active ? `bg-gradient-to-r ${s.color} text-white shadow-lg` : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-sky-300"}`}>
-                  <span className="text-base">{s.icon}</span><span>{sName}</span>
-                </button>
-              );
-            })}
           </div>
         </div>
       </section>

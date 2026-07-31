@@ -15,6 +15,7 @@ interface Job {
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
   contactEmail: string;
+  paywall: boolean;
 }
 
 function WWLogo({ size = 40 }: { size?: number }) {
@@ -75,18 +76,20 @@ function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlight
           <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"} px-3 py-1 text-xs font-medium text-white`}>{sd?.icon} {sName}</span>
           <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800 transition-colors">{T.viewDetails} &rarr;</a>
         </div>
-        {/* PAYPAL PAYWALL - CONTACT & COMPANY DATA */}
-        <PaywallContact
-          contactEmail={job.contactEmail}
-          companyData={{
-            company: job.company,
-            companyUrl: job.companyUrl,
-            location: job.location,
-            salary: job.salary,
-          }}
-          jobId={`home-${job.id}`}
-          lang={lang}
-        />
+        {/* PAYPAL PAYWALL - only for jobs marked by admin */}
+        {job.paywall && (
+          <PaywallContact
+            contactEmail={job.contactEmail}
+            companyData={{
+              company: job.company,
+              companyUrl: job.companyUrl,
+              location: job.location,
+              salary: job.salary,
+            }}
+            jobId={`home-${job.id}`}
+            lang={lang}
+          />
+        )}
       </div>
     </article>
   );
@@ -196,7 +199,6 @@ function LanguageDropdown({ lang, setLang }: { lang: Lang; setLang: (l: Lang) =>
 export default function HomePage() {
   const [lang, setLang] = useState<Lang>("en");
   const [selCountry, setSelCountry] = useState("");
-  const [selSector, setSelSector] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [nlName, setNlName] = useState("");
@@ -206,14 +208,13 @@ export default function HomePage() {
   const T = i18n[lang];
   const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr";
 
-  const fetchJobs = useCallback(async (country?: string, sector?: string) => {
+  const fetchJobs = useCallback(async (country?: string) => {
     setLoading(true);
     setFilterPulse(true);
     setTimeout(() => setFilterPulse(false), 600);
     try {
       const p = new URLSearchParams();
       if (country) p.set("country", country);
-      if (sector) p.set("sector", sector);
       const r = await fetch(`/api/jobs?${p.toString()}`);
       const data = await r.json();
       setJobs(data);
@@ -221,18 +222,14 @@ export default function HomePage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchJobs(selCountry, selSector); }, [fetchJobs, selCountry, selSector]);
+  useEffect(() => { fetchJobs(selCountry); }, [fetchJobs, selCountry]);
 
   const handleCountryClick = (code: string) => {
     window.location.href = `/${code}`;
   };
 
-  const handleSectorClick = (key: string) => {
-    setSelSector(selSector === key ? "" : key);
-  };
-
-  const clearFilters = () => { setSelCountry(""); setSelSector(""); };
-  const hasFilters = selCountry || selSector;
+  const clearFilters = () => { setSelCountry(""); };
+  const hasFilters = !!selCountry;
 
   return (
     <div className="min-h-screen bg-gray-50" dir={dir}>
@@ -289,35 +286,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTORS */}
-      <section className="bg-white border-y border-gray-100">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-3 mb-3">
-            <h2 className="text-sm font-bold text-gray-700">{T.sectors}</h2>
-            <div className="h-px flex-1 bg-gray-200" />
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            <button onClick={() => handleSectorClick("")} className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all ${!selSector ? "bg-slate-800 text-white shadow-md" : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-sky-300"}`}>{T.allSectors}</button>
-            {SECTORS.map((s) => {
-              const sName = sectorNames[lang]?.[s.key] || s.key;
-              const active = selSector === s.key;
-              return (
-                <button key={s.key} onClick={() => handleSectorClick(s.key)} className={`flex-shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105 active:scale-95 ${active ? `bg-gradient-to-r ${s.color} text-white shadow-lg` : "bg-gray-50 text-gray-600 border border-gray-200 hover:border-sky-300"}`}>
-                  <span className="text-base">{s.icon}</span><span>{sName}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* FILTER CHIPS */}
       {hasFilters && (
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-gray-400">{T.filterChip}</span>
             {selCountry && (() => { const c = COUNTRIES.find(x => x.code === selCountry); return c ? <FilterChip label={`${c.flag} ${c.name}`} onRemove={() => setSelCountry("")} /> : null; })()}
-            {selSector && <FilterChip label={sectorNames[lang]?.[selSector] || selSector} onRemove={() => setSelSector("")} />}
             <button onClick={clearFilters} className="ml-auto text-xs font-medium text-red-500 hover:text-red-600">{T.clearFilters}</button>
           </div>
         </div>
