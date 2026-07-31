@@ -6,6 +6,7 @@ import { COUNTRIES, getCountry, type CountryConfig } from "@/lib/countries";
 import { LANGUAGES, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { JobJsonLd, CountryListingJsonLd } from "@/components/JsonLd";
+import PaywallContact from "@/components/PaywallContact";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -47,7 +48,6 @@ function WWLogo({ size = 40 }: { size?: number }) {
 }
 
 function JobCardWithSchema({ job, lang, countryCfg }: { job: Job; lang: Lang; countryCfg: CountryConfig }) {
-  const [contactRevealed, setContactRevealed] = useState(false);
   const T = i18n[lang];
   const sd = SECTORS.find((s) => s.key === job.sector);
   const sName = sectorNames[lang]?.[job.sector] || job.sector;
@@ -80,23 +80,18 @@ function JobCardWithSchema({ job, lang, countryCfg }: { job: Job; lang: Lang; co
           <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"} px-3 py-1 text-xs font-medium text-white`}>{sd?.icon} {sName}</span>
           <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800">{T.viewDetails} &rarr;</a>
         </div>
-        {/* CONTACT - PAYWALL */}
-        <div className="mt-4 border-t border-gray-100 pt-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-400">{T.contactInfo}</span>
-            {!contactRevealed ? (
-              <button onClick={() => setContactRevealed(true)} className="flex items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-sky-600 hover:shadow-md hover:scale-105 active:scale-95">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                {T.unlock}
-              </button>
-            ) : (
-              <span className="text-xs font-medium text-sky-600 truncate max-w-[180px]">{job.contactEmail}</span>
-            )}
-          </div>
-          {!contactRevealed && (
-            <p className="mt-1.5 text-[10px] text-gray-300">{T.contactLocked}</p>
-          )}
-        </div>
+        {/* PAYPAL PAYWALL - CONTACT & COMPANY DATA */}
+        <PaywallContact
+          contactEmail={job.contactEmail}
+          companyData={{
+            company: job.company,
+            companyUrl: job.companyUrl,
+            location: job.location,
+            salary: job.salary,
+          }}
+          jobId={`job-${job.id}`}
+          lang={lang}
+        />
       </div>
     </article>
   );
