@@ -23,12 +23,10 @@ export async function generateMetadata({
   const country = getCountry(countryCode);
   const langCfg = LANGUAGES.find((l) => l.code === lang);
 
-  if (!country) {
-    return { title: "Country Not Found | W-W" };
-  }
+  if (!country) return { title: "Country Not Found | W-W" };
 
   const title = `${country.name} Jobs | ${langCfg?.name || lang} - W-W World of Work`;
-  const description = `Browse ${country.jobCount.toLocaleString()}+ job vacancies in ${country.name}. Top companies hiring now. ${langCfg?.name || lang} version.`;
+  const description = `Browse ${country.jobCount.toLocaleString()}+ job vacancies in ${country.name}. Top companies hiring now in Technology, Finance, Healthcare & more. Free to browse - apply today!`;
   const url = `https://ww.jobs/${lang}/${LANG_SLUGS[lang]}/${country.code}`;
 
   return {
@@ -38,52 +36,23 @@ export async function generateMetadata({
     alternates: {
       canonical: `/${lang}/${LANG_SLUGS[lang]}/${country.code}`,
       languages: Object.fromEntries(
-        LANGUAGES.map((l) => [
-          l.code,
-          `/${l.code}/${LANG_SLUGS[l.code]}/${country.code}`,
-        ])
+        LANGUAGES.map((l) => [l.code, `/${l.code}/${LANG_SLUGS[l.code]}/${country.code}`])
       ),
     },
     openGraph: {
-      title,
-      description,
-      type: "website",
-      url,
+      title, description, type: "website", url,
       siteName: "W-W World of Work",
-      locale: langCfg?.code?.replace("-", "_") || "en_US",
-      images: [
-        {
-          url: `https://ww.jobs/og-${country.code}.png`,
-          width: 1200,
-          height: 630,
-          alt: `${country.name} Jobs - W-W World of Work`,
-        },
-      ],
+      locale: lang?.replace("-", "_") || "en_US",
+      images: [{ url: `https://ww.jobs/og-${country.code}.png`, width: 1200, height: 630, alt: `${country.name} Jobs - W-W World of Work` }],
     },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [`https://ww.jobs/og-${country.code}.png`],
-    },
+    twitter: { card: "summary_large_image", title, description, images: [`https://ww.jobs/og-${country.code}.png`] },
     robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
+      index: true, follow: true,
+      googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 },
     },
   };
 }
 
-export default function LangSlugCountryLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function LangSlugCountryLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

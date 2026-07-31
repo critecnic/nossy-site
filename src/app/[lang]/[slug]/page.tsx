@@ -260,7 +260,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-4 sm:px-6 sm:grid-cols-4">
           <AnimatedCounter end={TOTAL_JOBS} suffix="+" label={T.statsJobs} />
           <AnimatedCounter end={3200} suffix="+" label={T.statsCompanies} />
-          <AnimatedCounter end={20} suffix="+" label={T.statsCountries} />
+          <AnimatedCounter end={12} suffix="" label={T.statsCountries} />
           <AnimatedCounter end={45000} suffix="+" label={T.statsUsers} />
         </div>
       </section>
@@ -271,7 +271,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{T.exploreCountries}</h2>
           <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto">{T.exploreCountriesSub}</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {COUNTRIES.map((country) => (
             <CountryCard key={country.code} country={country} T={T} onClick={() => handleCountryClick(country.code)} lang={lang} />
           ))}

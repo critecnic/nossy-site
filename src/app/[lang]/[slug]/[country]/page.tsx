@@ -236,7 +236,7 @@ export default function LangSlugCountryPage({ params }: { params: Promise<{ lang
       <section className="bg-white border-t border-gray-100 py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4">{T.featuredCountries}</h2>
-          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-10 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-11 gap-2">
             {COUNTRIES.filter(c => c.code !== countryCode).map((c) => (
               <button key={c.code} onClick={() => router.push(`/${lang}/${resolved.slug}/${c.code}`)} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-sky-50 transition-colors">
                 <span className="text-2xl">{c.flag}</span>

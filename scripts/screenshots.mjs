@@ -1,67 +1,60 @@
-import { spawn } from 'child_process';
 import { chromium } from 'playwright';
-import { writeFileSync } from 'fs';
 
-const PORT = 3456;
+const PORT = 3000;
+const BASE = `http://localhost:${PORT}`;
+const SCREENSHOTS_DIR = '/home/z/my-project/download';
 
-// Start server INSIDE this process
-const server = spawn('npx', ['next', 'start', '-p', String(PORT)], {
-  cwd: '/home/z/my-project',
-  stdio: ['ignore', 'pipe', 'pipe'],
-  env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=256' }
-});
+async function run() {
+  const { spawn } = await import('child_process');
+  
+   // Start server
+  const server = spawn('npx', ['next', 'start', '-p', String(PORT)], {
+    cwd: '/home/z/my-project',
+    stdio: 'pipe',
+    env: { ...process.env, PORT: String(PORT) },
+  });
 
-// Wait for server ready
-console.log('Waiting for server...');
-for (let i = 0; i < 60; i++) {
+  // Wait for server ready
+  await new Promise(resolve => setTimeout(resolve, 4000));
+
+  const browser = await chromium.launch({ headless: true });
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+
+  const shots = [
+    { url: '/en/jobs', file: 'preview-en-jobs.png', wait: 2000 },
+    { url: '/en/jobs/br', file: 'preview-en-jobs-brazil.png', wait: 2000 },
+    { url: '/pt-br/vagas', file: 'preview-ptbr-vagas.png', wait: 2000 },
+    { url: '/ar/وظائف', file: 'preview-ar-jobs.png', wait: 2000 },
+    { url: '/en/jobs/ng', file: 'preview-en-jobs-nigeria.png', wait: 2000 },
+  ];
+
+  for (const s of shots) {
+    try {
+      await page.goto(`${BASE}${s.url}`, { waitUntil: 'networkidle', timeout: 15000 });
+      await page.waitForTimeout(s.wait);
+      await page.screenshot({ path: `${SCREENSHOTS_DIR}/${s.file}`, fullPage: false });
+      console.log(`OK: ${s.file}`);
+    } catch (e) {
+      console.log(`FAIL: ${s.file} - ${e.message?.slice(0, 80)}`);
+    }
+  }
+
+  // Scroll down on English jobs page to show paywall
   try {
-    const r = await fetch(`http://127.0.0.1:${PORT}`, { signal: AbortSignal.timeout(2000) });
-    if (r.ok) { console.log('Server ready!'); break; }
-  } catch {}
-  await new Promise(r => setTimeout(r, 1000));
+    await page.goto(`${BASE}/en/jobs/br`, { waitUntil: 'networkidle', timeout: 15000 });
+    await page.waitForTimeout(1500);
+    await page.evaluate(() => window.scrollTo(0, 800));
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: `${SCREENSHOTS_DIR}/preview-en-jobs-brazil-paywall.png`, fullPage: false });
+    console.log('OK: preview-en-jobs-brazil-paywall.png');
+  } catch (e) {
+    console.log(`FAIL: paywall scroll - ${e.message?.slice(0, 80)}`);
+  }
+
+  await browser.close();
+  server.kill();
+  console.log('Done!');
 }
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
-
-// ====== BRAZIL ======
-console.log('Loading Brazil...');
-const p2 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-await p2.goto(`http://127.0.0.1:${PORT}/br`, { waitUntil: 'networkidle', timeout: 60000 });
-await p2.waitForTimeout(3000);
-const brArts = await p2.evaluate(() => document.querySelectorAll('article').length);
-console.log(`Brazil articles: ${brArts}`);
-await p2.screenshot({ path: '/home/z/my-project/download/preview-02-brazil.png', fullPage: true });
-console.log('OK: brazil');
-await p2.close();
-
-// ====== USA ======
-console.log('Loading USA...');
-const p3 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-await p3.goto(`http://127.0.0.1:${PORT}/us`, { waitUntil: 'networkidle', timeout: 60000 });
-await p3.waitForTimeout(3000);
-const usArts = await p3.evaluate(() => document.querySelectorAll('article').length);
-console.log(`USA articles: ${usArts}`);
-await p3.screenshot({ path: '/home/z/my-project/download/preview-03-usa.png', fullPage: true });
-console.log('OK: usa');
-await p3.close();
-
-// ====== HOME ======
-console.log('Loading Home...');
-const p1 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-await p1.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle', timeout: 60000 });
-await p1.waitForTimeout(4000);
-const homeArts = await p1.evaluate(() => document.querySelectorAll('article').length);
-console.log(`Home articles: ${homeArts}`);
-await p1.screenshot({ path: '/home/z/my-project/download/preview-01-home.png', fullPage: true });
-if (homeArts > 0) {
-  await p1.evaluate(() => window.scrollTo(0, 800));
-  await p1.waitForTimeout(500);
-  await p1.screenshot({ path: '/home/z/my-project/download/preview-04-home-paywall.png' });
-  console.log('OK: home-paywall');
-}
-console.log('OK: home');
-await p1.close();
-
-await browser.close();
-server.kill();
-console.log('ALL DONE');
+run().catch(e => { console.error(e); process.exit(1); });

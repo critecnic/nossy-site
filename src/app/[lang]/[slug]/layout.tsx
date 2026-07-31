@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
+import { COUNTRIES, TOTAL_JOBS } from "@/lib/countries";
 import type { Lang } from "@/lib/i18n";
 
 export function generateStaticParams() {
@@ -17,11 +18,11 @@ export async function generateMetadata({
   const { lang: langCode, slug } = await params;
   const lang = langCode as Lang;
   const langCfg = LANGUAGES.find((l) => l.code === lang);
+  const totalJobs = TOTAL_JOBS.toLocaleString();
 
   return {
-    title: `W-W | World of Work - ${langCfg?.name || lang} - Jobs Worldwide`,
-    description:
-      "Browse 15,400+ job vacancies across 20 countries. Free global job search with real salaries and top companies.",
+    title: `W-W | ${langCfg?.name || lang} - Jobs in 12 Countries | ${totalJobs}+ Vacancies`,
+    description: `Browse ${totalJobs}+ job vacancies across Nigeria, South Africa, India, Kenya, Egypt, Philippines, Ghana, Pakistan, Bangladesh, Brazil, Colombia, Morocco. ${langCfg?.name || lang} version. Free to apply.`,
     alternates: {
       canonical: `/${lang}/${slug}`,
       languages: Object.fromEntries(
@@ -29,19 +30,19 @@ export async function generateMetadata({
       ),
     },
     openGraph: {
-      title: `W-W | World of Work - ${langCfg?.name || lang}`,
-      description:
-        "Browse 15,400+ job vacancies across 20 countries. Free global job search.",
+      title: `W-W | World of Work - ${langCfg?.name || lang} | ${totalJobs}+ Jobs`,
+      description: `Browse ${totalJobs}+ job vacancies across 12 countries. Free global job search.`,
       type: "website",
       siteName: "W-W World of Work",
+      locale: lang?.replace("-", "_") || "en_US",
+    },
+    robots: {
+      index: true, follow: true,
+      googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 },
     },
   };
 }
 
-export default function LangSlugLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function LangSlugLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

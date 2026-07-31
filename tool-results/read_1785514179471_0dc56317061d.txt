@@ -894,70 +894,98 @@
    894→    "kr": "दक्षिण कोरिया", "sa": "सऊदी अरब", "ae": "संयुक्त अरब अमीरात", "es": "स्पेन",
    895→    "it": "इटली", "pt": "पुर्तगाल", "ng": "नाइजीरिया", "tr": "तुर्की",
    896→  },
-   897→};
-   898→
-   899→export const sectorNames: Partial<Record<Lang, Record<string, string>>> = {
-   900→  "en": {
-   901→    "Technology": "Technology", "Finance": "Finance", "Design": "Design",
-   902→    "Marketing": "Marketing", "Data Science": "Data Science", "Sales": "Sales",
-   903→    "Management": "Management", "Healthcare": "Healthcare", "Education": "Education",
-   904→    "Engineering": "Engineering", "Legal": "Legal", "HR": "HR"
-   905→  },
-   906→  "pt-br": {
-   907→    "Technology": "Tecnologia", "Finance": "Finanças", "Design": "Design",
-   908→    "Marketing": "Marketing", "Data Science": "Ciência de Dados", "Sales": "Vendas",
-   909→    "Management": "Gestão", "Healthcare": "Saúde", "Education": "Educação",
-   910→    "Engineering": "Engenharia", "Legal": "Jurídico", "HR": "RH"
-   911→  },
-   912→  "pt-pt": {
-   913→    "Technology": "Tecnologia", "Finance": "Finanças", "Design": "Design",
-   914→    "Marketing": "Marketing", "Data Science": "Ciência de Dados", "Sales": "Vendas",
-   915→    "Management": "Gestão", "Healthcare": "Saúde", "Education": "Educação",
-   916→    "Engineering": "Engenharia", "Legal": "Jurídico", "HR": "RH"
+   897→  "bn": {
+   898→    "in": "India", "us": "United States", "cn": "China", "br": "Brazil",
+   899→    "gb": "United Kingdom", "de": "Germany", "fr": "France", "jp": "Japan",
+   900→    "ca": "Canada", "au": "Australia", "mx": "Mexico", "id": "Indonesia",
+   901→    "kr": "South Korea", "sa": "Saudi Arabia", "ae": "UAE", "es": "Spain",
+   902→    "it": "Italy", "pt": "Portugal", "ng": "Nigeria", "tr": "Turkey",
+   903→  },
+   904→  "ur": {
+   905→    "in": "India", "us": "United States", "cn": "China", "br": "Brazil",
+   906→    "gb": "United Kingdom", "de": "Germany", "fr": "France", "jp": "Japan",
+   907→    "ca": "Canada", "au": "Australia", "mx": "Mexico", "id": "Indonesia",
+   908→    "kr": "South Korea", "sa": "Saudi Arabia", "ae": "UAE", "es": "Spain",
+   909→    "it": "Italy", "pt": "Portugal", "ng": "Nigeria", "tr": "Turkey",
+   910→  },
+   911→  "tl": {
+   912→    "in": "India", "us": "United States", "cn": "China", "br": "Brazil",
+   913→    "gb": "United Kingdom", "de": "Germany", "fr": "France", "jp": "Japan",
+   914→    "ca": "Canada", "au": "Australia", "mx": "Mexico", "id": "Indonesia",
+   915→    "kr": "South Korea", "sa": "Saudi Arabia", "ae": "UAE", "es": "Spain",
+   916→    "it": "Italy", "pt": "Portugal", "ng": "Nigeria", "tr": "Turkey",
    917→  },
-   918→  "es": {
-   919→    "Technology": "Tecnología", "Finance": "Finanzas", "Design": "Diseño",
-   920→    "Marketing": "Marketing", "Data Science": "Ciencia de Datos", "Sales": "Ventas",
-   921→    "Management": "Gestión", "Healthcare": "Salud", "Education": "Educación",
-   922→    "Engineering": "Ingeniería", "Legal": "Legal", "HR": "RRHH"
-   923→  },
-   924→  "fr": {
-   925→    "Technology": "Technologie", "Finance": "Finance", "Design": "Design",
-   926→    "Marketing": "Marketing", "Data Science": "Data Science", "Sales": "Ventes",
-   927→    "Management": "Management", "Healthcare": "Santé", "Education": "Éducation",
-   928→    "Engineering": "Ingénierie", "Legal": "Juridique", "HR": "RH"
-   929→  },
-   930→  "zh": {
-   931→    "Technology": "技术", "Finance": "金融", "Design": "设计",
-   932→    "Marketing": "市场营销", "Data Science": "数据科学", "Sales": "销售",
-   933→    "Management": "管理", "Healthcare": "医疗保健", "Education": "教育",
-   934→    "Engineering": "工程", "Legal": "法律", "HR": "人力资源"
-   935→  },
-   936→  "ja": {
-   937→    "Technology": "テクノロジー", "Finance": "金融", "Design": "デザイン",
-   938→    "Marketing": "マーケティング", "Data Science": "データサイエンス", "Sales": "営業",
-   939→    "Management": "マネジメント", "Healthcare": "ヘルスケア", "Education": "教育",
-   940→    "Engineering": "エンジニアリング", "Legal": "法務", "HR": "人事"
-   941→  },
-   942→  "ar": {
-   943→    "Technology": "التكنولوجيا", "Finance": "المالية", "Design": "التصميم",
-   944→    "Marketing": "التسويق", "Data Science": "علوم البيانات", "Sales": "المبيعات",
-   945→    "Management": "الإدارة", "Healthcare": "الرعاية الصحية", "Education": "التعليم",
-   946→    "Engineering": "الهندسة", "Legal": "القانون", "HR": "الموارد البشرية"
-   947→  },
-   948→  "de": {
-   949→    "Technology": "Technologie", "Finance": "Finanzen", "Design": "Design",
-   950→    "Marketing": "Marketing", "Data Science": "Datenwissenschaft", "Sales": "Vertrieb",
-   951→    "Management": "Management", "Healthcare": "Gesundheit", "Education": "Bildung",
-   952→    "Engineering": "Ingenieurwesen", "Legal": "Recht", "HR": "Personal"
-   953→  },
-   954→  "hi": {
-   955→    "Technology": "प्रौद्योगिकी", "Finance": "वित्त", "Design": "डिज़ाइन",
-   956→    "Marketing": "मार्केटिंग", "Data Science": "डेटा साइंस", "Sales": "बिक्री",
-   957→    "Management": "प्रबंधन", "Healthcare": "स्वास्थ्य सेवा", "Education": "शिक्षा",
-   958→    "Engineering": "इंजीनियरिंग", "Legal": "कानूनी", "HR": "मानव संसाधन"
-   959→  },
-   960→};
-   961→
-   962→export default t;
-   963→
+   918→  "sw": {
+   919→    "in": "India", "us": "United States", "cn": "China", "br": "Brazil",
+   920→    "gb": "United Kingdom", "de": "Germany", "fr": "France", "jp": "Japan",
+   921→    "ca": "Canada", "au": "Australia", "mx": "Mexico", "id": "Indonesia",
+   922→    "kr": "South Korea", "sa": "Saudi Arabia", "ae": "UAE", "es": "Spain",
+   923→    "it": "Italy", "pt": "Portugal", "ng": "Nigeria", "tr": "Turkey",
+   924→  },
+   925→};
+   926→
+   927→export const sectorNames: Partial<Record<Lang, Record<string, string>>> = {
+   928→  "en": {
+   929→    "Technology": "Technology", "Finance": "Finance", "Design": "Design",
+   930→    "Marketing": "Marketing", "Data Science": "Data Science", "Sales": "Sales",
+   931→    "Management": "Management", "Healthcare": "Healthcare", "Education": "Education",
+   932→    "Engineering": "Engineering", "Legal": "Legal", "HR": "HR"
+   933→  },
+   934→  "pt-br": {
+   935→    "Technology": "Tecnologia", "Finance": "Finanças", "Design": "Design",
+   936→    "Marketing": "Marketing", "Data Science": "Ciência de Dados", "Sales": "Vendas",
+   937→    "Management": "Gestão", "Healthcare": "Saúde", "Education": "Educação",
+   938→    "Engineering": "Engenharia", "Legal": "Jurídico", "HR": "RH"
+   939→  },
+   940→  "pt-pt": {
+   941→    "Technology": "Tecnologia", "Finance": "Finanças", "Design": "Design",
+   942→    "Marketing": "Marketing", "Data Science": "Ciência de Dados", "Sales": "Vendas",
+   943→    "Management": "Gestão", "Healthcare": "Saúde", "Education": "Educação",
+   944→    "Engineering": "Engenharia", "Legal": "Jurídico", "HR": "RH"
+   945→  },
+   946→  "es": {
+   947→    "Technology": "Tecnología", "Finance": "Finanzas", "Design": "Diseño",
+   948→    "Marketing": "Marketing", "Data Science": "Ciencia de Datos", "Sales": "Ventas",
+   949→    "Management": "Gestión", "Healthcare": "Salud", "Education": "Educación",
+   950→    "Engineering": "Ingeniería", "Legal": "Legal", "HR": "RRHH"
+   951→  },
+   952→  "fr": {
+   953→    "Technology": "Technologie", "Finance": "Finance", "Design": "Design",
+   954→    "Marketing": "Marketing", "Data Science": "Data Science", "Sales": "Ventes",
+   955→    "Management": "Management", "Healthcare": "Santé", "Education": "Éducation",
+   956→    "Engineering": "Ingénierie", "Legal": "Juridique", "HR": "RH"
+   957→  },
+   958→  "zh": {
+   959→    "Technology": "技术", "Finance": "金融", "Design": "设计",
+   960→    "Marketing": "市场营销", "Data Science": "数据科学", "Sales": "销售",
+   961→    "Management": "管理", "Healthcare": "医疗保健", "Education": "教育",
+   962→    "Engineering": "工程", "Legal": "法律", "HR": "人力资源"
+   963→  },
+   964→  "ja": {
+   965→    "Technology": "テクノロジー", "Finance": "金融", "Design": "デザイン",
+   966→    "Marketing": "マーケティング", "Data Science": "データサイエンス", "Sales": "営業",
+   967→    "Management": "マネジメント", "Healthcare": "ヘルスケア", "Education": "教育",
+   968→    "Engineering": "エンジニアリング", "Legal": "法務", "HR": "人事"
+   969→  },
+   970→  "ar": {
+   971→    "Technology": "التكنولوجيا", "Finance": "المالية", "Design": "التصميم",
+   972→    "Marketing": "التسويق", "Data Science": "علوم البيانات", "Sales": "المبيعات",
+   973→    "Management": "الإدارة", "Healthcare": "الرعاية الصحية", "Education": "التعليم",
+   974→    "Engineering": "الهندسة", "Legal": "القانون", "HR": "الموارد البشرية"
+   975→  },
+   976→  "de": {
+   977→    "Technology": "Technologie", "Finance": "Finanzen", "Design": "Design",
+   978→    "Marketing": "Marketing", "Data Science": "Datenwissenschaft", "Sales": "Vertrieb",
+   979→    "Management": "Management", "Healthcare": "Gesundheit", "Education": "Bildung",
+   980→    "Engineering": "Ingenieurwesen", "Legal": "Recht", "HR": "Personal"
+   981→  },
+   982→  "hi": {
+   983→    "Technology": "प्रौद्योगिकी", "Finance": "वित्त", "Design": "डिज़ाइन",
+   984→    "Marketing": "मार्केटिंग", "Data Science": "डेटा साइंस", "Sales": "बिक्री",
+   985→    "Management": "प्रबंधन", "Healthcare": "स्वास्थ्य सेवा", "Education": "शिक्षा",
+   986→    "Engineering": "इंजीनियरिंग", "Legal": "कानूनी", "HR": "मानव संसाधन"
+   987→  },
+   988→};
+   989→
+   990→export default t;
+   991→

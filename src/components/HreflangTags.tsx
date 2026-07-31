@@ -1,34 +1,37 @@
 // Server component for automatic hreflang tag generation
-// Generates <link rel="alternate" hrefLang="..."> for all country-language combos
+// Generates <link rel="alternate" hrefLang="..."> for all language-country combos
 
 import { COUNTRIES } from "@/lib/countries";
+import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
 
 interface HreflangTagsProps {
   currentCountry?: string;
+  currentLang?: string;
 }
 
 const BASE_URL = "https://ww.jobs";
 
-export function HreflangTags({ currentCountry }: HreflangTagsProps) {
+export function HreflangTags({ currentCountry, currentLang }: HreflangTagsProps) {
   const links: { rel: string; hreflang: string; href: string }[] = [];
 
   if (currentCountry) {
-    const country = COUNTRIES.find(c => c.code === currentCountry);
-    if (country) {
-      for (const hl of country.hreflang) {
-        links.push({ rel: "alternate", hreflang: hl, href: `${BASE_URL}/${country.code}` });
-      }
+    for (const lang of LANGUAGES) {
+      links.push({
+        rel: "alternate",
+        hreflang: lang.code,
+        href: `${BASE_URL}/${lang.code}/${LANG_SLUGS[lang.code]}/${currentCountry}`,
+      });
     }
-  }
-
-  links.push({ rel: "alternate", hreflang: "x-default", href: BASE_URL });
-
-  if (!currentCountry) {
-    for (const country of COUNTRIES) {
-      for (const hl of country.hreflang) {
-        links.push({ rel: "alternate", hreflang: hl, href: `${BASE_URL}/${country.code}` });
-      }
+    links.push({ rel: "alternate", hreflang: "x-default", href: `${BASE_URL}/en/jobs/${currentCountry}` });
+  } else {
+    for (const lang of LANGUAGES) {
+      links.push({
+        rel: "alternate",
+        hreflang: lang.code,
+        href: `${BASE_URL}/${lang.code}/${LANG_SLUGS[lang.code]}`,
+      });
     }
+    links.push({ rel: "alternate", hreflang: "x-default", href: `${BASE_URL}/en/jobs` });
   }
 
   return (
