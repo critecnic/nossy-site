@@ -224,7 +224,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <SiteLogo size={32} />
-            <span className="hidden sm:block text-lg font-bold tracking-tight text-gray-900">Work Versaly</span>
+            <span className="text-lg font-bold tracking-tight text-gray-900">Work Versaly</span>
           </div>
           <div className="flex items-center gap-3">
             <button
