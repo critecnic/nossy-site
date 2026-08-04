@@ -23,11 +23,11 @@ export async function generateMetadata({
   const country = getCountry(countryCode);
   const langCfg = LANGUAGES.find((l) => l.code === lang);
 
-  if (!country) return { title: "Country Not Found | W-W" };
+  if (!country) return { title: "Country Not Found | Work Versely" };
 
-  const title = `${country.name} Jobs | ${langCfg?.name || lang} - W-W World of Work`;
+  const title = `${country.name} Jobs | ${langCfg?.name || lang} - Work Versely`;
   const description = `Browse ${country.jobCount.toLocaleString()}+ job vacancies in ${country.name}. Top companies hiring now in Technology, Finance, Healthcare & more. Free to browse - apply today!`;
-  const url = `https://ww.jobs/${lang}/${LANG_SLUGS[lang]}/${country.code}`;
+  const url = `https://workversely.com/${lang}/${LANG_SLUGS[lang]}/${country.code}`;
 
   return {
     title,
@@ -41,11 +41,11 @@ export async function generateMetadata({
     },
     openGraph: {
       title, description, type: "website", url,
-      siteName: "W-W World of Work",
+      siteName: "Work Versely",
       locale: lang?.replace("-", "_") || "en_US",
-      images: [{ url: `https://ww.jobs/og-${country.code}.png`, width: 1200, height: 630, alt: `${country.name} Jobs - W-W World of Work` }],
+      images: [{ url: `https://workversely.com/og-${country.code}.png`, width: 1200, height: 630, alt: `${country.name} Jobs - Work Versely` }],
     },
-    twitter: { card: "summary_large_image", title, description, images: [`https://ww.jobs/og-${country.code}.png`] },
+    twitter: { card: "summary_large_image", title, description, images: [`https://workversely.com/og-${country.code}.png`] },
     robots: {
       index: true, follow: true,
       googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 },

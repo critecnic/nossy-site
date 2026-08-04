@@ -5,27 +5,12 @@ import { useRouter } from "next/navigation";
 import { COUNTRIES } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
+import SiteLogo from "@/components/SiteLogo";
 
 const SECTORS = ["Technology", "Finance", "Design", "Marketing", "Data Science", "Sales", "Management", "Healthcare", "Education", "Engineering", "Legal", "HR"];
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Remote", "Internship", "Freelance"];
 
-function WWLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
-      <defs>
-        <linearGradient id="lg1" x1="20" y1="30" x2="45" y2="95"><stop offset="0%" stopColor="#fff" /><stop offset="100%" stopColor="#38bdf8" /></linearGradient>
-        <linearGradient id="lg2" x1="55" y1="30" x2="100" y2="95"><stop offset="0%" stopColor="#38bdf8" /><stop offset="100%" stopColor="#fff" /></linearGradient>
-        <linearGradient id="lbg" x1="0" y1="0" x2="120" y2="120"><stop offset="0%" stopColor="#1e293b" /><stop offset="100%" stopColor="#0f172a" /></linearGradient>
-      </defs>
-      <rect width="120" height="120" rx="22" fill="url(#lbg)" />
-      <rect x="1" y="1" width="118" height="118" rx="21" stroke="rgba(14,165,233,0.3)" strokeWidth="1" fill="none" />
-      <text x="18" y="82" fontFamily="Arial Black, sans-serif" fontSize="52" fontWeight="900" fill="url(#lg1)">W</text>
-      <text x="55" y="82" fontFamily="Arial Black, sans-serif" fontSize="52" fontWeight="900" fill="url(#lg2)">W</text>
-      <circle cx="105" cy="20" r="5" fill="#0ea5e9"><animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite" /></circle>
-      <text x="14" y="108" fontFamily="Arial, sans-serif" fontSize="9" fontWeight="600" fill="rgba(56,189,248,0.6)" letterSpacing="3">WORLD OF WORK</text>
-    </svg>
-  );
-}
+
 
 export default function CompanyPostPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const router = useRouter();
@@ -109,7 +94,7 @@ export default function CompanyPostPage({ params }: { params: Promise<{ lang: st
   if (!resolved) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center"><WWLogo size={48} /><div className="mt-4 text-sm text-gray-400">Loading...</div></div>
+        <div className="text-center"><SiteLogo size={48} /><div className="mt-4 text-sm text-gray-400">Loading...</div></div>
       </div>
     );
   }
@@ -125,7 +110,7 @@ export default function CompanyPostPage({ params }: { params: Promise<{ lang: st
           <div className="flex items-center gap-3">
             <button onClick={() => router.push(`/${lang}/${slug}`)} className="text-sm font-medium text-sky-600 hover:text-sky-800 transition-colors">{String.fromCodePoint(0x2190)} {T.backToJobs}</button>
             <span className="text-gray-300">|</span>
-            <WWLogo size={28} />
+            <SiteLogo size={28} />
           </div>
           <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm">
             <span className="text-lg leading-none">{LANGUAGES.find((l) => l.code === lang)?.flag}</span>

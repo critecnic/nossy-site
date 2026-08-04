@@ -17,13 +17,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ lang: s
   const entries: string[] = [];
 
   // Global page for this language
-  entries.push(sitemapUrl(`https://ww.jobs/${lang.code}/${slug}/`, today, lang.code));
+  entries.push(sitemapUrl(`https://workversely.com/${lang.code}/${slug}/`, today, lang.code));
 
   // Country pages with hreflang alternates
   for (const country of COUNTRIES) {
-    const url = `https://ww.jobs/${lang.code}/${slug}/${country.code}/`;
+    const url = `https://workversely.com/${lang.code}/${slug}/${country.code}/`;
     const alternates = LANGUAGES.map(l =>
-      `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://ww.jobs/${l.code}/${LANG_SLUGS[l.code]}/${country.code}/" />`
+      `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/${country.code}/" />`
     ).join("\n");
     entries.push(`  <url>
     <loc>${url}</loc>
@@ -38,7 +38,7 @@ ${alternates}
   if (includeJobs) {
     for (const job of allJobs) {
       const jobSlug = job.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-      const url = `https://ww.jobs/${lang.code}/${slug}/${job.country}/${jobSlug}`;
+      const url = `https://workversely.com/${lang.code}/${slug}/${job.country}/${jobSlug}`;
       entries.push(`  <url>
     <loc>${url}</loc>
     <lastmod>${today}</lastmod>
@@ -69,7 +69,7 @@ ${entries.join("\n")}
 
 function sitemapUrl(loc: string, lastmod: string, langCode: string): string {
   const alternates = LANGUAGES.map(l =>
-    `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://ww.jobs/${l.code}/${LANG_SLUGS[l.code]}/" />`
+    `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/" />`
   ).join("\n");
   return `  <url>
     <loc>${loc}</loc>

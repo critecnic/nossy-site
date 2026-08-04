@@ -78,7 +78,7 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
   // Check localStorage on mount
   useEffect(() => {
     try {
-      const key = `ww_paid_${jobId}`;
+      const key = `wv_paid_${jobId}`;
       if (localStorage.getItem(key)) setUnlocked(true);
     } catch { /* ignore */ }
   }, [jobId]);
@@ -145,7 +145,7 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
               intent: "CAPTURE",
               purchase_units: [{
                 amount: { currency_code: CURRENCY, value: PRICE },
-                description: `W-W Job Access - ${jobId}`,
+                description: `Work Versely Job Access - ${jobId}`,
               }],
             }),
           });
@@ -169,7 +169,7 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
             });
             const result = await res.json();
             if (result.status === "COMPLETED") {
-              localStorage.setItem(`ww_paid_${jobId}`, data.orderID);
+              localStorage.setItem(`wv_paid_${jobId}`, data.orderID);
               setUnlocked(true);
               setLoading(false);
               return;
@@ -185,7 +185,7 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
           });
           const result = await res.json();
           if (result.status === "COMPLETED") {
-            localStorage.setItem(`ww_paid_${jobId}`, data.orderID);
+            localStorage.setItem(`wv_paid_${jobId}`, data.orderID);
             setUnlocked(true);
           } else {
             setPaypalError("Payment not completed");

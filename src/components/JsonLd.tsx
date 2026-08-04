@@ -92,9 +92,9 @@ export function JobJsonLd({
   const schema = {
     "@context": "https://schema.org/",
     "@type": "JobPosting",
-    "@id": `https://ww.jobs/job/${jobId || 0}`,
+    "@id": `https://workversely.com/job/${jobId || 0}`,
     title,
-    description: `<p>${description}</p><p>Apply now on W-W World of Work. Browse thousands of job vacancies across emerging markets.</p>`,
+    description: `<p>${description}</p><p>Apply now on Work Versely. Browse thousands of job vacancies across developed markets.</p>`,
     datePosted: datePosted || new Date(Date.now() - parsePosted(posted)).toISOString().split('T')[0],
     validThrough: new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
     employmentType: mapEmploymentType(type),
@@ -154,14 +154,14 @@ export function OrganizationJsonLd() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "W-W World of Work - Jobs in 12 Countries",
-    description: "Browse jobs across 12 emerging market countries worldwide",
+    name: "Work Versely - Jobs in 12 Countries",
+    description: "Browse jobs across 12 developed countries worldwide",
     numberOfItems: COUNTRIES.length,
     itemListElement: COUNTRIES.map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: `Jobs in ${c.name}`,
-      url: `https://ww.jobs/en/jobs/${c.code}`,
+      url: `https://workversely.com/en/jobs/${c.code}`,
     })),
   };
 
@@ -183,9 +183,9 @@ export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `Jobs in ${countryName} - W-W World of Work`,
+    name: `Jobs in ${countryName} - Work Versely`,
     description: `Browse ${jobCount}+ job vacancies in ${countryName}. Top companies hiring now in Technology, Finance, Healthcare and more.`,
-    url: `https://ww.jobs/en/jobs/${countryCode}`,
+    url: `https://workversely.com/en/jobs/${countryCode}`,
     about: { "@type": "Thing", name: `${countryName} Jobs` },
     mainEntity: {
       "@type": "ItemList",
@@ -215,7 +215,7 @@ export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs 
         },
       })) : [],
     },
-    isPartOf: { "@type": "WebSite", name: "W-W World of Work", url: "https://ww.jobs" },
+    isPartOf: { "@type": "WebSite", name: "Work Versely", url: "https://workversely.com" },
   };
 
   return (

@@ -3,7 +3,7 @@ import { COUNTRIES } from "@/lib/countries";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const baseUrl = "https://ww.jobs";
+  const baseUrl = "https://workversely.com";
   const sitemaps: string[] = [];
   const prioLangs = ["en", "pt-br", "es", "ar", "hi", "sw", "fr", "bn", "tl", "ur"];
 

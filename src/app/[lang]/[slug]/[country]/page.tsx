@@ -7,6 +7,7 @@ import { LANGUAGES, LANG_SLUGS, sectorNames, countryNames, default as i18n } fro
 import type { Lang } from "@/lib/i18n";
 import { JobJsonLd, CountryListingJsonLd } from "@/components/JsonLd";
 import PaywallContact from "@/components/PaywallContact";
+import SiteLogo from "@/components/SiteLogo";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -42,22 +43,7 @@ const TYPE_KEYS: Record<string, string> = {
   "Freelance": "freelance",
 };
 
-function WWLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
-      <defs>
-        <linearGradient id="lg1" x1="20" y1="30" x2="45" y2="95"><stop offset="0%" stopColor="#fff" /><stop offset="100%" stopColor="#38bdf8" /></linearGradient>
-        <linearGradient id="lg2" x1="55" y1="30" x2="100" y2="95"><stop offset="0%" stopColor="#38bdf8" /><stop offset="100%" stopColor="#fff" /></linearGradient>
-        <linearGradient id="lbg" x1="0" y1="0" x2="120" y2="120"><stop offset="0%" stopColor="#1e293b" /><stop offset="100%" stopColor="#0f172a" /></linearGradient>
-      </defs>
-      <rect width="120" height="120" rx="22" fill="url(#lbg)" />
-      <rect x="1" y="1" width="118" height="118" rx="21" stroke="rgba(14,165,233,0.3)" strokeWidth="1" fill="none" />
-      <text x="18" y="82" fontFamily="Arial Black, sans-serif" fontSize="52" fontWeight="900" fill="url(#lg1)">W</text>
-      <text x="55" y="82" fontFamily="Arial Black, sans-serif" fontSize="52" fontWeight="900" fill="url(#lg2)">W</text>
-      <text x="14" y="108" fontFamily="Arial, sans-serif" fontSize="9" fontWeight="600" fill="rgba(56,189,248,0.6)" letterSpacing="3">WORLD OF WORK</text>
-    </svg>
-  );
-}
+
 
 function JobCardWithSchema({ job, lang, countryCfg }: { job: Job; lang: Lang; countryCfg: CountryConfig }) {
   const T = i18n[lang];
@@ -159,7 +145,7 @@ export default function LangSlugCountryPage({ params }: { params: Promise<{ lang
   if (!resolved) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <WWLogo size={48} /><div className="mt-4 text-sm text-gray-400">Loading...</div>
+        <SiteLogo size={48} /><div className="mt-4 text-sm text-gray-400">Loading...</div>
       </div>
     );
   }
@@ -187,7 +173,7 @@ export default function LangSlugCountryPage({ params }: { params: Promise<{ lang
           <div className="flex items-center gap-3">
             <button onClick={() => router.push(`/${lang}/${resolved.slug}`)} className="text-sm font-medium text-sky-600 hover:text-sky-800 transition-colors">{T.backToGlobal}</button>
             <span className="text-gray-300">|</span>
-            <WWLogo size={28} />
+            <SiteLogo size={28} />
             <span className="text-sm font-bold text-gray-900">{countryCfg.flag} {countryLocalName}</span>
           </div>
           <div className="flex items-center gap-3">
@@ -327,7 +313,7 @@ export default function LangSlugCountryPage({ params }: { params: Promise<{ lang
       <footer className="border-t border-gray-200 bg-gray-50 py-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2">
-            <WWLogo size={20} />
+            <SiteLogo size={20} />
             <span className="text-sm text-gray-500">{T.footer}</span>
           </div>
           <div className="flex gap-6 text-sm text-gray-400">

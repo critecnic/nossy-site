@@ -13,21 +13,21 @@ const langCodes = LANGUAGES.map(l => l.code);
 const hreflangMap: Record<string, string> = {};
 COUNTRIES.forEach(c => {
   LANGUAGES.forEach(l => {
-    hreflangMap[`${l.code}-${c.code}`] = `https://ww.jobs/${l.code}/${LANG_SLUGS[l.code]}/${c.code}`;
+    hreflangMap[`${l.code}-${c.code}`] = `https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/${c.code}`;
   });
 });
 
 // Language-only alternates
 LANGUAGES.forEach(l => {
-  hreflangMap[l.code] = `https://ww.jobs/${l.code}/${LANG_SLUGS[l.code]}`;
+  hreflangMap[l.code] = `https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}`;
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "W-W | World of Work - Jobs in 12 Countries | Free Global Job Platform",
-    template: "%s | W-W World of Work",
+    default: "Work Versely | Work Versely - Jobs in 12 Countries | Free Global Job Platform",
+    template: "%s | Work Versely",
   },
-  description: "W-W World of Work: Browse 22,200+ job vacancies across Nigeria, South Africa, India, Kenya, Egypt, Philippines, Ghana, Pakistan, Bangladesh, Brazil, Colombia, Morocco. Free job search with real salaries and top companies.",
+  description: "Work Versely: Browse 22,200+ job vacancies across Nigeria, South Africa, India, Kenya, Egypt, Philippines, Ghana, Pakistan, Bangladesh, Brazil, Colombia, Morocco. Free job search with real salaries and top companies.",
   keywords: [
     "jobs", "job search", "careers", "employment", "hiring", "vacancies",
     "job portal", "job board", "job listings", "apply for jobs", "work abroad",
@@ -36,35 +36,35 @@ export const metadata: Metadata = {
     "jobs in Kenya", "jobs in Egypt", "jobs in Philippines",
     "jobs in Ghana", "jobs in Pakistan", "jobs in Bangladesh",
     "vagas de emprego Brasil", "trabajos Colombia",
-    "W-W", "World of Work", "ww.jobs", "global job platform",
+    "Work Versely", "Work Versely", "workversely.com", "global job platform",
   ],
-  authors: [{ name: "W-W World of Work" }],
-  creator: "W-W World of Work",
-  publisher: "W-W World of Work",
+  authors: [{ name: "Work Versely" }],
+  creator: "Work Versely",
+  publisher: "Work Versely",
   formatDetection: { email: false, address: false, telephone: false },
-  metadataBase: new URL("https://ww.jobs"),
+  metadataBase: new URL("https://workversely.com"),
   alternates: {
     canonical: "/en/jobs",
     languages: {
-      "x-default": "https://ww.jobs/en/jobs",
+      "x-default": "https://workversely.com/en/jobs",
       ...hreflangMap,
     },
   },
   openGraph: {
-    title: "W-W | World of Work - Jobs in 12 Countries",
-    description: "Browse 22,200+ job vacancies across 12 emerging market countries. Free job search with real salaries and top companies.",
+    title: "Work Versely | Work Versely - Jobs in 12 Countries",
+    description: "Browse 22,200+ job vacancies across 12 developed countries. Free job search with real salaries and top companies.",
     type: "website",
-    siteName: "W-W World of Work",
-    url: "https://ww.jobs",
+    siteName: "Work Versely",
+    url: "https://workversely.com",
     locale: "en_US",
-    images: [{ url: "https://ww.jobs/og-image.png", width: 1200, height: 630, alt: "W-W World of Work - Global Job Platform" }],
+    images: [{ url: "https://workversely.com/og-image.png", width: 1200, height: 630, alt: "Work Versely - Global Job Platform" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "W-W | World of Work - Jobs in 12 Countries",
+    title: "Work Versely | Work Versely - Jobs in 12 Countries",
     description: "Browse 22,200+ job vacancies across 12 countries. Free global job search.",
-    images: ["https://ww.jobs/og-image.png"],
-    creator: "@wwjobs",
+    images: ["https://workversely.com/og-image.png"],
+    creator: "@workversely",
   },
   robots: {
     index: true, follow: true,
@@ -79,11 +79,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const organizationLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "W-W World of Work",
-    "alternateName": ["W-W", "World of Work", "WW Jobs"],
-    "url": "https://ww.jobs",
-    "logo": "https://ww.jobs/logo.png",
-    "description": "Global job platform connecting talent with opportunities in 12 emerging market countries. Free job search with 22,200+ vacancies.",
+    "name": "Work Versely",
+    "alternateName": ["Work Versely", "Work Versely", "Work Versely"],
+    "url": "https://workversely.com",
+    "logo": "https://workversely.com/logo.png",
+    "description": "Global job platform connecting talent with opportunities in 12 developed countries. Free job search with 22,200+ vacancies.",
     "sameAs": [],
     "foundingDate": "2025",
     "numberOfEmployees": { "@type": "QuantitativeValue", "minValue": 10, "maxValue": 50 },
@@ -92,14 +92,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const websiteLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "W-W World of Work",
-    "alternateName": "W-W",
-    "url": "https://ww.jobs",
+    "name": "Work Versely",
+    "alternateName": "Work Versely",
+    "url": "https://workversely.com",
     "description": "Global job platform with 22,200+ vacancies in 12 countries",
     "inLanguage": langCodes,
     "potentialAction": {
       "@type": "SearchAction",
-      "target": { "@type": "EntryPoint", "urlTemplate": "https://ww.jobs/search?q={search_term_string}" },
+      "target": { "@type": "EntryPoint", "urlTemplate": "https://workversely.com/search?q={search_term_string}" },
       "query-input": "required name=search_term_string",
     },
   });
@@ -108,8 +108,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://ww.jobs/en/jobs" },
-      { "@type": "ListItem", "position": 2, "name": "All Countries", "item": "https://ww.jobs/en/jobs#countries" },
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://workversely.com/en/jobs" },
+      { "@type": "ListItem", "position": 2, "name": "All Countries", "item": "https://workversely.com/en/jobs#countries" },
     ],
   });
 

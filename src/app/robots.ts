@@ -17,6 +17,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/_next/'],
       },
     ],
-    sitemap: 'https://ww.jobs/sitemap-index.xml',
+    sitemap: 'https://workversely.com/sitemap-index.xml',
   };
 }

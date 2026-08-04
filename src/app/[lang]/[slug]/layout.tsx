@@ -21,7 +21,7 @@ export async function generateMetadata({
   const totalJobs = TOTAL_JOBS.toLocaleString();
 
   return {
-    title: `W-W | ${langCfg?.name || lang} - Jobs in 12 Countries | ${totalJobs}+ Vacancies`,
+    title: `Work Versely | ${langCfg?.name || lang} - Jobs in 12 Countries | ${totalJobs}+ Vacancies`,
     description: `Browse ${totalJobs}+ job vacancies across Nigeria, South Africa, India, Kenya, Egypt, Philippines, Ghana, Pakistan, Bangladesh, Brazil, Colombia, Morocco. ${langCfg?.name || lang} version. Free to apply.`,
     alternates: {
       canonical: `/${lang}/${slug}`,
@@ -30,10 +30,10 @@ export async function generateMetadata({
       ),
     },
     openGraph: {
-      title: `W-W | World of Work - ${langCfg?.name || lang} | ${totalJobs}+ Jobs`,
+      title: `Work Versely | Work Versely - ${langCfg?.name || lang} | ${totalJobs}+ Jobs`,
       description: `Browse ${totalJobs}+ job vacancies across 12 countries. Free global job search.`,
       type: "website",
-      siteName: "W-W World of Work",
+      siteName: "Work Versely",
       locale: lang?.replace("-", "_") || "en_US",
     },
     robots: {

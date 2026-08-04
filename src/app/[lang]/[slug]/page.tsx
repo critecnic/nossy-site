@@ -7,6 +7,7 @@ import { LANGUAGES, LANG_SLUGS, sectorNames, countryNames, default as i18n } fro
 import type { Lang } from "@/lib/i18n";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 import PaywallContact from "@/components/PaywallContact";
+import SiteLogo from "@/components/SiteLogo";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -33,23 +34,7 @@ const SECTORS = [
   { key: "Engineering", icon: "\uD83D\uDD27", color: "from-slate-500 to-gray-400" },
 ];
 
-function WWLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
-      <defs>
-        <linearGradient id="lg1" x1="20" y1="30" x2="45" y2="95"><stop offset="0%" stopColor="#fff" /><stop offset="100%" stopColor="#38bdf8" /></linearGradient>
-        <linearGradient id="lg2" x1="55" y1="30" x2="100" y2="95"><stop offset="0%" stopColor="#38bdf8" /><stop offset="100%" stopColor="#fff" /></linearGradient>
-        <linearGradient id="lbg" x1="0" y1="0" x2="120" y2="120"><stop offset="0%" stopColor="#1e293b" /><stop offset="100%" stopColor="#0f172a" /></linearGradient>
-      </defs>
-      <rect width="120" height="120" rx="22" fill="url(#lbg)" />
-      <rect x="1" y="1" width="118" height="118" rx="21" stroke="rgba(14,165,233,0.3)" strokeWidth="1" fill="none" />
-      <text x="18" y="82" fontFamily="Arial Black, sans-serif" fontSize="52" fontWeight="900" fill="url(#lg1)">W</text>
-      <text x="55" y="82" fontFamily="Arial Black, sans-serif" fontSize="52" fontWeight="900" fill="url(#lg2)">W</text>
-      <circle cx="105" cy="20" r="5" fill="#0ea5e9"><animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite" /></circle>
-      <text x="14" y="108" fontFamily="Arial, sans-serif" fontSize="9" fontWeight="600" fill="rgba(56,189,248,0.6)" letterSpacing="3">WORLD OF WORK</text>
-    </svg>
-  );
-}
+
 
 const TYPE_KEYS: Record<string, string> = {
   "Full-time": "fullTime",
@@ -223,7 +208,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <WWLogo size={48} />
+          <SiteLogo size={48} />
           <div className="mt-4 text-sm text-gray-400">Loading...</div>
         </div>
       </div>
@@ -238,8 +223,8 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <WWLogo size={32} />
-            <span className="hidden sm:block text-lg font-bold tracking-tight text-gray-900">W-W</span>
+            <SiteLogo size={32} />
+            <span className="hidden sm:block text-lg font-bold tracking-tight text-gray-900">Work Versely</span>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -457,7 +442,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
       <footer className="border-t border-gray-200 bg-white py-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6">
           <div className="flex items-center gap-2">
-            <WWLogo size={20} />
+            <SiteLogo size={20} />
             <span className="text-sm text-gray-500">{T.footer}</span>
           </div>
           <div className="flex gap-6 text-sm text-gray-400">
