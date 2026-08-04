@@ -94,7 +94,7 @@ export function JobJsonLd({
     "@type": "JobPosting",
     "@id": `https://workversely.com/job/${jobId || 0}`,
     title,
-    description: `<p>${description}</p><p>Apply now on Work Versely. Browse thousands of job vacancies across developed markets.</p>`,
+    description: `<p>${description}</p><p>Apply now on Work Versaly. Browse thousands of job vacancies across developed markets.</p>`,
     datePosted: datePosted || new Date(Date.now() - parsePosted(posted)).toISOString().split('T')[0],
     validThrough: new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
     employmentType: mapEmploymentType(type),
@@ -154,7 +154,7 @@ export function OrganizationJsonLd() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Work Versely - Jobs in 12 Countries",
+    name: "Work Versaly - Jobs in 12 Countries",
     description: "Browse jobs across 12 developed countries worldwide",
     numberOfItems: COUNTRIES.length,
     itemListElement: COUNTRIES.map((c, i) => ({
@@ -183,7 +183,7 @@ export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `Jobs in ${countryName} - Work Versely`,
+    name: `Jobs in ${countryName} - Work Versaly`,
     description: `Browse ${jobCount}+ job vacancies in ${countryName}. Top companies hiring now in Technology, Finance, Healthcare and more.`,
     url: `https://workversely.com/en/jobs/${countryCode}`,
     about: { "@type": "Thing", name: `${countryName} Jobs` },
@@ -215,7 +215,7 @@ export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs 
         },
       })) : [],
     },
-    isPartOf: { "@type": "WebSite", name: "Work Versely", url: "https://workversely.com" },
+    isPartOf: { "@type": "WebSite", name: "Work Versaly", url: "https://workversely.com" },
   };
 
   return (

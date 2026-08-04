@@ -145,7 +145,7 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
               intent: "CAPTURE",
               purchase_units: [{
                 amount: { currency_code: CURRENCY, value: PRICE },
-                description: `Work Versely Job Access - ${jobId}`,
+                description: `Work Versaly Job Access - ${jobId}`,
               }],
             }),
           });

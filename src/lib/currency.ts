@@ -1,4 +1,4 @@
-// Multi-currency formatting for Work Versely Global
+// Multi-currency formatting for Work Versaly Global
 
 export interface SalaryInfo {
   min: number;

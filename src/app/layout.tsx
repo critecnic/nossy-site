@@ -24,10 +24,10 @@ LANGUAGES.forEach(l => {
 
 export const metadata: Metadata = {
   title: {
-    default: "Work Versely | Work Versely - Jobs in 12 Countries | Free Global Job Platform",
-    template: "%s | Work Versely",
+    default: "Work Versaly | Work Versaly - Jobs in 12 Countries | Free Global Job Platform",
+    template: "%s | Work Versaly",
   },
-  description: "Work Versely: Browse 22,200+ job vacancies across Nigeria, South Africa, India, Kenya, Egypt, Philippines, Ghana, Pakistan, Bangladesh, Brazil, Colombia, Morocco. Free job search with real salaries and top companies.",
+  description: "Work Versaly: Browse 22,200+ job vacancies across Nigeria, South Africa, India, Kenya, Egypt, Philippines, Ghana, Pakistan, Bangladesh, Brazil, Colombia, Morocco. Free job search with real salaries and top companies.",
   keywords: [
     "jobs", "job search", "careers", "employment", "hiring", "vacancies",
     "job portal", "job board", "job listings", "apply for jobs", "work abroad",
@@ -36,11 +36,11 @@ export const metadata: Metadata = {
     "jobs in Kenya", "jobs in Egypt", "jobs in Philippines",
     "jobs in Ghana", "jobs in Pakistan", "jobs in Bangladesh",
     "vagas de emprego Brasil", "trabajos Colombia",
-    "Work Versely", "Work Versely", "workversely.com", "global job platform",
+    "Work Versaly", "Work Versaly", "workversely.com", "global job platform",
   ],
-  authors: [{ name: "Work Versely" }],
-  creator: "Work Versely",
-  publisher: "Work Versely",
+  authors: [{ name: "Work Versaly" }],
+  creator: "Work Versaly",
+  publisher: "Work Versaly",
   formatDetection: { email: false, address: false, telephone: false },
   metadataBase: new URL("https://workversely.com"),
   alternates: {
@@ -51,17 +51,17 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Work Versely | Work Versely - Jobs in 12 Countries",
+    title: "Work Versaly | Work Versaly - Jobs in 12 Countries",
     description: "Browse 22,200+ job vacancies across 12 developed countries. Free job search with real salaries and top companies.",
     type: "website",
-    siteName: "Work Versely",
+    siteName: "Work Versaly",
     url: "https://workversely.com",
     locale: "en_US",
-    images: [{ url: "https://workversely.com/og-image.png", width: 1200, height: 630, alt: "Work Versely - Global Job Platform" }],
+    images: [{ url: "https://workversely.com/og-image.png", width: 1200, height: 630, alt: "Work Versaly - Global Job Platform" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Work Versely | Work Versely - Jobs in 12 Countries",
+    title: "Work Versaly | Work Versaly - Jobs in 12 Countries",
     description: "Browse 22,200+ job vacancies across 12 countries. Free global job search.",
     images: ["https://workversely.com/og-image.png"],
     creator: "@workversely",
@@ -79,8 +79,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const organizationLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Work Versely",
-    "alternateName": ["Work Versely", "Work Versely", "Work Versely"],
+    "name": "Work Versaly",
+    "alternateName": ["Work Versaly", "Work Versaly", "Work Versaly"],
     "url": "https://workversely.com",
     "logo": "https://workversely.com/logo.png",
     "description": "Global job platform connecting talent with opportunities in 12 developed countries. Free job search with 22,200+ vacancies.",
@@ -92,8 +92,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const websiteLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Work Versely",
-    "alternateName": "Work Versely",
+    "name": "Work Versaly",
+    "alternateName": "Work Versaly",
     "url": "https://workversely.com",
     "description": "Global job platform with 22,200+ vacancies in 12 countries",
     "inLanguage": langCodes,

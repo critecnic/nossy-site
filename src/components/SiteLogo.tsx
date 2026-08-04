@@ -5,72 +5,85 @@ import React from "react";
 let gradientId = 0;
 
 /**
- * Work Versely — Modern Logo Component
- * A sleek WV monogram inside a rounded dark square with gradient accents.
+ * Work Versaly — Modern Logo
+ * Clean WV monogram with vibrant gradient on dark rounded square.
  */
 export default function SiteLogo({ size = 40 }: { size?: number }) {
-  // Unique gradient IDs per instance to avoid SVG ID collisions
   const uid = typeof window !== "undefined" ? ++gradientId : 0;
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id={`wv-grad-a-${uid}`} x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#6366f1" />
-          <stop offset="50%" stopColor="#0ea5e9" />
-          <stop offset="100%" stopColor="#06b6d4" />
+        {/* Main diagonal gradient — indigo to cyan */}
+        <linearGradient id={`wvMain-${uid}`} x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#818cf8" />
+          <stop offset="50%" stopColor="#38bdf8" />
+          <stop offset="100%" stopColor="#22d3ee" />
         </linearGradient>
-        <linearGradient id={`wv-grad-b-${uid}`} x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#c084fc" />
-          <stop offset="100%" stopColor="#38bdf8" />
+        {/* Secondary gradient — purple to sky */}
+        <linearGradient id={`wvSec-${uid}`} x1="0" y1="0" x2="120" y2="80" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#a78bfa" />
+          <stop offset="100%" stopColor="#7dd3fc" />
         </linearGradient>
-        <linearGradient id={`wv-bg-${uid}`} x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+        {/* Background gradient — deep navy */}
+        <linearGradient id={`wvBg-${uid}`} x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#1e1b4b" />
-          <stop offset="100%" stopColor="#0f172a" />
+          <stop offset="100%" stopColor="#0c1222" />
         </linearGradient>
-        <clipPath id={`wv-clip-${uid}`}>
-          <rect width="120" height="120" rx="26" />
+        {/* Clip for corner accent */}
+        <clipPath id={`wvClip-${uid}`}>
+          <rect width="120" height="120" rx="28" />
         </clipPath>
       </defs>
-      {/* Background */}
-      <rect width="120" height="120" rx="26" fill={`url(#wv-bg-${uid})`} />
-      {/* Subtle border glow */}
-      <rect x="0.5" y="0.5" width="119" height="119" rx="25.5" stroke="url(#wv-grad-a-${uid})" strokeWidth="1" fill="none" opacity="0.35" />
-      {/* Geometric accent — top-right arc */}
-      <g clipPath={`url(#wv-clip-${uid})`} opacity="0.12">
-        <circle cx="120" cy="0" r="60" fill="#6366f1" />
+
+      {/* Dark rounded background */}
+      <rect width="120" height="120" rx="28" fill={`url(#wvBg-${uid})`} />
+
+      {/* Gradient border */}
+      <rect x="1" y="1" width="118" height="118" rx="27" stroke={`url(#wvMain-${uid})`} strokeWidth="1.2" fill="none" opacity="0.4" />
+
+      {/* Top-right corner glow accent */}
+      <g clipPath={`url(#wvClip-${uid})`} opacity="0.08">
+        <circle cx="130" cy="-10" r="70" fill="#818cf8" />
       </g>
-      {/* W letter */}
+      <g clipPath={`url(#wvClip-${uid})`} opacity="0.06">
+        <circle cx="-10" cy="130" r="60" fill="#22d3ee" />
+      </g>
+
+      {/* W — bold, left-aligned */}
       <text
-        x="10" y="80"
+        x="8" y="78"
         fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif"
-        fontSize="58"
+        fontSize="56"
         fontWeight="800"
-        fill={`url(#wv-grad-a-${uid})`}
-        letterSpacing="-1"
+        fill={`url(#wvMain-${uid})`}
+        letterSpacing="-2"
       >W</text>
-      {/* V letter */}
+
+      {/* V — lighter weight, right-aligned */}
       <text
-        x="56" y="80"
+        x="54" y="78"
         fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif"
-        fontSize="58"
+        fontSize="56"
         fontWeight="300"
-        fill={`url(#wv-grad-b-${uid})`}
-        letterSpacing="-1"
+        fill={`url(#wvSec-${uid})`}
+        letterSpacing="-2"
       >V</text>
-      {/* Accent dot */}
-      <circle cx="107" cy="18" r="4" fill="#0ea5e9">
-        <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
+
+      {/* Animated accent dot */}
+      <circle cx="108" cy="16" r="3.5" fill="#38bdf8">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="2.5s" repeatCount="indefinite" />
       </circle>
+
       {/* Tagline */}
       <text
-        x="60" y="108"
+        x="60" y="106"
         fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif"
-        fontSize="8.5"
-        fontWeight="600"
-        fill="rgba(99,102,241,0.55)"
+        fontSize="8"
+        fontWeight="700"
+        fill="rgba(129,140,248,0.5)"
         textAnchor="middle"
-        letterSpacing="3.5"
-      >WORK VERSELY</text>
+        letterSpacing="4"
+      >WORK VERSALY</text>
     </svg>
   );
 }
