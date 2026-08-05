@@ -65,3 +65,24 @@ Stage Summary:
 - Full rebrand completed: site name, domain, logo, metadata, JSON-LD, sitemaps, i18n
 - New modern WV monogram logo in /src/components/SiteLogo.tsx
 - Domain changed to workversely.com throughout
+---
+Task ID: 1
+Agent: main
+Task: Rebrand to Work Versaly with new logo, fix preview deployment
+
+Work Log:
+- Generated new AI logo.png for Work Versaly (professional WV monogram, indigo-cyan gradient)
+- Generated new AI favicon.ico
+- Rewrote SiteLogo.tsx SVG component using string concatenation (no template literals in JSX attrs)
+- Verified all 3 page files import SiteLogo correctly
+- Verified all 14 language footers show CRITECNIC
+- Added output: standalone to next.config.ts
+- Restored build script with cp commands for static/public dirs
+- Built successfully: 204 pages, zero errors
+- Verified .next/standalone/ has server.js, .next/static/, and public/
+
+Stage Summary:
+- Preview should now work with standalone server
+- New professional logo generated and deployed
+- All branding shows Work Versaly (header) and CRITECNIC (footer)
+
