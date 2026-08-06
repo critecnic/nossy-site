@@ -169,9 +169,10 @@ export async function GET(request: Request) {
     }))
     .sort((a, b) => b.count - a.count);
 
-  // Compute total before pagination
-  const total = allFilteredJobs.length;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
+  // Use display total from index for hero stats, actual count for pagination
+  const actualTotal = allFilteredJobs.length;
+  const displayTotal = (!country && !category && !type && !search) ? (index.total || actualTotal) : actualTotal;
+  const totalPages = Math.max(1, Math.ceil(actualTotal / limit));
 
   // Paginate
   const start = (page - 1) * limit;
@@ -185,7 +186,8 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     jobs: resultJobs,
-    total,
+    total: displayTotal,
+    actualTotal,
     page,
     totalPages,
     categories: mergedCategories,
