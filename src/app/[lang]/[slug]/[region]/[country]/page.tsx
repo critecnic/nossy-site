@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import SiteLogo from "@/components/SiteLogo";
+import PaywallModal from "@/components/PaywallModal";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
   location: string; country: string; countryName: string;
-  salary: string; description: string; sector: string; posted: string; type: string;
-  paywall: boolean; salaryMin: number; salaryMax: number;
-  salaryCurrency: string; salaryPeriod: string; contactEmail: string;
+  salary: string; salaryMin: number; salaryMax: number;
+  salaryCurrency: string; salaryPeriod: string;
+  description: string; sector: string; posted: string; type: string;
+  paywall: boolean; contactEmail: string;
 }
 
 const RN: Record<string, Record<string, string>> = {
@@ -76,7 +78,7 @@ const CM: Record<string, { icon: string; color: string }> = {
   "Data Science & Analytics": { icon: "📊", color: "from-violet-500 to-purple-400" },
   "AI & Machine Learning": { icon: "🤖", color: "from-fuchsia-500 to-pink-400" },
   "Product Management": { icon: "📋", color: "from-amber-500 to-orange-400" },
-  "Cybersecurity": { icon: "🔒", color: "from-red-500 to-rose-400" },
+  Cybersecurity: { icon: "🔒", color: "from-red-500 to-rose-400" },
   "Engineering Leadership": { icon: "👑", color: "from-purple-500 to-indigo-400" },
   Consulting: { icon: "🤝", color: "from-teal-500 to-cyan-400" },
   "Data Engineering": { icon: "🗂️", color: "from-indigo-500 to-blue-400" },
@@ -89,78 +91,106 @@ const CM: Record<string, { icon: string; color: string }> = {
   "Writing & Content": { icon: "✍️", color: "from-lime-500 to-green-400" },
   "Sales & Marketing": { icon: "📢", color: "from-orange-500 to-red-400" },
   "Finance Technology": { icon: "💰", color: "from-emerald-600 to-green-500" },
-  "IT Support & Operations": { icon: "🛠️", color: "from-gray-500 to-slate-400" },
+  "IT Support & Operations": { icon: "🔧", color: "from-gray-500 to-slate-400" },
   "Research & Development": { icon: "🔬", color: "from-cyan-500 to-teal-400" },
   Other: { icon: "📂", color: "from-sky-400 to-blue-500" },
 };
-
 function cmf(n: string) { return CM[n] || { icon: "📂", color: "from-sky-400 to-blue-500" }; }
 
-function LangSelector({ lang, switchLang }: { lang: Lang; switchLang: (l: Lang) => void }) {
-  return (
-    <select
-      value={lang}
-      onChange={(e) => switchLang(e.target.value as Lang)}
-      className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent cursor-pointer shadow-sm hover:border-sky-300 transition-colors"
-    >
-      {LANGUAGES.map((l) => (
-        <option key={l.code} value={l.code}>
-          {l.flag} {l.name}
-        </option>
-      ))}
-    </select>
-  );
+function LS({ lang, switchLang }: { lang: Lang; switchLang: (l: Lang) => void }) {
+  return (<select value={lang} onChange={(e) => switchLang(e.target.value as Lang)} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent cursor-pointer shadow-sm hover:border-sky-300 transition-colors">
+    {LANGUAGES.map((l) => (<option key={l.code} value={l.code}>{l.flag} {l.name}</option>))}
+  </select>);
+}
+
+const PW_TEXT: Record<string, { unlock: string; premium: string }> = {
+  en: { unlock: 'Unlock Contact', premium: 'Premium' },
+  "pt-br": { unlock: 'Desbloquear Contato', premium: 'Premium' },
+  es: { unlock: 'Desbloquear', premium: 'Premium' },
+  fr: { unlock: 'Débloquer', premium: 'Premium' },
+  de: { unlock: 'Freischalten', premium: 'Premium' },
+};
+
+function salaryStr(j: Job): string {
+  const S: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', BRL: 'R$', INR: '₹', JPY: '¥', CNY: '¥', SGD: 'S$', KRW: '₩' };
+  const mn = j.salaryMin || 0, mx = j.salaryMax || 0;
+  if (!mn && !mx) return '';
+  const s = S[j.salaryCurrency] || j.salaryCurrency || '';
+  const a = Math.round(mn).toLocaleString(), b = Math.round(mx).toLocaleString();
+  if (j.salaryPeriod === 'year') return s + ' ' + a + ' - ' + b + '/yr';
+  if (j.salaryPeriod === 'month') return s + ' ' + a + ' - ' + b + '/mo';
+  return s + ' ' + a + ' - ' + b;
 }
 
 export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
   const { lang: langCode, region: rc, country: cc } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [countryName, setCountryName] = useState("");
-  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadProgress, setLoadProgress] = useState(0);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [actualTotal, setActualTotal] = useState(0);
-  const [workTypes, setWorkTypes] = useState<string[]>([]);
+  const [paywallJob, setPaywallJob] = useState<Job | null>(null);
+  const [countries, setCountries] = useState<any[]>([]);
   const router = useRouter();
+  const PER = 18;
 
   useEffect(() => {
-    if (!rc || !cc) return; setLoading(true);
-    let url = "/api/jobs?region=" + rc + "&country=" + encodeURIComponent(cc) + "&page=" + page + "&limit=18";
-    if (search) url += "&search=" + encodeURIComponent(search);
-    if (typeFilter && typeFilter !== "all") url += "&type=" + encodeURIComponent(typeFilter);
-    fetch(url).then(r => r.json()).then((jd) => {
-      setJobs(jd.jobs || []); setTotalPages(jd.totalPages || 1); setActualTotal(jd.actualTotal || 0);
-      const types = [...new Set((jd.jobs || []).map((j: Job) => j.type))];
-      if (workTypes.length === 0 && types.length > 0) setWorkTypes(types);
-      setLoading(false);
-      if (jd.jobs && jd.jobs.length > 0 && !countryName) setCountryName(jd.jobs[0].countryName);
-    }).catch(() => setLoading(false));
-  }, [rc, cc, page, search, typeFilter]);
+    fetch("/data/countries.json").then(r => r.json()).then(setCountries).catch(() => {});
+  }, []);
 
   useEffect(() => {
-    if (!rc || !cc || countryName) return;
-    fetch("/api/jobs?action=countries").then(r => r.json()).then((cd) => {
-      const match = (cd.countries || []).find((c: any) => c.slug === cc);
-      if (match) setCountryName(match.name);
-    });
-  }, [rc, cc, countryName]);
+    if (!rc || !cc) return;
+    setLoading(true); setLoadProgress(10);
+    fetch("/data/" + rc + "_" + cc + ".json")
+      .then(r => { setLoadProgress(50); return r.json(); })
+      .then((data: Job[]) => {
+        setLoadProgress(90);
+        setAllJobs(data || []);
+        if (data && data.length > 0) setCountryName(data[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc);
+        setLoadProgress(100);
+        setLoading(false);
+      })
+      .catch(() => { setLoading(false); });
+  }, [rc, cc]);
+
+  // Get country name from countries list if not yet set
+  useEffect(() => {
+    if (countryName || !cc || countries.length === 0) return;
+    const m = countries.find((c: any) => c.slug === cc);
+    if (m) setCountryName(m.name);
+  }, [countries, cc, countryName]);
+
+  const filtered = allJobs.filter(j => {
+    if (typeFilter && typeFilter !== 'all' && j.type?.toLowerCase() !== typeFilter.toLowerCase()) return false;
+    if (search) { const s = search.toLowerCase(); if (!j.title?.toLowerCase().includes(s) && !j.company?.toLowerCase().includes(s)) return false; }
+    return true;
+  });
+
+  const actualTotal = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(actualTotal / PER));
+  const paged = filtered.slice((page - 1) * PER, page * PER);
+  const workTypes = [...new Set(allJobs.map(j => j.type).filter(Boolean))];
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = RN[lang]?.[rc] || rc;
-  const PER = 18;
   const tl = TYPE_LABELS[lang] || TYPE_LABELS["en"];
+  const pw = PW_TEXT[lang] || PW_TEXT["en"];
+  const getTypeLabel = (t: string) => tl[t] || t;
 
-  function switchLang(l: Lang) { router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc); }
-  function goRegion() { router.push("/" + lang + "/" + LANG_SLUGS[lang] + "/" + rc); }
-  function goHome() { router.push("/" + lang + "/" + LANG_SLUGS[lang]); }
-  function getTypeLabel(t: string) { return tl[t] || t; }
+  const goHome = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs")), [lang, router]);
+  const goRegion = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc), [lang, router, rc]);
+
+  useEffect(() => { setPage(1); }, [search, typeFilter]);
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
+      <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)}
+        jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ''} lang={lang} company={paywallJob?.company || ''} />
+
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -171,7 +201,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             <span className="text-gray-300 mx-2 hidden sm:inline">/</span>
             <span className="text-gray-700 font-semibold hidden sm:inline">{countryName}</span>
           </div>
-          <LangSelector lang={lang} switchLang={switchLang} />
+          <LS lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc)} />
         </div>
       </header>
 
@@ -190,13 +220,13 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          <button onClick={() => { setTypeFilter("all"); setPage(1); }}
+          <button onClick={() => { setTypeFilter("all"); }}
             className={"px-4 py-2 rounded-full text-sm font-medium border transition-all " +
               (typeFilter === "" || typeFilter === "all" ? "bg-sky-500 text-white border-sky-500" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300")}>
             {T.allWorkTypes}
           </button>
           {workTypes.map((t) => (
-            <button key={t} onClick={() => { setTypeFilter(t); setPage(1); }}
+            <button key={t} onClick={() => { setTypeFilter(t); }}
               className={"px-4 py-2 rounded-full text-sm font-medium border transition-all " +
                 (typeFilter === t ? "bg-sky-500 text-white border-sky-500" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300")}>
               {getTypeLabel(t)}
@@ -207,36 +237,55 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder={T.searchPlaceholder} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent" />
+          <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); }} placeholder={T.searchPlaceholder} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent" />
         </div>
 
-        {loading ? (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5"><div className="h-4 bg-gray-200 rounded w-1/3 mb-3" /><div className="h-5 bg-gray-200 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-200 rounded w-1/2 mb-3" /><div className="h-3 bg-gray-200 rounded w-full mb-2" /><div className="h-3 bg-gray-200 rounded w-2/3" /></div>))}</div>
-        ) : jobs.length === 0 ? (<div className="text-center py-16 text-gray-400"><p className="text-4xl mb-3">🔍</p><p>{T.noJobsFound}</p></div>
+        {loading ? (
+          <div className="space-y-4">
+            <div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-sky-500 h-2 rounded-full transition-all" style={{ width: loadProgress + '%' }} /></div>
+            <p className="text-center text-sm text-gray-400">{T.loading}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (<div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5"><div className="h-4 bg-gray-200 rounded w-1/3 mb-3" /><div className="h-5 bg-gray-200 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-200 rounded w-1/2 mb-3" /></div>))}
+            </div>
+          </div>
+        ) : actualTotal === 0 ? (
+          <div className="text-center py-16 text-gray-400"><p className="text-4xl mb-3">🔍</p><p>{T.noJobsFound}</p></div>
         ) : (<>
           <p className="text-sm text-gray-500 mb-4">{T.showing.replace("{0}", String((page - 1) * PER + 1)).replace("{1}", String(Math.min(page * PER, actualTotal))).replace("{2}", actualTotal.toLocaleString())}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{jobs.map((job) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
             const m = cmf(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = TC[job.type] || "bg-gray-50 text-gray-700";
-            return (<article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
-              <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium " + tc}>{getTypeLabel(job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h3>
-                <p className="text-xs font-medium text-gray-600 mb-1">{job.company}</p>
-                <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
-                <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{job.salary}</span></div>
-                <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
-                {job.description && (<p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>)}
-                {job.paywall && (<div className="mt-3 pt-3 border-t border-gray-100"><p className="text-xs text-amber-600 font-medium">{T.contactForDetails}</p></div>)}
-                {job.companyUrl && (<a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors">
-                  {T.applyNow}<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                </a>)}
-              </div></article>);
+            return (
+              <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
+                <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
+                {job.paywall && <div className="absolute top-3 right-3 z-10"><span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200">{pw.premium}</span></div>}
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium " + tc}>{getTypeLabel(job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
+                  <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h3>
+                  <p className="text-xs font-medium text-gray-600 mb-1">{job.company}</p>
+                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
+                  <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{salaryStr(job)}</span></div>
+                  <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
+                  {job.paywall ? (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.description || ''}</p>
+                      <button onClick={() => setPaywallJob(job)} className="w-full py-2 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm flex items-center justify-center gap-1.5">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        {pw.unlock}
+                      </button>
+                    </div>
+                  ) : (<>
+                    {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
+                    {job.companyUrl && <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors">
+                      {T.applyNow}<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>}
+                  </>)}
+                </div></article>);
           })}</div>
-          {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
+          {totalPages > 1 && <div className="flex items-center justify-center gap-3 mt-8">
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">{T.prevPage}</button>
             <span className="text-sm text-gray-600">{T.pageOf.replace("{0}", String(page)).replace("{1}", String(totalPages))}</span>
             <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">{T.nextPage}</button>
-          </div>)}
+          </div>}
         </>)}
       </main>
 

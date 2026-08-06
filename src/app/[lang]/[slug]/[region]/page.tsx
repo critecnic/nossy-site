@@ -65,8 +65,8 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
 
   useEffect(() => {
     if (!rc) return; setLoading(true);
-    fetch("/api/jobs?action=countries").then(r => r.json()).then((cd) => {
-      const ac = (cd.countries || []).filter((c: CountryInfo) => c.region === rc).sort((a: CountryInfo, b: CountryInfo) => b.count - a.count);
+    fetch("/data/countries.json").then(r => r.json()).then((cd: CountryInfo[]) => {
+      const ac = (cd || []).filter((c: CountryInfo) => c.region === rc).sort((a: CountryInfo, b: CountryInfo) => b.count - a.count);
       setRegionCountries(ac); setLoading(false);
     }).catch(() => setLoading(false));
   }, [rc]);

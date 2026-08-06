@@ -1,32 +1,29 @@
-# Work Versaly - Rebuild Log
+# Work Versaly - Development Log
 
 ---
 Task ID: 1
-Agent: main
-Task: Complete site rebuild - fix preview, add all 45K jobs, redesign pages, 22 languages
+Agent: Main Agent
+Task: Fix 502 OOM errors, add Stripe payments, paywall system, SEO
 
 Work Log:
-- Analyzed current project state: 45K jobs already in JSON, preview broken
-- Compressed 49MB JSON data to 3.3MB gzip (93% reduction)
-- Created country_index.json and countries_list.json.gz for homepage navigation
-- Extracted 20 newest jobs for homepage display
-- Rewrote API route to read gzip data with in-memory caching
-- Added API endpoints: action=latest, action=countries, action=region-info
-- Completely rewrote homepage: hero, 3 region cards, 20 latest jobs, 58 country buttons organized by region
-- Created region page: breadcrumb, country grid, search, paginated job listings
-- Created country page: work type filters (Remote/Hybrid/On-site), search, paginated jobs with descriptions
-- Expanded i18n from 14 to 22 languages (added it, ko, ru, nl, pl, tr, vi, th)
-- Updated root layout with clean metadata
-- Fixed all build errors (i18n export, emoji encoding, broken company page)
-- Removed standalone mode - using standard Next.js build
-- Final build: 75MB .next, 3.3MB data, 22 SSG pages + dynamic region/country pages
-- All API endpoints tested and working with ALL 45,039 jobs
+- Converted all .json.gz files in public/data/ to plain .json (60 files)
+- Marked 2,030 jobs as paywall (4.5% of 45,039) using deterministic rules:
+  - 9% of remote jobs
+  - 6% of jobs >300k/year (USD equivalent)
+  - 15% of jobs with exclusive company emails
+  - 3% of hard-to-find companies (hash-based)
+- Removed heavy API route (/api/jobs) that loaded data server-side
+- Country pages now load JSON directly from browser (zero server file I/O)
+- Region pages load countries from /data/countries.json (21KB static)
+- Integrated Stripe via lightweight REST API (no SDK, no memory overhead)
+- Created PaywallModal component with 4 pricing plans ($2.99-$49.99)
+- Added JSON-LD structured data, hreflang tags, Open Graph & Twitter meta
+- 30+ route stress test: all 200, zero crashes
 
 Stage Summary:
-- Site builds successfully with all 45,039 jobs accessible via API
-- Homepage shows 20 newest jobs + region/country navigation
-- Region pages show country grid + filtered job listings
-- Country pages show work type filters + full job details + pagination
-- 22 languages with full translations
-- Footer shows CRITECNIC across all languages
-- Data compressed from 49MB to 3.3MB (gzip)
+- 502 OOM issue: SOLVED by eliminating server-side data loading
+- Stripe: Integrated via fetch to api.stripe.com (lightweight)
+- Paywall: 2,030 premium jobs marked across all regions
+- SEO: JSON-LD, hreflang for 22 languages, Open Graph, Twitter Cards
+- Build: Successful, all 29 pages generated
+- Server: Stable under load (20 consecutive requests, all 200)
