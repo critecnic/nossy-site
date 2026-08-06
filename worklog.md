@@ -48,3 +48,20 @@ Stage Summary:
 - Preview URL should now work with standard next build/start
 - All 22 languages, 3 regions, 58 countries functional
 - Stripe checkout API, paywall modal, webhook all operational
+---
+Task ID: 2
+Agent: main
+Task: Reconfigure for standalone deploy mode
+
+Work Log:
+- Added back output: 'standalone' to next.config.ts (preview platform requires it)
+- Updated build script: next build + cp static + cp public into standalone
+- Updated start script: node .next/standalone/server.js with 512MB limit
+- Verified standalone output: server.js, static assets, public/data all present
+- 25/25 tests passed on standalone server (22 routes + content + data + CSS/JS)
+- Total standalone size: 106MB
+
+Stage Summary:
+- Standalone mode required by preview platform container
+- All static assets properly copied and served (CSS 200, JS 200, fonts 200)
+- Clean project deployed without unnecessary files
