@@ -1,0 +1,462 @@
+    50→    50→  "Specialized Development": { icon: "⚡", color: "from-yellow-500 to-amber-400" },
+    51→    51→  "Game Development": { icon: "🎮", color: "from-emerald-500 to-green-400" },
+    52→    52→  "Embedded & IoT": { icon: "🔌", color: "from-stone-500 to-neutral-400" },
+    53→    53→  "Writing & Content": { icon: "✍️", color: "from-lime-500 to-green-400" },
+    54→    54→  "Finance Technology": { icon: "💰", color: "from-emerald-600 to-green-500" },
+    55→    55→  "Other": { icon: "📋", color: "from-gray-400 to-slate-400" },
+    56→    56→};
+    57→    57→
+    58→    58→function getCatMeta(name: string) {
+    59→    59→  return CATEGORIES_META[name] || { icon: "📂", color: "from-sky-400 to-blue-500" };
+    60→    60→}
+    61→    61→
+    62→    62→function JobCard({ job, lang }: { job: Job; lang: Lang }) {
+    63→    63→  const T = i18n[lang];
+    64→    64→  const cm = getCatMeta(job.sector);
+    65→    65→  const sName = sectorNames[lang]?.[job.sector] || job.sector;
+    66→    66→  return (
+    67→    67→    <article className="card-hover group relative overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-300 border-gray-100">
+    68→    68→      <div className={`h-1 w-full bg-gradient-to-r ${cm.color}`} />
+    69→    69→      <div className="p-5">
+    70→    70→        <div className="mb-3 flex items-center justify-between">
+    71→    71→          <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">{job.type}</span>
+    72→    72→          <span className="text-xs text-gray-400">{T.posted} {job.posted}</span>
+    73→    73→        </div>
+    74→    74→        <h3 className="mb-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-sky-600">{job.title}</h3>
+    75→    75→        <p className="my-2 text-sm font-medium text-gray-700">{job.company}</p>
+    76→    76→        <div className="flex items-center gap-3 text-sm text-gray-500">
+    77→    77→          <span className="flex items-center gap-1">{job.location}</span>
+    78→    78→          <span className="text-gray-300">|</span>
+    79→    79→          <span className="font-medium text-emerald-600">{job.salary}</span>
+    80→    80→        </div>
+    81→    81→        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-gray-500">{job.description}</p>
+    82→    82→        <div className="mt-4 flex items-center justify-between">
+    83→    83→          <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${cm.color} px-3 py-1 text-xs font-medium text-white`}>{cm.icon} {sName}</span>
+    84→    84→          <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800 transition-colors">{T.viewDetails} &rarr;</a>
+    85→    85→        </div>
+    86→    86→        {job.paywall && (
+    87→    87→          <PaywallContact
+    88→    88→            contactEmail={job.contactEmail}
+    89→    89→            companyData={{ company: job.company, companyUrl: job.companyUrl, location: job.location, salary: job.salary }}
+    90→    90→            jobId={`home-${job.id}`}
+    91→    91→            lang={lang}
+    92→    92→          />
+    93→    93→        )}
+    94→    94→      </div>
+    95→    95→    </article>
+    96→    96→  );
+    97→    97→}
+    98→    98→
+    99→    99→function AnimatedCounter({ end, label, suffix = "" }: { end: number; label: string; suffix?: string }) {
+   100→   100→  const [count, setCount] = useState(0);
+   101→   101→  const ref = useRef<HTMLDivElement>(null);
+   102→   102→  const started = useRef(false);
+   103→   103→  useEffect(() => {
+   104→   104→    const obs = new IntersectionObserver(([e]) => {
+   105→   105→      if (e.isIntersecting && !started.current) {
+   106→   106→        started.current = true;
+   107→   107→        const step = Math.max(1, Math.floor(end / 80));
+   108→   108→        let c = 0;
+   109→   109→        const t = setInterval(() => { c += step; if (c >= end) { setCount(end); clearInterval(t); } else setCount(c); }, 16);
+   110→   110→      }
+   111→   111→    }, { threshold: 0.3 });
+   112→   112→    if (ref.current) obs.observe(ref.current);
+   113→   113→    return () => obs.disconnect();
+   114→   114→  }, [end]);
+   115→   115→  return (<div ref={ref} className="text-center"><div className="text-3xl font-black text-white">{count.toLocaleString()}{suffix}</div><div className="mt-1 text-sm font-medium text-sky-200">{label}</div></div>);
+   116→   116→}
+   117→   117→
+   118→   118→function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+   119→   119→  const [exiting, setExiting] = useState(false);
+   120→   120→  const handleRemove = () => { setExiting(true); setTimeout(onRemove, 280); };
+   121→   121→  if (exiting) return <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-xs font-medium text-sky-700">{label}</span>;
+   122→   122→  return (
+   123→   123→    <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-xs font-medium text-sky-700 transition-all hover:bg-sky-100">
+   124→   124→      {label}
+   125→   125→      <button onClick={handleRemove} className="ml-0.5 rounded-full p-0.5 transition-all hover:bg-sky-200 hover:rotate-90 duration-300">
+   126→   126→        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+   127→   127→      </button>
+   128→   128→    </span>
+   129→   129→  );
+   130→   130→}
+   131→   131→
+   132→   132→export default function LangSlugPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
+   133→   133→  const router = useRouter();
+   134→   134→  const [resolved, setResolved] = useState<{ lang: Lang; slug: string } | null>(null);
+   135→   135→
+   136→   136→  useEffect(() => {
+   137→   137→    params.then((p) => {
+   138→   138→      const langCode = p.lang as Lang;
+   139→   139→      const expectedSlug = LANG_SLUGS[langCode];
+   140→   140→      if (!expectedSlug || p.slug !== expectedSlug) {
+   141→   141→        router.replace(`/${langCode}/${expectedSlug}`);
+   142→   142→      } else {
+   143→   143→        setResolved({ lang: langCode, slug: p.slug });
+   144→   144→      }
+   145→   145→    });
+   146→   146→  }, [params, router]);
+   147→   147→
+   148→   148→  const lang = resolved?.lang || "en";
+   149→   149→  const slug = resolved?.slug || "";
+   150→   150→  const [selType, setSelType] = useState("");
+   151→   151→  const [selCategory, setSelCategory] = useState("");
+   152→   152→  const [searchQuery, setSearchQuery] = useState("");
+   153→   153→  const [searchInput, setSearchInput] = useState("");
+   154→   154→  const [jobs, setJobs] = useState<Job[]>([]);
+   155→   155→  const [totalJobs, setTotalJobs] = useState(0);
+   156→   156→  const [totalPages, setTotalPages] = useState(1);
+   157→   157→  const [page, setPage] = useState(1);
+   158→   158→  const [loading, setLoading] = useState(true);
+   159→   159→  const [nlName, setNlName] = useState("");
+   160→   160→  const [nlEmail, setNlEmail] = useState("");
+   161→   161→  const [nlSent, setNlSent] = useState(false);
+   162→   162→  const [filterPulse, setFilterPulse] = useState(false);
+   163→   163→  const T = i18n[lang];
+   164→   164→  const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr";
+   165→   165→
+   166→   166→  const fetchJobs = useCallback(async (p = 1) => {
+   167→   167→    setLoading(true);
+   168→   168→    setFilterPulse(true);
+   169→   169→    setTimeout(() => setFilterPulse(false), 600);
+   170→   170→    try {
+   171→   171→      const sp = new URLSearchParams();
+   172→   172→      sp.set("page", String(p));
+   173→   173→      sp.set("limit", "18");
+   174→   174→      if (selType && selType !== "all") sp.set("type", selType);
+   175→   175→      if (selCategory && selCategory !== "all") sp.set("category", selCategory);
+   176→   176→      if (searchQuery) sp.set("search", searchQuery);
+   177→   177→      const r = await fetch(`/api/jobs?${sp.toString()}`);
+   178→   178→      const data: ApiResponse = await r.json();
+   179→   179→      setJobs(data.jobs);
+   180→   180→      setTotalJobs(data.total);
+   181→   181→      setTotalPages(data.totalPages);
+   182→   182→      setPage(data.page);
+   183→   183→    } catch { setJobs([]); setTotalJobs(0); }
+   184→   184→    setLoading(false);
+   185→   185→  }, [selType, selCategory, searchQuery]);
+   186→   186→
+   187→   187→  useEffect(() => { fetchJobs(1); }, [fetchJobs]);
+   188→   188→
+   189→   189→  const handleRegionClick = (code: string) => {
+   190→   190→    router.push(`/${lang}/${slug}/${code}`);
+   191→   191→  };
+   192→   192→
+   193→   193→  const clearFilters = () => { setSelType(""); setSelCategory(""); setSearchQuery(""); setSearchInput(""); };
+   194→   194→  const hasFilters = !!selType || !!selCategory || !!searchQuery;
+   195→   195→
+   196→   196→  const handleSearch = (e: React.FormEvent) => {
+   197→   197→    e.preventDefault();
+   198→   198→    setSearchQuery(searchInput);
+   199→   199→  };
+   200→   200→
+   201→   201→  if (!resolved) {
+   202→   202→    return (
+   203→   203→      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+   204→   204→        <div className="text-center">
+   205→   205→          <SiteLogo size={48} />
+   206→   206→          <div className="mt-4 text-sm text-gray-400">Loading...</div>
+   207→   207→        </div>
+   208→   208→      </div>
+   209→   209→    );
+   210→   210→  }
+   211→   211→
+   212→   212→  return (
+   213→   213→    <div className="min-h-screen bg-gray-50" dir={dir}>
+   214→   214→      <OrganizationJsonLd />
+   215→   215→
+   216→   216→      {/* HEADER */}
+   217→   217→      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
+   218→   218→        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+   219→   219→          <div className="flex items-center gap-3">
+   220→   220→            <SiteLogo size={32} />
+   221→   221→            <span className="text-lg font-bold tracking-tight text-gray-900">Work Versaly</span>
+   222→   222→          </div>
+   223→   223→          <div className="flex items-center gap-3">
+   224→   224→            <button
+   225→   225→              onClick={() => router.push(`/${lang}/${slug}/company/post`)}
+   226→   226→              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-600 transition-all"
+   227→   227→            >
+   228→   228→              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+   229→   229→              {T.postJob}
+   230→   230→            </button>
+   231→   231→            <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm">
+   232→   232→              <span className="text-lg leading-none">{LANGUAGES.find((l) => l.code === lang)?.flag}</span>
+   233→   233→              <span className="hidden sm:inline text-xs font-semibold text-gray-600">{LANGUAGES.find((l) => l.code === lang)?.name}</span>
+   234→   234→            </div>
+   235→   235→          </div>
+   236→   236→        </div>
+   237→   237→      </header>
+   238→   238→
+   239→   239→      {/* HERO */}
+   240→   240→      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-14 sm:py-18">
+   241→   241→        <div className="absolute inset-0 overflow-hidden">
+   242→   242→          <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-sky-500/10 blur-3xl" />
+   243→   243→          <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-sky-600/10 blur-3xl" />
+   244→   244→        </div>
+   245→   245→        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 text-center">
+   246→   246→          <div className="mb-4">
+   247→   247→            <span className="inline-flex items-center gap-2 rounded-full bg-sky-500/20 px-4 py-1.5 text-sm font-medium text-sky-300 backdrop-blur-sm">
+   248→   248→              <span className="inline-block h-2 w-2 rounded-full bg-sky-400 animate-pulse" />{T.statsJobs}: {TOTAL_JOBS.toLocaleString()}+
+   249→   249→            </span>
+   250→   250→          </div>
+   251→   251→          <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight mb-3">{T.heroTitle}</h1>
+   252→   252→          <p className="mx-auto max-w-2xl text-base sm:text-lg text-gray-300 mb-6">{T.heroSub}</p>
+   253→   253→          {/* Search input */}
+   254→   254→          <form onSubmit={handleSearch} className="mx-auto max-w-lg">
+   255→   255→            <div className="relative">
+   256→   256→              <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+   257→   257→              <input
+   258→   258→                type="text"
+   259→   259→                value={searchInput}
+   260→   260→                onChange={(e) => setSearchInput(e.target.value)}
+   261→   261→                placeholder={T.searchJobs}
+   262→   262→                className="w-full rounded-xl border border-white/20 bg-white/10 pl-12 pr-4 py-3.5 text-sm text-white placeholder-sky-200/60 outline-none backdrop-blur-sm focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all"
+   263→   263→              />
+   264→   264→            </div>
+   265→   265→          </form>
+   266→   266→        </div>
+   267→   267→      </section>
+   268→   268→
+   269→   269→      {/* STATS */}
+   270→   270→      <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 py-8 border-t border-sky-500/20">
+   271→   271→        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-4 sm:px-6 sm:grid-cols-4">
+   272→   272→          <AnimatedCounter end={TOTAL_JOBS} suffix="+" label={T.statsJobs} />
+   273→   273→          <AnimatedCounter end={3200} suffix="+" label={T.statsCompanies} />
+   274→   274→          <AnimatedCounter end={TOTAL_REGIONS} suffix="" label={T.statsCountries} />
+   275→   275→          <AnimatedCounter end={TOTAL_CATEGORIES} suffix="" label={T.statsCategories} />
+   276→   276→        </div>
+   277→   277→      </section>
+   278→   278→
+   279→   279→      {/* REGION CARDS */}
+   280→   280→      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+   281→   281→        <div className="text-center mb-8">
+   282→   282→          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{T.exploreRegions}</h2>
+   283→   283→          <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto">{T.exploreRegionsSub}</p>
+   284→   284→        </div>
+   285→   285→        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+   286→   286→          {REGIONS.map((region) => (
+   287→   287→            <button
+   288→   288→              key={region.code}
+   289→   289→              onClick={() => handleRegionClick(region.code)}
+   290→   290→              className="group relative flex flex-col items-center gap-3 rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-sky-200 hover:-translate-y-1 active:scale-[0.97] cursor-pointer text-center"
+   291→   291→            >
+   292→   292→              <div className="text-5xl sm:text-6xl transition-transform duration-300 group-hover:scale-125">
+   293→   293→                {region.flag}
+   294→   294→              </div>
+   295→   295→              <div className="flex flex-col items-center">
+   296→   296→                <span className="text-lg font-bold text-gray-800">{region.name}</span>
+   297→   297→                <span className="mt-1 flex items-center gap-1 text-sm text-gray-500">
+   298→   298→                  <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
+   299→   299→                  {region.jobCount.toLocaleString()} {T.jobCount}
+   300→   300→                </span>
+   301→   301→                <span className="mt-0.5 text-xs text-sky-600 font-medium">{region.currency.symbol} {region.currency.code}</span>
+   302→   302→              </div>
+   303→   303→              {/* Top 3 categories */}
+   304→   304→              {region.topCategories && region.topCategories.length > 0 && (
+   305→   305→                <div className="mt-2 flex flex-wrap justify-center gap-1">
+   306→   306→                  {region.topCategories.slice(0, 3).map((cat) => {
+   307→   307→                    const cm = getCatMeta(cat.name);
+   308→   308→                    return (
+   309→   309→                      <span key={cat.name} className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+   310→   310→                        {cm.icon} {cat.name.split(" & ")[0].split(" ")[0]} ({cat.count.toLocaleString()})
+   311→   311→                      </span>
+   312→   312→                    );
+   313→   313→                  })}
+   314→   314→                </div>
+   315→   315→              )}
+   316→   316→            </button>
+   317→   317→          ))}
+   318→   318→        </div>
+   319→   319→      </section>
+   320→   320→
+   321→   321→      {/* FILTER SECTION - Type & Category */}
+   322→   322→      <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-4">
+   323→   323→        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+   324→   324→          <div className="mb-4">
+   325→   325→            <h3 className="text-sm font-bold text-gray-700 mb-3">{T.filterByType}</h3>
+   326→   326→            <div className="flex flex-wrap gap-2">
+   327→   327→              <button
+   328→   328→                onClick={() => setSelType("")}
+   329→   329→                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!selType ? "bg-sky-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+   330→   330→              >{T.allTypes}</button>
+   331→   331→              {JOB_TYPES.map((t) => {
+   332→   332→                const tKey = t.toLowerCase() === "remoto" ? "remote" : t.toLowerCase() === "hibrido" ? "hibrido" : "presencial";
+   333→   333→                const label = T[tKey] || t;
+   334→   334→                return (
+   335→   335→                  <button
+   336→   336→                    key={t}
+   337→   337→                    onClick={() => setSelType(selType === t ? "" : t)}
+   338→   338→                    className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selType === t ? "bg-sky-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+   339→   339→                  >{label}</button>
+   340→   340→                );
+   341→   341→              })}
+   342→   342→            </div>
+   343→   343→          </div>
+   344→   344→          <div>
+   345→   345→            <h3 className="text-sm font-bold text-gray-700 mb-3">{T.filterBySector}</h3>
+   346→   346→            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+   347→   347→              <button
+   348→   348→                onClick={() => setSelCategory("")}
+   349→   349→                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!selCategory ? "bg-indigo-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+   350→   350→              >{T.allFunctions}</button>
+   351→   351→              {Object.keys(CATEGORIES_META).map((s) => {
+   352→   352→                const cm = CATEGORIES_META[s];
+   353→   353→                const sName = sectorNames[lang]?.[s] || s;
+   354→   354→                return (
+   355→   355→                  <button
+   356→   356→                    key={s}
+   357→   357→                    onClick={() => setSelCategory(selCategory === s ? "" : s)}
+   358→   358→                    className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selCategory === s ? "bg-gradient-to-r " + cm.color + " text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+   359→   359→                  >{cm.icon} {sName}</button>
+   360→   360→                );
+   361→   361→              })}
+   362→   362→            </div>
+   363→   363→          </div>
+   364→   364→        </div>
+   365→   365→      </section>
+   366→   366→
+   367→   367→      {/* FILTER CHIPS */}
+   368→   368→      {hasFilters && (
+   369→   369→        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-2">
+   370→   370→          <div className="flex flex-wrap items-center gap-2">
+   371→   371→            <span className="text-xs font-medium text-gray-400">{T.filterChip}</span>
+   372→   372→            {selType && <FilterChip label={T[selType.toLowerCase() === "remoto" ? "remote" : selType.toLowerCase() === "hibrido" ? "hibrido" : "presencial"] || selType} onRemove={() => setSelType("")} />}
+   373→   373→            {selCategory && <FilterChip label={sectorNames[lang]?.[selCategory] || selCategory} onRemove={() => setSelCategory("")} />}
+   374→   374→            {searchQuery && <FilterChip label={`🔍 ${searchQuery}`} onRemove={() => { setSearchQuery(""); setSearchInput(""); }} />}
+   375→   375→            <button onClick={clearFilters} className="ml-auto text-xs font-medium text-red-500 hover:text-red-600">{T.clearFilters}</button>
+   376→   376→          </div>
+   377→   377→        </div>
+   378→   378→      )}
+   379→   379→
+   380→   380→      {/* JOBS */}
+   381→   381→      <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-16">
+   382→   382→        <div className="mb-6 flex items-center justify-between">
+   383→   383→          <div className="flex items-center gap-3">
+   384→   384→            <h2 className="text-xl font-bold text-gray-800">{T.jobsHeader}</h2>
+   385→   385→          </div>
+   386→   386→          <div className="flex items-center gap-2">
+   387→   387→            {loading && (
+   388→   388→              <div className="flex items-center gap-1.5 text-xs text-sky-500">
+   389→   389→                <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+   390→   390→                {T.filtering}
+   391→   391→              </div>
+   392→   392→            )}
+   393→   393→            <span className={`text-sm font-medium transition-all ${filterPulse ? "text-sky-500" : "text-gray-500"}`}><span className="font-bold">{totalJobs.toLocaleString()}</span> {T.results}</span>
+   394→   394→          </div>
+   395→   395→        </div>
+   396→   396→        {loading ? (
+   397→   397→          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+   398→   398→            {[1,2,3,4,5,6].map((i) => (
+   399→   399→              <div key={i} className="rounded-xl border border-gray-100 bg-white p-5">
+   400→   400→                <div className="h-5 w-20 rounded-full bg-gray-100 mb-3 animate-pulse" />
+   401→   401→                <div className="h-6 w-3/4 rounded bg-gray-100 mb-2 animate-pulse" />
+   402→   402→                <div className="h-4 w-1/2 rounded bg-gray-100 mb-4 animate-pulse" />
+   403→   403→                <div className="h-4 w-full rounded bg-gray-100 mb-2 animate-pulse" />
+   404→   404→                <div className="h-4 w-2/3 rounded bg-gray-100 animate-pulse" />
+   405→   405→              </div>
+   406→   406→            ))}
+   407→   407→          </div>
+   408→   408→        ) : jobs.length === 0 ? (
+   409→   409→          <div className="flex flex-col items-center justify-center py-20 text-center">
+   410→   410→            <div className="mb-4 text-5xl">🔍</div>
+   411→   411→            <h3 className="text-lg font-semibold text-gray-700">{T.noJobs}</h3>
+   412→   412→            <p className="mt-2 text-sm text-gray-500 max-w-xs">{T.noJobsSub}</p>
+   413→   413→            {hasFilters && <button onClick={clearFilters} className="mt-5 rounded-xl bg-sky-500 px-6 py-2.5 text-sm font-medium text-white shadow-md hover:bg-sky-600 transition-all">{T.clearFilters}</button>}
+   414→   414→          </div>
+   415→   415→        ) : (
+   416→   416→          <>
+   417→   417→            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+   418→   418→              {jobs.map((job) => <JobCard key={`${job.id}-${page}`} job={job} lang={lang} />)}
+   419→   419→            </div>
+   420→   420→            {/* PAGINATION */}
+   421→   421→            {totalPages > 1 && (
+   422→   422→              <div className="mt-8 flex items-center justify-center gap-2">
+   423→   423→                <button
+   424→   424→                  onClick={() => fetchJobs(Math.max(1, page - 1))}
+   425→   425→                  disabled={page <= 1}
+   426→   426→                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+   427→   427→                >&laquo; Prev</button>
+   428→   428→                <span className="text-sm text-gray-500">{page} {T.pageOf} {totalPages}</span>
+   429→   429→                <button
+   430→   430→                  onClick={() => fetchJobs(Math.min(totalPages, page + 1))}
+   431→   431→                  disabled={page >= totalPages}
+   432→   432→                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+   433→   433→                >Next &raquo;</button>
+   434→   434→              </div>
+   435→   435→            )}
+   436→   436→          </>
+   437→   437→        )}
+   438→   438→      </section>
+   439→   439→
+   440→   440→      {/* FOR COMPANIES CTA */}
+   441→   441→      <section className="bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 py-14">
+   442→   442→        <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
+   443→   443→          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">{T.forCompanies}</h2>
+   444→   444→          <p className="mb-8 text-sky-100 max-w-xl mx-auto">{T.companyRegisterSub}</p>
+   445→   445→          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+   446→   446→            <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
+   447→   447→              <div className="text-3xl mb-2">🔗</div>
+   448→   448→              <h3 className="font-bold text-white text-sm">{T.benefit1Title}</h3>
+   449→   449→              <p className="text-xs text-sky-100 mt-1">{T.benefit1Desc}</p>
+   450→   450→            </div>
+   451→   451→            <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
+   452→   452→              <div className="text-3xl mb-2">🌍</div>
+   453→   453→              <h3 className="font-bold text-white text-sm">{T.benefit2Title}</h3>
+   454→   454→              <p className="text-xs text-sky-100 mt-1">{T.benefit2Desc}</p>
+   455→   455→            </div>
+   456→   456→            <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
+   457→   457→              <div className="text-3xl mb-2">💬</div>
+   458→   458→              <h3 className="font-bold text-white text-sm">{T.benefit3Title}</h3>
+   459→   459→              <p className="text-xs text-sky-100 mt-1">{T.benefit3Desc}</p>
+   460→   460→            </div>
+   461→   461→          </div>
+   462→   462→          <button
+   463→   463→            onClick={() => router.push(`/${lang}/${slug}/company/post`)}
+   464→   464→            className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-sky-600 shadow-lg hover:bg-sky-50 transition-all active:scale-[0.98]"
+   465→   465→          >
+   466→   466→            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+   467→   467→            {T.registerAndPost}
+   468→   468→          </button>
+   469→   469→        </div>
+   470→   470→      </section>
+   471→   471→
+   472→   472→      {/* NEWSLETTER */}
+   473→   473→      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-14">
+   474→   474→        <div className="mx-auto max-w-2xl px-4 sm:px-6 text-center">
+   475→   475→          <div className="mb-4 inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-white/10">
+   476→   476→            <svg className="h-6 w-6 text-sky-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+   477→   477→          </div>
+   478→   478→          <p className="mb-6 text-sky-200">{T.newsletterSub}</p>
+   479→   479→          {!nlSent ? (
+   480→   480→            <div className="mx-auto max-w-md space-y-3">
+   481→   481→              <input type="text" value={nlName} onChange={(e) => setNlName(e.target.value)} placeholder={T.name} className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-sky-200/60 outline-none backdrop-blur-sm focus:border-sky-400" />
+   482→   482→              <input type="email" value={nlEmail} onChange={(e) => setNlEmail(e.target.value)} placeholder={T.email} className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-sky-200/60 outline-none backdrop-blur-sm focus:border-sky-400" />
+   483→   483→              <button onClick={() => { if (nlName && nlEmail) setNlSent(true); }} className="w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white shadow-lg hover:bg-sky-400 transition-all active:scale-[0.98]">{T.subscribe}</button>
+   484→   484→            </div>
+   485→   485→          ) : (
+   486→   486→            <div className="rounded-2xl bg-white/10 border border-sky-400/30 px-6 py-8 backdrop-blur-sm">
+   487→   487→              <div className="mb-3 text-4xl">&#10003;</div>
+   488→   488→              <p className="text-lg font-semibold text-white">{T.subscribed}</p>
+   489→   489→            </div>
+   490→   490→          )}
+   491→   491→        </div>
+   492→   492→      </section>
+   493→   493→
+   494→   494→      {/* FOOTER */}
+   495→   495→      <footer className="border-t border-gray-200 bg-white py-6">
+   496→   496→        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6">
+   497→   497→          <div className="flex items-center gap-2">
+   498→   498→            <SiteLogo size={20} />
+   499→   499→            <span className="text-sm text-gray-500">{T.footer}</span>
+   500→   500→          </div>
+   501→   501→          <div className="flex gap-6 text-sm text-gray-400">
+   502→   502→            <a href="#" className="hover:text-sky-600">{T.privacy}</a>
+   503→   503→            <a href="#" className="hover:text-sky-600">{T.terms}</a>
+   504→   504→            <a href="#" className="hover:text-sky-600">{T.contact}</a>
+   505→   505→          </div>
+   506→   506→        </div>
+   507→   507→      </footer>
+   508→   508→    </div>
+   509→   509→  );
+   510→   510→}
+   511→   511→
