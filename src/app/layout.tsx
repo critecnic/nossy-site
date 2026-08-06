@@ -55,7 +55,7 @@ function HrefLangTags() {
     { hreflang: "de", href: "/de/stellenangebote" },
     { hreflang: "x-default", href: "/en/jobs" },
   ];
-  return <>{links.map(l => <link key={l.hreflang} rel="alternate" hrefLang={l.hreflang} href={l.href} />)}</>;
+  return <>{links.map(l => <link key={l.hreflang} rel="alternate" hreflang={l.hreflang} href={l.href} />)}</>;
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
