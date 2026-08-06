@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -29,7 +29,7 @@ const CATEGORIES_META: Record<string, { icon: string; color: string }> = {
   "Cybersecurity": { icon: "🔒", color: "from-red-500 to-rose-400" },
   "Engineering Leadership": { icon: "👑", color: "from-purple-500 to-indigo-400" },
   "Consulting": { icon: "🤝", color: "from-teal-500 to-cyan-400" },
-  "Data Engineering": { icon: "🗂️", color: "from-indigo-500 to-blue-400" },
+  "Data Engineering": { icon: "🗄️", color: "from-indigo-500 to-blue-400" },
   "UX/UI & Design": { icon: "🎨", color: "from-pink-500 to-rose-400" },
   "QA & Testing": { icon: "✅", color: "from-green-500 to-emerald-400" },
   "Mobile Development": { icon: "📱", color: "from-blue-600 to-violet-400" },
@@ -73,8 +73,6 @@ const REGION_NAMES: Record<string, Record<string, string>> = {
   "sw": { "europa": "Ulaya", "asia": "Asia", "eua": "Marekani" },
 };
 
-const REGION_FLAGS: Record<string, string> = { "europa": "🇪🇺", "asia": "🇨🇳", "eua": "🇺🇸" };
-
 const TYPE_COLORS: Record<string, string> = {
   "Remoto": "bg-green-50 text-green-700 border-green-200",
   "Hibrido": "bg-amber-50 text-amber-700 border-amber-200",
@@ -97,7 +95,6 @@ const COUNTRY_FLAGS: Record<string, string> = {
   "united-states": "🇺🇸", "remoto-global": "🌍",
 };
 
-/* Language dropdown component */
 function LangSelector({ lang, switchLang }: { lang: Lang; switchLang: (l: Lang) => void }) {
   return (
     <select
@@ -115,18 +112,12 @@ function LangSelector({ lang, switchLang }: { lang: Lang; switchLang: (l: Lang) 
 }
 
 export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
-  const [lang, setLang] = useState<Lang>("en");
+  const { lang: langCode } = use(params);
+  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [latestJobs, setLatestJobs] = useState<Job[]>([]);
   const [countries, setCountries] = useState<CountryInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  useEffect(() => {
-    params.then((p) => {
-      const validLang = (LANGUAGES.find(l => l.code === p.lang)?.code || "en") as Lang;
-      setLang(validLang);
-    });
-  }, [params]);
 
   useEffect(() => {
     Promise.all([
@@ -161,7 +152,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
   }
 
   return (
-    <div className={isRtl ? "rtl" : "ltr"} dir={isRtl ? "rtl" : "ltr"}>
+    <div dir={isRtl ? "rtl" : "ltr"}>
       {/* HEADER */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -169,8 +160,6 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <SiteLogo size={38} />
             <span className="text-xl font-bold text-gray-900 tracking-tight">Work Versaly</span>
           </div>
-
-          {/* Language Selector - Dropdown */}
           <LangSelector lang={lang} switchLang={switchLang} />
         </div>
       </header>
@@ -311,7 +300,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                       {regionCountries
                         .sort((a, b) => b.count - a.count)
                         .map((c) => {
-                          const flag = COUNTRY_FLAGS[c.slug] || "🇳🇿";
+                          const flag = COUNTRY_FLAGS[c.slug] || "🏳️";
                           return (
                             <button
                               key={c.slug}

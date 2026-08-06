@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -29,14 +29,14 @@ const RN: Record<string, Record<string, string>> = {
   ru: { europa: "Европа", asia: "Азия", eua: "США" },
   zh: { europa: "欧洲", asia: "亚洲", eua: "美国" },
   ja: { europa: "ヨーロッパ", asia: "アジア", eua: "アメリカ" },
-  ko: { europa: "유럽", asia: "아시아", eua: "미국" },
+  ko: { europa:"유럽", asia:"아시아", eua:"미국" },
   hi: { europa: "यूरोप", asia: "एशिया", eua: "अमेरिका" },
   bn: { europa: "ইউরোপ", asia: "এশিয়া", eua: "যুক্তরাষ্ট্র" },
   ar: { europa: "أوروبا", asia: "آسيا", eua: "الولايات المتحدة" },
   tr: { europa: "Avrupa", asia: "Asya", eua: "ABD" },
   vi: { europa: "Châu Âu", asia: "Châu Á", eua: "Mỹ" },
   th: { europa: "ยุโรป", asia: "เอเชีย", eua: "อเมริกา" },
-  ur: { europa: "یورپ", asia: "ایشیا", eua: "امریکہ" },
+  ur: { europa: "یورپ", asia: "اشیا", eua: "امریکہ" },
   tl: { europa: "Europa", asia: "Asia", eua: "USA" },
   sw: { europa: "Ulaya", asia: "Asia", eua: "Marekani" },
 };
@@ -50,7 +50,7 @@ const CF: Record<string, string> = {
   "portugal": "🇵🇹", "czech-republic": "🇨🇿", "romania": "🇷🇴",
   "greece": "🇬🇷", "hungary": "🇭🇺", "india": "🇮🇳",
   "china": "🇨🇳", "japao": "🇯🇵", "singapore": "🇸🇬",
-  "south-korea": "🇰🇷", "hong-kong": "🇭🇰", "taiwan": "🇹🇼",
+  "south-korea": "🇰🇷", "hong-kong": "🇭🇰", "taiwan": "🇹🇨",
   "united-states": "🇺🇸", "remoto-global": "🌍",
 };
 
@@ -67,8 +67,8 @@ const CM: Record<string, { icon: string; color: string }> = {
   "Product Management": { icon: "📋", color: "from-amber-500 to-orange-400" },
   "Cybersecurity": { icon: "🔒", color: "from-red-500 to-rose-400" },
   "Engineering Leadership": { icon: "👑", color: "from-purple-500 to-indigo-400" },
-  "Consulting": { icon: "🤝", color: "from-teal-500 to-cyan-400" },
-  "Data Engineering": { icon: "🗂️", color: "from-indigo-500 to-blue-400" },
+  Consulting: { icon: "🤝", color: "from-teal-500 to-cyan-400" },
+  "Data Engineering": { icon: "🗒️", color: "from-indigo-500 to-blue-400" },
   "UX/UI & Design": { icon: "🎨", color: "from-pink-500 to-rose-400" },
   "QA & Testing": { icon: "✅", color: "from-green-500 to-emerald-400" },
   "Mobile Development": { icon: "📱", color: "from-blue-600 to-violet-400" },
@@ -102,8 +102,8 @@ function LangSelector({ lang, switchLang }: { lang: Lang; switchLang: (l: Lang) 
 }
 
 export default function RegionPage({ params }: { params: Promise<{ lang: string; slug: string; region: string }> }) {
-  const [lang, setLang] = useState<Lang>("en");
-  const [rc, setRc] = useState("");
+  const { lang: langCode, region: rc } = use(params);
+  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [regionCountries, setRegionCountries] = useState<CountryInfo[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,8 +112,6 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
   const [totalPages, setTotalPages] = useState(1);
   const [actualTotal, setActualTotal] = useState(0);
   const router = useRouter();
-
-  useEffect(() => { params.then((p) => { setLang((LANGUAGES.find(l => l.code === p.lang)?.code || "en") as Lang); setRc(p.region); }); }, [params]);
 
   useEffect(() => {
     if (!rc) return; setLoading(true);
@@ -137,7 +135,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
   function goHome() { router.push("/" + lang + "/" + LANG_SLUGS[lang]); }
 
   return (
-    <div className={isRtl ? "rtl" : "ltr"} dir={isRtl ? "rtl" : "ltr"}>
+    <div dir={isRtl ? "rtl" : "ltr"}>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -169,7 +167,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {regionCountries.map((c) => (
               <button key={c.slug} onClick={() => goCountry(c.slug)} className="group flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-md transition-all text-left">
-                <span className="text-2xl">{CF[c.slug] || "🏳️"}</span>
+                <span className="text-2xl">{CF[c.slug] || "🏳️‍🌈"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-800 truncate group-hover:text-sky-600 transition-colors">{c.name}</p>
                   <p className="text-xs font-bold text-sky-600">{c.count.toLocaleString()} {T.jobCount}</p>

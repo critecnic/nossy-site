@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -78,7 +78,7 @@ const CM: Record<string, { icon: string; color: string }> = {
   "Product Management": { icon: "📋", color: "from-amber-500 to-orange-400" },
   "Cybersecurity": { icon: "🔒", color: "from-red-500 to-rose-400" },
   "Engineering Leadership": { icon: "👑", color: "from-purple-500 to-indigo-400" },
-  "Consulting": { icon: "🤝", color: "from-teal-500 to-cyan-400" },
+  Consulting: { icon: "🤝", color: "from-teal-500 to-cyan-400" },
   "Data Engineering": { icon: "🗂️", color: "from-indigo-500 to-blue-400" },
   "UX/UI & Design": { icon: "🎨", color: "from-pink-500 to-rose-400" },
   "QA & Testing": { icon: "✅", color: "from-green-500 to-emerald-400" },
@@ -113,9 +113,8 @@ function LangSelector({ lang, switchLang }: { lang: Lang; switchLang: (l: Lang) 
 }
 
 export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
-  const [lang, setLang] = useState<Lang>("en");
-  const [rc, setRc] = useState("");
-  const [cc, setCc] = useState("");
+  const { lang: langCode, region: rc, country: cc } = use(params);
+  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [countryName, setCountryName] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,8 +125,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [actualTotal, setActualTotal] = useState(0);
   const [workTypes, setWorkTypes] = useState<string[]>([]);
   const router = useRouter();
-
-  useEffect(() => { params.then((p) => { setLang((LANGUAGES.find(l => l.code === p.lang)?.code || "en") as Lang); setRc(p.region); setCc(p.country); }); }, [params]);
 
   useEffect(() => {
     if (!rc || !cc) return; setLoading(true);
@@ -153,7 +150,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
-  const rCfg = REGIONS.find(r => r.code === rc);
   const rName = RN[lang]?.[rc] || rc;
   const PER = 18;
   const tl = TYPE_LABELS[lang] || TYPE_LABELS["en"];
@@ -164,7 +160,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   function getTypeLabel(t: string) { return tl[t] || t; }
 
   return (
-    <div className={isRtl ? "rtl" : "ltr"} dir={isRtl ? "rtl" : "ltr"}>
+    <div dir={isRtl ? "rtl" : "ltr"}>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
