@@ -65,3 +65,23 @@ Stage Summary:
 - Standalone mode required by preview platform container
 - All static assets properly copied and served (CSS 200, JS 200, fonts 200)
 - Clean project deployed without unnecessary files
+---
+Task ID: 3
+Agent: main
+Task: Radical project cleanup for preview deployment
+
+Work Log:
+- Removed 48 unused UI components (components/ui/)
+- Removed unused hooks/, lib files (db.ts, utils.ts, currency.ts, locations.ts)
+- Removed components.json, tailwind.config.ts (v3 relics)
+- Replaced package.json: 50+ deps -> 10 deps (next, react, react-dom + 5 devDeps)
+- Removed puppeteer (150MB Chromium download), sharp, prisma, next-auth, 30+ radix-ui, framer-motion, recharts, etc.
+- npm install: 24s with 47 packages (was 500+ packages, several minutes)
+- Fixed start script: PORT env var instead of -p flag for standalone server
+- Clean build + standalone test: all routes 200
+- Standalone size: 90MB
+
+Stage Summary:
+- Project is now minimal: 12 source files, 10 npm packages
+- No heavy dependencies that could cause deployment timeout/OOM
+- All functionality preserved: 22 languages, 3 regions, 58 countries, Stripe paywall, SEO
