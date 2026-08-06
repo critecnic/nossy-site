@@ -46,18 +46,25 @@ function JsonLd() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
+function HrefLangTags() {
+  const links = [
+    { hreflang: "en", href: "/en/jobs" },
+    { hreflang: "pt-BR", href: "/pt-br/vagas" },
+    { hreflang: "es", href: "/es/empleos" },
+    { hreflang: "fr", href: "/fr/emplois" },
+    { hreflang: "de", href: "/de/stellenangebote" },
+    { hreflang: "x-default", href: "/en/jobs" },
+  ];
+  return <>{links.map(l => <link key={l.hreflang} rel="alternate" hrefLang={l.hreflang} href={l.href} />)}</>;
+}
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#0f172a" />
-        <link rel="alternate" hreflang="en" href="https://workversely.com/en/jobs" />
-        <link rel="alternate" hreflang="pt-BR" href="https://workversely.com/pt-br/vagas" />
-        <link rel="alternate" hreflang="es" href="https://workversely.com/es/empleos" />
-        <link rel="alternate" hreflang="fr" href="https://workversely.com/fr/emplois" />
-        <link rel="alternate" hreflang="de" href="https://workversaly.com/de/stellenangebote" />
-        <link rel="alternate" hreflang="x-default" href="https://workversaly.com/en/jobs" />
+        <HrefLangTags />
         <JsonLd />
       </head>
       <body className={geistSans.variable + " antialiased bg-gray-50 text-gray-900"}>

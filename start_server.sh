@@ -1,6 +1,10 @@
 #!/bin/bash
-while true; do
-  npx next dev -p 3000 --turbopack 2>&1 | tee -a /tmp/next_dev.log
-  echo "Server died, restarting in 2s..." >> /tmp/next_dev.log
-  sleep 2
-done
+# Work Versaly - Production Start Script
+cd "$(dirname "$0")"
+
+# Copy latest assets to standalone
+cp -r .next/static .next/standalone/.next/ 2>/dev/null
+cp -r public .next/standalone/ 2>/dev/null
+
+# Start standalone server with memory limit
+NODE_OPTIONS='--max-old-space-size=768' node .next/standalone/server.js -H 0.0.0.0 -p ${PORT:-3000}
