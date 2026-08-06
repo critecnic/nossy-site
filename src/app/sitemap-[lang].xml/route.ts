@@ -1,7 +1,6 @@
 import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
-import { COUNTRIES } from "@/lib/countries";
+import { REGIONS } from "@/lib/countries";
 import { NextResponse } from "next/server";
-import { jobs as allJobs } from "@/app/api/jobs/route";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ lang: string }> }) {
   const { lang: langCode } = await params;
@@ -11,19 +10,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ lang: s
   const slug = LANG_SLUGS[lang.code];
   const today = new Date().toISOString().split('T')[0];
 
-  const prioLangs = ["en", "pt-br", "es", "ar", "hi", "sw", "fr", "bn", "tl", "ur"];
-  const includeJobs = prioLangs.includes(lang.code);
-
   const entries: string[] = [];
 
   // Global page for this language
-  entries.push(sitemapUrl(`https://workversely.com/${lang.code}/${slug}/`, today, lang.code));
+  entries.push(sitemapUrl(`https://workversely.com/${lang.code}/${slug}/`, today));
 
-  // Country pages with hreflang alternates
-  for (const country of COUNTRIES) {
-    const url = `https://workversely.com/${lang.code}/${slug}/${country.code}/`;
+  // Region pages with hreflang alternates
+  for (const region of REGIONS) {
+    const url = `https://workversely.com/${lang.code}/${slug}/${region.code}/`;
     const alternates = LANGUAGES.map(l =>
-      `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/${country.code}/" />`
+      `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/${region.code}/" />`
     ).join("\n");
     entries.push(`  <url>
     <loc>${url}</loc>
@@ -32,42 +28,36 @@ export async function GET(_req: Request, { params }: { params: Promise<{ lang: s
     <priority>0.8</priority>
 ${alternates}
   </url>`);
-  }
 
-  // Job detail pages for priority languages (with Job Posting XML extension)
-  if (includeJobs) {
-    for (const job of allJobs) {
-      const jobSlug = job.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-      const url = `https://workversely.com/${lang.code}/${slug}/${job.country}/${jobSlug}`;
-      entries.push(`  <url>
-    <loc>${url}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-    <jp:job_posting>
-      <jp:title><![CDATA[${job.title}]]></jp:title>
-      <jp:description><![CDATA[${job.description}]]></jp:description>
-      <jp:date_posted>${new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0]}</jp:date_posted>
-      <jp:valid_through>${new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]}</jp:valid_through>
-      <jp:hiring_organization name="${job.company}" />
-      <jp:job_location city="${job.location.split(',')[0].trim()}" country="${job.country.toUpperCase()}" />
-      <jp:employment_type>${job.type === 'Remote' ? 'FULL_TIME' : job.type.toUpperCase().replace('-', '_')}</jp:employment_type>
-    </jp:job_posting>
+    // Sub-country pages
+    if (region.countries) {
+      for (const cName of Object.keys(region.countries)) {
+        const cSlug = cName.toLowerCase().replace(/\s+/g, '-');
+        const cUrl = `https://workversely.com/${lang.code}/${slug}/${cSlug}/`;
+        const cAlternates = LANGUAGES.map(l =>
+          `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/${cSlug}/" />`
+        ).join("\n");
+        entries.push(`  <url>
+      <loc>${cUrl}</loc>
+      <lastmod>${today}</lastmod>
+      <changefreq>daily</changefreq>
+      <priority>0.7</priority>
+${cAlternates}
   </url>`);
+      }
     }
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:jp="https://www.google.com/schemas/sitemap-jp/1.0">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${entries.join("\n")}
 </urlset>`;
 
   return new NextResponse(xml, { headers: { "Content-Type": "application/xml" } });
 }
 
-function sitemapUrl(loc: string, lastmod: string, langCode: string): string {
+function sitemapUrl(loc: string, lastmod: string): string {
   const alternates = LANGUAGES.map(l =>
     `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/" />`
   ).join("\n");

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { COUNTRIES, TOTAL_JOBS, getCountry, type CountryConfig } from "@/lib/countries";
-import { LANGUAGES, LANG_SLUGS, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
+import { REGIONS, TOTAL_JOBS, TOTAL_REGIONS, TOTAL_CATEGORIES, getRegion } from "@/lib/countries";
+import { LANGUAGES, LANG_SLUGS, sectorNames, default as i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 import PaywallContact from "@/components/PaywallContact";
@@ -12,7 +12,6 @@ import SiteLogo from "@/components/SiteLogo";
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
   location: string; country: string; countryName: string;
-  lat: number; lng: number;
   salary: string; salaryMin: number; salaryMax: number;
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
@@ -20,39 +19,53 @@ interface Job {
   paywall: boolean;
 }
 
-const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Remote", "Internship", "Freelance"];
+interface ApiResponse {
+  jobs: Job[];
+  total: number;
+  page: number;
+  totalPages: number;
+  categories: { name: string; count: number; avgSalary: number; requirements: string }[];
+  countries: Record<string, number>;
+  allCategories: string[];
+}
 
-const SECTORS = [
-  { key: "Technology", icon: "\uD83D\uDCBB", color: "from-blue-500 to-cyan-400" },
-  { key: "Finance", icon: "\uD83D\uDCB0", color: "from-emerald-500 to-green-400" },
-  { key: "Design", icon: "\uD83C\uDFA8", color: "from-purple-500 to-pink-400" },
-  { key: "Marketing", icon: "\uD83D\uDCE3", color: "from-orange-500 to-amber-400" },
-  { key: "Data Science", icon: "\uD83D\uDCCA", color: "from-indigo-500 to-violet-400" },
-  { key: "Sales", icon: "\uD83D\uDCC8", color: "from-red-500 to-rose-400" },
-  { key: "Management", icon: "\uD83D\uDC65", color: "from-teal-500 to-emerald-400" },
-  { key: "Healthcare", icon: "\uD83E\uDEBA", color: "from-pink-500 to-red-400" },
-  { key: "Engineering", icon: "\uD83D\uDD27", color: "from-slate-500 to-gray-400" },
-];
+const JOB_TYPES = ["Remoto", "Hibrido", "Presencial"];
 
-
-
-const TYPE_KEYS: Record<string, string> = {
-  "Full-time": "fullTime",
-  "Part-time": "partTime",
-  "Contract": "contract",
-  "Remote": "remote",
-  "Internship": "internship",
-  "Freelance": "freelance",
+const CATEGORIES_META: Record<string, { icon: string; color: string }> = {
+  "Software Engineering": { icon: "💻", color: "from-blue-500 to-cyan-400" },
+  "Cloud & DevOps": { icon: "☁️", color: "from-sky-500 to-blue-400" },
+  "Data Science & Analytics": { icon: "📊", color: "from-violet-500 to-purple-400" },
+  "AI & Machine Learning": { icon: "🤖", color: "from-fuchsia-500 to-pink-400" },
+  "Product Management": { icon: "📋", color: "from-amber-500 to-orange-400" },
+  "Cybersecurity": { icon: "🔒", color: "from-red-500 to-rose-400" },
+  "Mobile Development": { icon: "📱", color: "from-teal-500 to-emerald-400" },
+  "UX/UI & Design": { icon: "🎨", color: "from-pink-500 to-rose-400" },
+  "Engineering Leadership": { icon: "👔", color: "from-slate-600 to-gray-500" },
+  "QA & Testing": { icon: "✅", color: "from-green-500 to-emerald-400" },
+  "Data Engineering": { icon: "🗄️", color: "from-indigo-500 to-blue-400" },
+  "Consulting": { icon: "💼", color: "from-cyan-500 to-teal-400" },
+  "Sales & Marketing": { icon: "📣", color: "from-orange-500 to-amber-400" },
+  "IT Support & Operations": { icon: "🖥️", color: "from-gray-500 to-slate-400" },
+  "Research & Development": { icon: "🔬", color: "from-purple-500 to-indigo-400" },
+  "Specialized Development": { icon: "⚡", color: "from-yellow-500 to-amber-400" },
+  "Game Development": { icon: "🎮", color: "from-emerald-500 to-green-400" },
+  "Embedded & IoT": { icon: "🔌", color: "from-stone-500 to-neutral-400" },
+  "Writing & Content": { icon: "✍️", color: "from-lime-500 to-green-400" },
+  "Finance Technology": { icon: "💰", color: "from-emerald-600 to-green-500" },
+  "Other": { icon: "📋", color: "from-gray-400 to-slate-400" },
 };
 
-function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlighted: boolean }) {
+function getCatMeta(name: string) {
+  return CATEGORIES_META[name] || { icon: "📂", color: "from-sky-400 to-blue-500" };
+}
+
+function JobCard({ job, lang }: { job: Job; lang: Lang }) {
   const T = i18n[lang];
-  const sd = SECTORS.find((s) => s.key === job.sector);
+  const cm = getCatMeta(job.sector);
   const sName = sectorNames[lang]?.[job.sector] || job.sector;
-  const countryCfg = getCountry(job.country);
   return (
     <article className="card-hover group relative overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-300 border-gray-100">
-      <div className={`h-1 w-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"}`} />
+      <div className={`h-1 w-full bg-gradient-to-r ${cm.color}`} />
       <div className="p-5">
         <div className="mb-3 flex items-center justify-between">
           <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">{job.type}</span>
@@ -61,16 +74,13 @@ function JobCard({ job, lang }: { job: Job; index: number; lang: Lang; highlight
         <h3 className="mb-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-sky-600">{job.title}</h3>
         <p className="my-2 text-sm font-medium text-gray-700">{job.company}</p>
         <div className="flex items-center gap-3 text-sm text-gray-500">
-          <span className="flex items-center gap-1">
-            {countryCfg?.flag || ""}
-            {job.location}
-          </span>
+          <span className="flex items-center gap-1">{job.location}</span>
           <span className="text-gray-300">|</span>
           <span className="font-medium text-emerald-600">{job.salary}</span>
         </div>
         <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-gray-500">{job.description}</p>
         <div className="mt-4 flex items-center justify-between">
-          <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${sd?.color || "from-sky-400 to-blue-500"} px-3 py-1 text-xs font-medium text-white`}>{sd?.icon} {sName}</span>
+          <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${cm.color} px-3 py-1 text-xs font-medium text-white`}>{cm.icon} {sName}</span>
           <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-sky-600 hover:text-sky-800 transition-colors">{T.viewDetails} &rarr;</a>
         </div>
         {job.paywall && (
@@ -119,36 +129,6 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
   );
 }
 
-function CountryCard({ country, T, onClick, lang }: { country: CountryConfig; T: Record<string, string>; onClick: () => void; lang: Lang }) {
-  const [hovered, setHovered] = useState(false);
-  const localName = countryNames[lang]?.[country.code] || country.name;
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="group relative flex flex-col items-center gap-2 rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-sky-200 hover:-translate-y-1 active:scale-[0.97] cursor-pointer text-center"
-    >
-      <div className={`text-4xl sm:text-5xl transition-transform duration-300 ${hovered ? "scale-125" : "scale-100"}`}>
-        {country.flag}
-      </div>
-      <div className="flex flex-col items-center">
-        <span className="text-sm font-bold text-gray-800 leading-tight">{localName}</span>
-        <span className="mt-1 flex items-center gap-1 text-xs text-gray-500">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          {country.jobCount.toLocaleString()} {T.openPositions}
-        </span>
-        <span className="mt-0.5 text-xs text-sky-600 font-medium">{country.currency.symbol} {country.currency.code}</span>
-      </div>
-      {hovered && (
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-sky-500 px-3 py-1 text-[10px] font-semibold text-white shadow-md whitespace-nowrap">
-          {T.viewJobs} &rarr;
-        </div>
-      )}
-    </button>
-  );
-}
-
 export default function LangSlugPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const router = useRouter();
   const [resolved, setResolved] = useState<{ lang: Lang; slug: string } | null>(null);
@@ -167,10 +147,14 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
 
   const lang = resolved?.lang || "en";
   const slug = resolved?.slug || "";
-  const [selCountry, setSelCountry] = useState("");
   const [selType, setSelType] = useState("");
-  const [selSector, setSelSector] = useState("");
+  const [selCategory, setSelCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [nlName, setNlName] = useState("");
   const [nlEmail, setNlEmail] = useState("");
@@ -179,30 +163,40 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
   const T = i18n[lang];
   const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr";
 
-  const fetchJobs = useCallback(async (country?: string) => {
+  const fetchJobs = useCallback(async (p = 1) => {
     setLoading(true);
     setFilterPulse(true);
     setTimeout(() => setFilterPulse(false), 600);
     try {
-      const p = new URLSearchParams();
-      if (country) p.set("country", country);
-      if (selType && selType !== "all") p.set("type", selType);
-      if (selSector && selSector !== "all") p.set("sector", selSector);
-      const r = await fetch(`/api/jobs?${p.toString()}`);
-      const data = await r.json();
-      setJobs(data);
-    } catch { setJobs([]); }
+      const sp = new URLSearchParams();
+      sp.set("page", String(p));
+      sp.set("limit", "18");
+      if (selType && selType !== "all") sp.set("type", selType);
+      if (selCategory && selCategory !== "all") sp.set("category", selCategory);
+      if (searchQuery) sp.set("search", searchQuery);
+      const r = await fetch(`/api/jobs?${sp.toString()}`);
+      const data: ApiResponse = await r.json();
+      setJobs(data.jobs);
+      setTotalJobs(data.total);
+      setTotalPages(data.totalPages);
+      setPage(data.page);
+    } catch { setJobs([]); setTotalJobs(0); }
     setLoading(false);
-  }, [selType, selSector]);
+  }, [selType, selCategory, searchQuery]);
 
-  useEffect(() => { fetchJobs(selCountry); }, [fetchJobs, selCountry]);
+  useEffect(() => { fetchJobs(1); }, [fetchJobs]);
 
-  const handleCountryClick = (code: string) => {
+  const handleRegionClick = (code: string) => {
     router.push(`/${lang}/${slug}/${code}`);
   };
 
-  const clearFilters = () => { setSelCountry(""); setSelType(""); setSelSector(""); };
-  const hasFilters = !!selCountry || !!selType || !!selSector;
+  const clearFilters = () => { setSelType(""); setSelCategory(""); setSearchQuery(""); setSearchInput(""); };
+  const hasFilters = !!selType || !!selCategory || !!searchQuery;
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchQuery(searchInput);
+  };
 
   if (!resolved) {
     return (
@@ -255,7 +249,20 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight mb-3">{T.heroTitle}</h1>
-          <p className="mx-auto max-w-2xl text-base sm:text-lg text-gray-300">{T.heroSub}</p>
+          <p className="mx-auto max-w-2xl text-base sm:text-lg text-gray-300 mb-6">{T.heroSub}</p>
+          {/* Search input */}
+          <form onSubmit={handleSearch} className="mx-auto max-w-lg">
+            <div className="relative">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={T.searchJobs}
+                className="w-full rounded-xl border border-white/20 bg-white/10 pl-12 pr-4 py-3.5 text-sm text-white placeholder-sky-200/60 outline-none backdrop-blur-sm focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all"
+              />
+            </div>
+          </form>
         </div>
       </section>
 
@@ -264,28 +271,56 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-4 sm:px-6 sm:grid-cols-4">
           <AnimatedCounter end={TOTAL_JOBS} suffix="+" label={T.statsJobs} />
           <AnimatedCounter end={3200} suffix="+" label={T.statsCompanies} />
-          <AnimatedCounter end={12} suffix="" label={T.statsCountries} />
-          <AnimatedCounter end={45000} suffix="+" label={T.statsUsers} />
+          <AnimatedCounter end={TOTAL_REGIONS} suffix="" label={T.statsCountries} />
+          <AnimatedCounter end={TOTAL_CATEGORIES} suffix="" label={T.statsCategories} />
         </div>
       </section>
 
-      {/* COUNTRY GRID */}
+      {/* REGION CARDS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <div className="text-center mb-8">
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{T.exploreCountries}</h2>
-          <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto">{T.exploreCountriesSub}</p>
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{T.exploreRegions}</h2>
+          <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto">{T.exploreRegionsSub}</p>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-          {COUNTRIES.map((country) => (
-            <CountryCard key={country.code} country={country} T={T} onClick={() => handleCountryClick(country.code)} lang={lang} />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+          {REGIONS.map((region) => (
+            <button
+              key={region.code}
+              onClick={() => handleRegionClick(region.code)}
+              className="group relative flex flex-col items-center gap-3 rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-sky-200 hover:-translate-y-1 active:scale-[0.97] cursor-pointer text-center"
+            >
+              <div className="text-5xl sm:text-6xl transition-transform duration-300 group-hover:scale-125">
+                {region.flag}
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-lg font-bold text-gray-800">{region.name}</span>
+                <span className="mt-1 flex items-center gap-1 text-sm text-gray-500">
+                  <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
+                  {region.jobCount.toLocaleString()} {T.jobCount}
+                </span>
+                <span className="mt-0.5 text-xs text-sky-600 font-medium">{region.currency.symbol} {region.currency.code}</span>
+              </div>
+              {/* Top 3 categories */}
+              {region.topCategories && region.topCategories.length > 0 && (
+                <div className="mt-2 flex flex-wrap justify-center gap-1">
+                  {region.topCategories.slice(0, 3).map((cat) => {
+                    const cm = getCatMeta(cat.name);
+                    return (
+                      <span key={cat.name} className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                        {cm.icon} {cat.name.split(" & ")[0].split(" ")[0]} ({cat.count.toLocaleString()})
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </button>
           ))}
         </div>
       </section>
 
-      {/* FILTER SECTION - Type & Sector */}
+      {/* FILTER SECTION - Type & Category */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-4">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          {/* Job Type Filter */}
           <div className="mb-4">
             <h3 className="text-sm font-bold text-gray-700 mb-3">{T.filterByType}</h3>
             <div className="flex flex-wrap gap-2">
@@ -294,7 +329,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
                 className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!selType ? "bg-sky-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >{T.allTypes}</button>
               {JOB_TYPES.map((t) => {
-                const tKey = TYPE_KEYS[t];
+                const tKey = t.toLowerCase() === "remoto" ? "remote" : t.toLowerCase() === "hibrido" ? "hibrido" : "presencial";
                 const label = T[tKey] || t;
                 return (
                   <button
@@ -306,22 +341,22 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
               })}
             </div>
           </div>
-          {/* Sector/Function Filter */}
           <div>
             <h3 className="text-sm font-bold text-gray-700 mb-3">{T.filterBySector}</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
               <button
-                onClick={() => setSelSector("")}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!selSector ? "bg-indigo-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                onClick={() => setSelCategory("")}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${!selCategory ? "bg-indigo-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >{T.allFunctions}</button>
-              {SECTORS.map((s) => {
-                const sName = sectorNames[lang]?.[s.key] || s.key;
+              {Object.keys(CATEGORIES_META).map((s) => {
+                const cm = CATEGORIES_META[s];
+                const sName = sectorNames[lang]?.[s] || s;
                 return (
                   <button
-                    key={s.key}
-                    onClick={() => setSelSector(selSector === s.key ? "" : s.key)}
-                    className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selSector === s.key ? "bg-gradient-to-r " + s.color + " text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                  >{s.icon} {sName}</button>
+                    key={s}
+                    onClick={() => setSelCategory(selCategory === s ? "" : s)}
+                    className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selCategory === s ? "bg-gradient-to-r " + cm.color + " text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  >{cm.icon} {sName}</button>
                 );
               })}
             </div>
@@ -334,9 +369,9 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-gray-400">{T.filterChip}</span>
-            {selCountry && (() => { const c = COUNTRIES.find(x => x.code === selCountry); return c ? <FilterChip label={`${c.flag} ${c.name}`} onRemove={() => setSelCountry("")} /> : null; })()}
-            {selType && <FilterChip label={T[TYPE_KEYS[selType]] || selType} onRemove={() => setSelType("")} />}
-            {selSector && <FilterChip label={sectorNames[lang]?.[selSector] || selSector} onRemove={() => setSelSector("")} />}
+            {selType && <FilterChip label={T[selType.toLowerCase() === "remoto" ? "remote" : selType.toLowerCase() === "hibrido" ? "hibrido" : "presencial"] || selType} onRemove={() => setSelType("")} />}
+            {selCategory && <FilterChip label={sectorNames[lang]?.[selCategory] || selCategory} onRemove={() => setSelCategory("")} />}
+            {searchQuery && <FilterChip label={`🔍 ${searchQuery}`} onRemove={() => { setSearchQuery(""); setSearchInput(""); }} />}
             <button onClick={clearFilters} className="ml-auto text-xs font-medium text-red-500 hover:text-red-600">{T.clearFilters}</button>
           </div>
         </div>
@@ -355,7 +390,7 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
                 {T.filtering}
               </div>
             )}
-            <span className={`text-sm font-medium transition-all ${filterPulse ? "text-sky-500" : "text-gray-500"}`}><span className="font-bold">{jobs.length}</span> {T.results}</span>
+            <span className={`text-sm font-medium transition-all ${filterPulse ? "text-sky-500" : "text-gray-500"}`}><span className="font-bold">{totalJobs.toLocaleString()}</span> {T.results}</span>
           </div>
         </div>
         {loading ? (
@@ -372,15 +407,33 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
           </div>
         ) : jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-4 text-5xl">\uD83D\uDD0D</div>
+            <div className="mb-4 text-5xl">🔍</div>
             <h3 className="text-lg font-semibold text-gray-700">{T.noJobs}</h3>
             <p className="mt-2 text-sm text-gray-500 max-w-xs">{T.noJobsSub}</p>
             {hasFilters && <button onClick={clearFilters} className="mt-5 rounded-xl bg-sky-500 px-6 py-2.5 text-sm font-medium text-white shadow-md hover:bg-sky-600 transition-all">{T.clearFilters}</button>}
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {jobs.map((job, i) => <JobCard key={`${job.id}-${selCountry}-${selType}-${selSector}`} job={job} index={i} lang={lang} highlighted={false} />)}
-          </div>
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {jobs.map((job) => <JobCard key={`${job.id}-${page}`} job={job} lang={lang} />)}
+            </div>
+            {/* PAGINATION */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-2">
+                <button
+                  onClick={() => fetchJobs(Math.max(1, page - 1))}
+                  disabled={page <= 1}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >&laquo; Prev</button>
+                <span className="text-sm text-gray-500">{page} {T.pageOf} {totalPages}</span>
+                <button
+                  onClick={() => fetchJobs(Math.min(totalPages, page + 1))}
+                  disabled={page >= totalPages}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >Next &raquo;</button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
@@ -391,17 +444,17 @@ export default function LangSlugPage({ params }: { params: Promise<{ lang: strin
           <p className="mb-8 text-sky-100 max-w-xl mx-auto">{T.companyRegisterSub}</p>
           <div className="grid sm:grid-cols-3 gap-4 mb-8">
             <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
-              <div className="text-3xl mb-2">\uD83D\uDD17</div>
+              <div className="text-3xl mb-2">🔗</div>
               <h3 className="font-bold text-white text-sm">{T.benefit1Title}</h3>
               <p className="text-xs text-sky-100 mt-1">{T.benefit1Desc}</p>
             </div>
             <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
-              <div className="text-3xl mb-2">\uD83C\uDF0D</div>
+              <div className="text-3xl mb-2">🌍</div>
               <h3 className="font-bold text-white text-sm">{T.benefit2Title}</h3>
               <p className="text-xs text-sky-100 mt-1">{T.benefit2Desc}</p>
             </div>
             <div className="rounded-2xl bg-white/15 backdrop-blur-sm p-5 text-center">
-              <div className="text-3xl mb-2">\uD83D\uDCAC</div>
+              <div className="text-3xl mb-2">💬</div>
               <h3 className="font-bold text-white text-sm">{T.benefit3Title}</h3>
               <p className="text-xs text-sky-100 mt-1">{T.benefit3Desc}</p>
             </div>
