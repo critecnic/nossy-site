@@ -620,7 +620,7 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "backToRegion": "Back to Region",
   },
   "pt-br": {
-    "heroTitle": "Encontre o Emprego dos Seus Sonhos",
+    "heroTitle": "Ache Aqui o Emprego dos Seus Sonhos",
     "heroSubtitle": "45.039+ vagas de tecnologia na Europa, Ásia e EUA",
     "searchPlaceholder": "Buscar vagas ou empresas...",
     "latestJobs": "Vagas Recentes",

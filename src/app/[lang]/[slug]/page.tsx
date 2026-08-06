@@ -29,7 +29,7 @@ const CATEGORIES_META: Record<string, { icon: string; color: string }> = {
   "Cybersecurity": { icon: "🔒", color: "from-red-500 to-rose-400" },
   "Engineering Leadership": { icon: "👑", color: "from-purple-500 to-indigo-400" },
   "Consulting": { icon: "🤝", color: "from-teal-500 to-cyan-400" },
-  "Data Engineering": { icon: "🗄️", color: "from-indigo-500 to-blue-400" },
+  "Data Engineering": { icon: "🗂️", color: "from-indigo-500 to-blue-400" },
   "UX/UI & Design": { icon: "🎨", color: "from-pink-500 to-rose-400" },
   "QA & Testing": { icon: "✅", color: "from-green-500 to-emerald-400" },
   "Mobile Development": { icon: "📱", color: "from-blue-600 to-violet-400" },
@@ -85,20 +85,40 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  "united-kingdom": "🇬🇧", "germany": "🇩🇪", "france": "🇫🇷", "sweden": "🇸🇪", "spain": "🇪🇸",
-  "netherlands": "🇳🇱", "ireland": "🇮🇪", "switzerland": "🇨🇭", "italy": "🇮🇹", "belgium": "🇧🇪",
-  "denmark": "🇩🇰", "norway": "🇳🇴", "finland": "🇫🇮", "austria": "🇦🇹", "poland": "🇵🇱",
-  "portugal": "🇵🇹", "czech-republic": "🇨🇿", "romania": "🇷🇴", "greece": "🇬🇷", "hungary": "🇭🇺",
-  "india": "🇮🇳", "china": "🇨🇳", "japao": "🇯🇵", "singapore": "🇸🇬", "south-korea": "🇰🇷",
-  "hong-kong": "🇭🇰", "taiwan": "🇹🇼", "united-states": "🇺🇸", "remoto-global": "🌍",
+  "united-kingdom": "🇬🇧", "germany": "🇩🇪", "france": "🇫🇷",
+  "sweden": "🇸🇪", "spain": "🇪🇸", "netherlands": "🇳🇱",
+  "ireland": "🇮🇪", "switzerland": "🇨🇭", "italy": "🇮🇹",
+  "belgium": "🇧🇪", "denmark": "🇩🇰", "norway": "🇳🇴",
+  "finland": "🇫🇮", "austria": "🇦🇹", "poland": "🇵🇱",
+  "portugal": "🇵🇹", "czech-republic": "🇨🇿", "romania": "🇷🇴",
+  "greece": "🇬🇷", "hungary": "🇭🇺", "india": "🇮🇳",
+  "china": "🇨🇳", "japao": "🇯🇵", "singapore": "🇸🇬",
+  "south-korea": "🇰🇷", "hong-kong": "🇭🇰", "taiwan": "🇹🇼",
+  "united-states": "🇺🇸", "remoto-global": "🌍",
 };
+
+/* Language dropdown component */
+function LangSelector({ lang, switchLang }: { lang: Lang; switchLang: (l: Lang) => void }) {
+  return (
+    <select
+      value={lang}
+      onChange={(e) => switchLang(e.target.value as Lang)}
+      className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent cursor-pointer shadow-sm hover:border-sky-300 transition-colors"
+    >
+      {LANGUAGES.map((l) => (
+        <option key={l.code} value={l.code}>
+          {l.flag} {l.name}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const [lang, setLang] = useState<Lang>("en");
   const [latestJobs, setLatestJobs] = useState<Job[]>([]);
   const [countries, setCountries] = useState<CountryInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -150,70 +170,32 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <span className="text-xl font-bold text-gray-900 tracking-tight">Work Versaly</span>
           </div>
 
-          {/* Language Selector - Desktop */}
-          <div className="hidden lg:flex items-center gap-1 bg-gray-50 rounded-xl p-1 max-h-10 overflow-y-auto">
-            {LANGUAGES.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => switchLang(l.code)}
-                className={"px-2 py-1 text-xs rounded-lg transition-all whitespace-nowrap " +
-                  (l.code === lang
-                    ? "bg-sky-500 text-white font-medium shadow-sm"
-                    : "text-gray-600 hover:bg-gray-200")}
-              >
-                {l.flag} {l.name.split(" (")[0]}
-              </button>
-            ))}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 rounded-lg hover:bg-gray-100">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {mobileMenuOpen
-                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
-            </svg>
-          </button>
+          {/* Language Selector - Dropdown */}
+          <LangSelector lang={lang} switchLang={switchLang} />
         </div>
-
-        {/* Mobile Language Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-100 bg-white p-3 max-h-64 overflow-y-auto">
-            <div className="grid grid-cols-3 gap-1">
-              {LANGUAGES.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => { switchLang(l.code); setMobileMenuOpen(false); }}
-                  className={"px-3 py-2 text-xs rounded-lg text-left transition-all " +
-                    (l.code === lang ? "bg-sky-500 text-white font-medium" : "bg-gray-50 text-gray-700 hover:bg-gray-100")}
-                >
-                  {l.flag} {l.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* HERO */}
-        <section className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+      {/* HERO - BLUE BANNER */}
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white py-16 sm:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-lg">
             {T.heroTitle}
           </h1>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto mb-8">
             {T.heroSubtitle}
           </p>
-          <div className="flex items-center justify-center gap-6 mt-6 text-sm text-gray-500">
+          <div className="flex items-center justify-center gap-6 text-blue-100 text-sm">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               {TOTAL_JOBS.toLocaleString()}+ {T.vacancies}
             </span>
             <span>58 {T.countries}</span>
-            <span>3 {T.browseByRegion.replace("Browse by ", "")}</span>
+            <span>3 {T.allRegions}</span>
           </div>
-        </section>
+        </div>
+      </section>
 
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* 3 REGION CARDS */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByRegion}</h2>
@@ -329,7 +311,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                       {regionCountries
                         .sort((a, b) => b.count - a.count)
                         .map((c) => {
-                          const flag = COUNTRY_FLAGS[c.slug] || "🏳️";
+                          const flag = COUNTRY_FLAGS[c.slug] || "🇳🇿";
                           return (
                             <button
                               key={c.slug}
