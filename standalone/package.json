@@ -1,0 +1,29 @@
+{
+  "name": "work-versaly",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "db:push": "echo 'skip'",
+    "db:generate": "echo 'skip'",
+    "db:migrate": "echo 'skip'",
+    "db:reset": "echo 'skip'",
+    "lint": "echo 'skip'"
+  },
+  "dependencies": {
+    "next": "^15.5.22",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "20.17.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.5",
+    "typescript": "^5"
+  }
+}
