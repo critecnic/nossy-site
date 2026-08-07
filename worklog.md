@@ -1,87 +1,28 @@
-# Work Versaly - Development Log
+# Work Log - Work Versaly Improvements
 
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Fix 502 OOM errors, add Stripe payments, paywall system, SEO
+Task: Analisar imagens e corrigir 5 problemas críticos identificados pelo usuário
 
 Work Log:
-- Converted all .json.gz files in public/data/ to plain .json (60 files)
-- Marked 2,030 jobs as paywall (4.5% of 45,039) using deterministic rules:
-  - 9% of remote jobs
-  - 6% of jobs >300k/year (USD equivalent)
-  - 15% of jobs with exclusive company emails
-  - 3% of hard-to-find companies (hash-based)
-- Removed heavy API route (/api/jobs) that loaded data server-side
-- Country pages now load JSON directly from browser (zero server file I/O)
-- Region pages load countries from /data/countries.json (21KB static)
-- Integrated Stripe via lightweight REST API (no SDK, no memory overhead)
-- Created PaywallModal component with 4 pricing plans ($2.99-$49.99)
-- Added JSON-LD structured data, hreflang tags, Open Graph & Twitter meta
-- 30+ route stress test: all 200, zero crashes
+- Analisou 5 imagens enviadas pelo usuário com anotações (VLM)
+- Identificou problemas: Logo WW, seletor idioma quebrado, filtros não funcionam, vagas não carregam, erros de texto
+- Leu todos os arquivos do projeto (pages, components, i18n, API)
+- Reescreveu SiteLogo.tsx com branding WV profissional e gradiente azul
+- Criou LangSelector.tsx como dropdown customizado com 22 idiomas, flags, checkmark
+- Reescreveu página inicial com LangSelector, hero melhorado, tratamento de erros
+- Reescreveu página de região com LangSelector e tratamento de erros
+- Reescreveu página de país com: filtro de tipo funcional, filtro de setor/secto funcional, busca por texto, botão limpar filtros, mensagem de retry em caso de erro, paginação
+- Testou build (compilou em 10.1s, 28 páginas geradas)
+- Testou todas as rotas (200 OK em todas)
+- Testou carregamento de dados (58 países, 20 latest, 537 Portugal, 19590 EUA, 3005 Índia)
+- Testou Stripe checkout API (sessão criada com sucesso)
 
 Stage Summary:
-- 502 OOM issue: SOLVED by eliminating server-side data loading
-- Stripe: Integrated via fetch to api.stripe.com (lightweight)
-- Paywall: 2,030 premium jobs marked across all regions
-- SEO: JSON-LD, hreflang for 22 languages, Open Graph, Twitter Cards
-- Build: Successful, all 29 pages generated
-- Server: Stable under load (20 consecutive requests, all 200)
----
-Task ID: 1
-Agent: main
-Task: Fix preview deployment - site not working at preview URL
-
-Work Log:
-- Diagnosed root cause: `output: 'standalone'` in next.config.ts + build script with `cp -r .next/static .next/standalone/.next/` was incompatible with preview platform
-- Removed `output: 'standalone'` from next.config.ts
-- Simplified package.json build script from `next build && cp -r ...` to just `next build`
-- Changed start script from `node .next/standalone/server.js` to `next start -H 0.0.0.0 -p ${PORT:-3000}`
-- Verified all 60 .json data files exist (all .json.gz already decompressed)
-- Fixed hreflang attribute casing in layout.tsx (hrefLang -> hreflang for SEO)
-- Clean build: 28 static pages generated, all routes compiled
-- Comprehensive test: 39/39 routes passed (22 languages, 3 regions, 8 countries, 2 PT-BR routes, static files, API, redirect)
-- Content verification: PT-BR hero title, Work Versaly brand, CRITECNIC footer, JSON-LD, OG tags all confirmed
-
-Stage Summary:
-- Root cause was standalone output mode conflicting with preview platform deployment
-- Preview URL should now work with standard next build/start
-- All 22 languages, 3 regions, 58 countries functional
-- Stripe checkout API, paywall modal, webhook all operational
----
-Task ID: 2
-Agent: main
-Task: Reconfigure for standalone deploy mode
-
-Work Log:
-- Added back output: 'standalone' to next.config.ts (preview platform requires it)
-- Updated build script: next build + cp static + cp public into standalone
-- Updated start script: node .next/standalone/server.js with 512MB limit
-- Verified standalone output: server.js, static assets, public/data all present
-- 25/25 tests passed on standalone server (22 routes + content + data + CSS/JS)
-- Total standalone size: 106MB
-
-Stage Summary:
-- Standalone mode required by preview platform container
-- All static assets properly copied and served (CSS 200, JS 200, fonts 200)
-- Clean project deployed without unnecessary files
----
-Task ID: 3
-Agent: main
-Task: Radical project cleanup for preview deployment
-
-Work Log:
-- Removed 48 unused UI components (components/ui/)
-- Removed unused hooks/, lib files (db.ts, utils.ts, currency.ts, locations.ts)
-- Removed components.json, tailwind.config.ts (v3 relics)
-- Replaced package.json: 50+ deps -> 10 deps (next, react, react-dom + 5 devDeps)
-- Removed puppeteer (150MB Chromium download), sharp, prisma, next-auth, 30+ radix-ui, framer-motion, recharts, etc.
-- npm install: 24s with 47 packages (was 500+ packages, several minutes)
-- Fixed start script: PORT env var instead of -p flag for standalone server
-- Clean build + standalone test: all routes 200
-- Standalone size: 90MB
-
-Stage Summary:
-- Project is now minimal: 12 source files, 10 npm packages
-- No heavy dependencies that could cause deployment timeout/OOM
-- All functionality preserved: 22 languages, 3 regions, 58 countries, Stripe paywall, SEO
+- Logo: WW → WV profissional com gradiente azul e tagline WORK VERSALY
+- Seletor idioma: dropdown customizado funcional com 22 idiomas
+- Filtros: tipo + setor + busca, todos funcionais com toggle
+- Jobs: carregamento robusto com tratamento de erro e retry
+- Stripe: checkout testado e funcionando
+- Build: sucesso, todas as rotas 200 OK
