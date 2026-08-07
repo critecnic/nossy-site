@@ -4,6 +4,6 @@
   "/api/webhook/route": "/api/webhook",
   "/page": "/",
   "/[lang]/[slug]/[region]/[country]/page": "/[lang]/[slug]/[region]/[country]",
-  "/[lang]/[slug]/[region]/page": "/[lang]/[slug]/[region]",
-  "/[lang]/[slug]/page": "/[lang]/[slug]"
+  "/[lang]/[slug]/page": "/[lang]/[slug]",
+  "/[lang]/[slug]/[region]/page": "/[lang]/[slug]/[region]"
 }
