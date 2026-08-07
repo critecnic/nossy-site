@@ -4,6 +4,6 @@
   "/api/webhook/route": "app/api/webhook/route.js",
   "/page": "app/page.js",
   "/[lang]/[slug]/[region]/[country]/page": "app/[lang]/[slug]/[region]/[country]/page.js",
-  "/[lang]/[slug]/page": "app/[lang]/[slug]/page.js",
-  "/[lang]/[slug]/[region]/page": "app/[lang]/[slug]/[region]/page.js"
+  "/[lang]/[slug]/[region]/page": "app/[lang]/[slug]/[region]/page.js",
+  "/[lang]/[slug]/page": "app/[lang]/[slug]/page.js"
 }
