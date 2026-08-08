@@ -9,6 +9,8 @@ import { getFlag } from "@/lib/flags";
 import { getSectorMeta, getTypeStyle, getRegionName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
+import latestData from "@/data/latest_20.json";
+import countriesData from "@/data/countries.json";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -20,20 +22,13 @@ interface CountryInfo { name: string; slug: string; region: string; count: numbe
 export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { lang: langCode } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
-  const [latest, setLatest] = useState<Job[]>([]);
-  const [countries, setCountries] = useState<CountryInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [latest, setLatest] = useState<Job[]>(latestData as Job[]);
+  const [countries, setCountries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
+  const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    setLoading(true); setDataError(false);
-    Promise.all([
-      fetch("/data/latest_20.json").then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-      fetch("/data/countries.json").then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    ]).then(([j, c]) => { setLatest(j || []); setCountries(c || []); setLoading(false); })
-      .catch(() => { setDataError(true); setLoading(false); });
-  }, []);
+  useEffect(() => { setLatest(latestData as Job[]); setCountries(countriesData as CountryInfo[]); }, []);
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";

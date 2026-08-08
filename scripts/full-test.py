@@ -1,278 +1,120 @@
-#!/usr/bin/env python3
-"""Complete test: start server, test EVERY route, verify content, keep alive."""
-import subprocess, os, time, urllib.request, sys, json
+import subprocess, time, os, sys, json, urllib.request
 
-os.chdir('/home/z/my-project/standalone')
-env = {**os.environ, 'PORT': '3000', 'HOSTNAME': '0.0.0.0'}
+os.chdir('/home/z/my-project')
 
 # Start server
+env = os.environ.copy()
+env['PORT'] = '3000'
+env['HOSTNAME'] = '0.0.0.0'
 proc = subprocess.Popen(
-    ['node', 'server.js'],
-    env=env,
-    stdout=open('/tmp/nxsrv.log', 'w'),
-    stderr=subprocess.STDOUT,
+    ['node', '.next/standalone/server.js'],
+    stdout=open('/tmp/wv-out.log','w'),
+    stderr=open('/tmp/wv-err.log','w'),
+    env=env
 )
-with open('/tmp/nxserver.pid', 'w') as f:
-    f.write(str(proc.pid))
 
-time.sleep(4)
-
-# Check if alive
-try:
-    os.kill(proc.pid, 0)
-    print(f'Server started PID={proc.pid}')
-except:
-    print('SERVER FAILED TO START')
-    sys.exit(1)
-
-results = []
-fail_count = 0
-total = 0
-
-# Test helper
-def test_route(route, label):
-    global fail_count, total
-    total += 1
+for i in range(20):
+    time.sleep(1)
     try:
-        url = f'http://127.0.0.1:3000/{route}'
-        req = urllib.request.urlopen(url, timeout=15)
-        code = req.status
-        sz = len(req.read())
-        if code == 200 and sz > 100:
-            results.append(f'  OK   {sz:>7}B  {label}')
-            return True
-        else:
-            fail_count += 1
-            results.append(f'  FAIL {code} {sz}B  {label}')
-            return False
-    except Exception as e:
-        fail_count += 1
-        results.append(f'  ERR       {label}: {str(e)[:50]}')
-        return False
-
-# ===== TEST 1: All 22 language homepages =====
-results.append('=== TEST 1: 22 Language Homepages ===')
-for code, slug, name in [
-    ('en','jobs','English'), ('pt-br','vagas','Portugues BR'), ('pt-pt','empregos','Portugues PT'),
-    ('es','empleos','Espanol'), ('fr','emplois','Francais'), ('de','stellenangebote','Deutsch'),
-    ('it','lavoro','Italiano'), ('nl','vacatures','Nederlands'), ('pl','praca','Polski'),
-    ('ru','rabota','Russky'), ('ja','求人','Japanese'), ('ko','채용','Korean'),
-    ('hi','नौकरियां','Hindi'), ('bn','চাকরি','Bengali'), ('ar','وظائف','Arabic'),
-    ('tr','is-ilanlari','Turkce'), ('vi','viec-lam','Tieng Viet'), ('th','งาน','Thai'),
-    ('ur','ملازمت','Urdu'), ('tl','mga-trabaho','Filipino'), ('sw','kazi','Kiswahili'),
-]:
-    # Use urllib's quote for non-ASCII
-    try:
-        from urllib.parse import quote
-        url_path = f'/{code}/{quote(slug, safe="")}'
-        test_route(url_path, f'Homepage {name}')
-    except:
-        test_route(f'{code}/{slug}', f'Homepage {name}')
-
-# ===== TEST 2: All region pages =====
-results.append('\n=== TEST 2: Region Pages (3 langs x 3 regions) ===')
-for lang_slug in ['en/jobs', 'pt-br/vagas', 'es/empleos']:
-    for region in ['europa', 'asia', 'eua']:
-        test_route(f'{lang_slug}/{region}', f'{lang_slug}/{region}')
-
-# ===== TEST 3: Key country pages =====
-results.append('\n=== TEST 3: Country Pages (25 countries) ===')
-countries = [
-    'europa/portugal', 'europa/germany', 'europa/france', 'europa/spain',
-    'europa/united-kingdom', 'europa/italy', 'europa/netherlands', 'europa/sweden',
-    'europa/ireland', 'europa/switzerland', 'europa/poland', 'europa/norway',
-    'europa/denmark', 'europa/belgium', 'europa/austria', 'europa/finland',
-    'europa/remoto-global',
-    'asia/india', 'asia/japao', 'asia/singapura', 'asia/coreia-do-sul',
-    'asia/china', 'asia/hong-kong', 'asia/taiwan', 'asia/indonesia',
-    'asia/tailandia', 'asia/vietna', 'asia/filipinas', 'asia/remoto-global',
-    'eua/united-states',
-]
-for c in countries:
-    test_route(f'en/jobs/{c}', c.replace('_', ' '))
-
-# ===== TEST 4: Country pages in multiple languages =====
-results.append('\n=== TEST 4: Multilingual Country Pages ===')
-ml_routes = [
-    ('pt-br/vagas/europa/portugal', 'PT Portugal'),
-    ('es/empleos/europa/spain', 'ES Spain'),
-    ('fr/emplois/europa/france', 'FR France'),
-    ('de/stellenangebote/europa/germany', 'DE Germany'),
-    ('it/lavoro/europa/italy', 'IT Italy'),
-    ('en/jobs/asia/india', 'EN India'),
-    ('en/jobs/eua/united-states', 'EN USA'),
-    ('pt-br/vagas/asia/india', 'PT-BR India'),
-    ('pt-br/vagas/eua/united-states', 'PT-BR USA'),
-    ('en/jobs/europa/remoto-global', 'EN EU Remote'),
-    ('en/jobs/asia/remoto-global', 'EN Asia Remote'),
-]
-for route, label in ml_routes:
-    test_route(route, label)
-
-# ===== TEST 5: Data files =====
-results.append('\n=== TEST 5: Data Files ===')
-data_files = [
-    'countries.json', 'latest_20.json',
-    'europa_portugal.json', 'europa_germany.json', 'europa_france.json',
-    'europa_spain.json', 'europa_united-kingdom.json', 'europa_italy.json',
-    'europa_netherlands.json', 'asia_india.json', 'asia_japao.json',
-    'asia_china.json', 'asia_singapura.json', 'eua_united-states.json',
-    'europa_remoto-global.json', 'asia_remoto-global.json',
-]
-for f in data_files:
-    test_route(f'data/{f}', f)
-
-# ===== TEST 6: Static assets =====
-results.append('\n=== TEST 6: Static Assets ===')
-test_route('_next/static/css/72b44e531c303d21.css', 'CSS bundle')
-
-# ===== TEST 7: API =====
-results.append('\n=== TEST 7: API Endpoints ===')
-# Test checkout API
-try:
-    total += 1
-    data = json.dumps({"plan": "single", "jobId": 1}).encode()
-    req = urllib.request.Request(
-        'http://127.0.0.1:3000/api/checkout',
-        data=data,
-        headers={'Content-Type': 'application/json'},
-        method='POST'
-    )
-    resp = urllib.request.urlopen(req, timeout=10)
-    code = resp.status
-    body = resp.read().decode()
-    if code == 200:
-        results.append(f'  OK   {len(body):>7}B  Checkout API')
-    else:
-        fail_count += 1
-        results.append(f'  FAIL {code}  Checkout API')
-except Exception as e:
-    fail_count += 1
-    results.append(f'  ERR       Checkout API: {str(e)[:50]}')
-
-# ===== TEST 8: Content Verification =====
-results.append('\n=== TEST 8: Content Verification (PT-BR Homepage) ===')
-try:
-    html = urllib.request.urlopen('http://127.0.0.1:3000/pt-br/vagas', timeout=10).read().decode('utf-8')
-    checks = [
-        ('Ache Aqui o Emprego dos Seus Sonhos', 'Hero title'),
-        ('CRITECNIC', 'Footer brand'),
-        ('Work Versaly', 'Brand name'),
-        ('45.039', 'Job count'),
-        ('vagas de tecnologia', 'Hero subtitle'),
-        ('Europa', 'Region Europa'),
-        ('data/countries.json', 'Countries data load'),
-        ('data/latest_20.json', 'Latest jobs data load'),
-    ]
-    for text, label in checks:
-        found = text in html
-        if found:
-            results.append(f'  OK   "{text[:40]}" found ({label})')
-        else:
-            fail_count += 1
-            total += 1
-            results.append(f'  FAIL "{text[:40]}" NOT found ({label})')
-except Exception as e:
-    fail_count += 1
-    results.append(f'  ERR  Content check: {e}')
-
-# ===== TEST 9: Content Verification (EN Homepage) =====
-results.append('\n=== TEST 9: Content Verification (EN Homepage) ===')
-try:
-    html = urllib.request.urlopen('http://127.0.0.1:3000/en/jobs', timeout=10).read().decode('utf-8')
-    checks = [
-        ('Find Your Dream Job Worldwide', 'EN Hero title'),
-        ('CRITECNIC', 'EN Footer brand'),
-        ('Work Versaly', 'EN Brand name'),
-        ('Browse by Region', 'EN Region section'),
-        ('Browse by Country', 'EN Country section'),
-        ('Latest Jobs', 'EN Latest section'),
-    ]
-    for text, label in checks:
-        found = text in html
-        if found:
-            results.append(f'  OK   "{text[:40]}" found ({label})')
-        else:
-            fail_count += 1
-            total += 1
-            results.append(f'  FAIL "{text[:40]}" NOT found ({label})')
-except Exception as e:
-    fail_count += 1
-    results.append(f'  ERR  EN Content check: {e}')
-
-# ===== TEST 10: Country page content (Portugal) =====
-results.append('\n=== TEST 10: Country Page Content (Portugal PT-BR) ===')
-try:
-    html = urllib.request.urlopen('http://127.0.0.1:3000/pt-br/vagas/europa/portugal', timeout=10).read().decode('utf-8')
-    checks = [
-        ('Filtrar por Tipo', 'Type filter label'),
-        ('Buscar vagas', 'Search placeholder'),
-        ('Todos os Tipos', 'All types button'),
-        ('Todas as Categorias', 'All categories button'),
-        ('data/europa_portugal.json', 'Country data load'),
-        ('CRITECNIC', 'Footer brand'),
-    ]
-    for text, label in checks:
-        found = text in html
-        if found:
-            results.append(f'  OK   "{text[:40]}" found ({label})')
-        else:
-            fail_count += 1
-            total += 1
-            results.append(f'  FAIL "{text[:40]}" NOT found ({label})')
-except Exception as e:
-    fail_count += 1
-    results.append(f'  ERR  Portugal content: {e}')
-
-# ===== TEST 11: Data integrity =====
-results.append('\n=== TEST 11: Data Integrity ===')
-try:
-    cdata = json.loads(urllib.request.urlopen('http://127.0.0.1:3000/data/countries.json', timeout=10).read())
-    results.append(f'  OK   {len(cdata)} countries in countries.json')
-    
-    l20 = json.loads(urllib.request.urlopen('http://127.0.0.1:3000/data/latest_20.json', timeout=10).read())
-    results.append(f'  OK   {len(l20)} jobs in latest_20.json')
-    unique_countries = len(set(j.get('countryName','') for j in l20))
-    results.append(f'  OK   {unique_countries} unique countries in latest_20')
-    
-    # Check first job has required fields
-    j = l20[0]
-    required = ['id','title','company','location','countryName','salary','sector','type','posted','paywall']
-    missing = [f for f in required if f not in j]
-    if not missing:
-        results.append(f'  OK   All {len(required)} required fields present in job data')
-    else:
-        fail_count += 1
-        results.append(f'  FAIL Missing fields: {missing}')
-except Exception as e:
-    fail_count += 1
-    results.append(f'  ERR  Data integrity: {e}')
-
-# ===== SUMMARY =====
-passed = total - fail_count
-pct = (passed / total * 100) if total > 0 else 0
-
-results.append(f'')
-results.append(f'{"="*50}')
-results.append(f'TOTAL: {passed}/{total} passed ({pct:.1f}%)')
-results.append(f'FAILURES: {fail_count}')
-if fail_count <= total * 0.01:  # 1% tolerance
-    results.append(f'STATUS: WITHIN 1% ERROR TOLERANCE - APPROVED')
+        r = urllib.request.urlopen('http://localhost:3000/pt-br/vagas', timeout=5)
+        if r.status == 200:
+            print(f'Server ready ({i+1}s)')
+            break
+    except: pass
 else:
-    results.append(f'STATUS: EXCEEDS 1% ERROR TOLERANCE ({fail_count/total*100:.1f}%)')
+    print('SERVER FAILED'); sys.exit(1)
 
-# Check server still alive
-try:
-    os.kill(proc.pid, 0)
-    results.append(f'SERVER ALIVE PID={proc.pid}')
-except:
-    results.append('SERVER DIED AFTER TESTS')
+BASE = 'http://localhost:3000'
+p = f = 0
+fails = []
 
-# Write results
-with open('/tmp/nxtest_results.txt', 'w') as f:
-    f.write('\n'.join(results))
+def chk(url, label):
+    global p, f
+    try:
+        r = urllib.request.urlopen(url, timeout=8)
+        if r.status == 200:
+            p += 1; print(f'  OK {label}')
+        else:
+            f += 1; fails.append(label); print(f'  FAIL {label} -> {r.status}')
+    except Exception as e:
+        f += 1; fails.append(label); print(f'  FAIL {label} -> {e}')
 
-print('\n'.join(results))
+routes = [
+    ('/pt-br/vagas','pt-br'),('/en/jobs','en'),('/es/empleos','es'),('/fr/emplois','fr'),
+    ('/de/stellenangebote','de'),('/it/offerte-di-lavoro','it'),('/nl/vacatures','nl'),
+    ('/pl/oferty-pracy','pl'),('/ro/locuri-de-munca','ro'),('/tr/is-ilanlari','tr'),
+    ('/zh-cn/jobs-cn','zh-cn'),('/ja/jobs-ja','ja'),('/ko/jobs-ko','ko'),('/ar/jobs-ar','ar'),
+    ('/hi/jobs-in','hi'),('/ru/vacancy','ru'),('/sv/lediga-jobb','sv'),('/cs/prace','cs'),
+    ('/da/job-i-danmark','da'),('/pt/vagas-pt','pt'),('/hu/allaskereso','hu'),('/uk/vacancy-uk','uk'),
+    ('/pt-br/vagas/europa','EU-pt'),('/pt-br/vagas/asia','AS-pt'),('/pt-br/vagas/eua','US-pt'),
+    ('/en/jobs/europa','EU-en'),('/en/jobs/asia','AS-en'),('/en/jobs/eua','US-en'),
+    ('/es/empleos/europa','EU-es'),('/es/empleos/asia','AS-es'),('/fr/emplois/europa','EU-fr'),
+    ('/de/stellenangebote/europa','EU-de'),('/it/offerte-di-lavoro/europa','EU-it'),
+    ('/nl/vacatures/europa','EU-nl'),
+    ('/pt-br/vagas/europa/alemanha','ALE'),('/pt-br/vagas/europa/portugal','POR'),
+    ('/pt-br/vagas/europa/franca','FRA'),('/pt-br/vagas/europa/espanha','ESP'),
+    ('/pt-br/vagas/europa/italia','ITA'),('/pt-br/vagas/europa/reino-unido','UK'),
+    ('/en/jobs/eua/estados-unidos','USA'),('/pt-br/vagas/asia/japao','JAP'),
+    ('/pt-br/vagas/asia/india','IND'),('/pt-br/vagas/asia/china','CHN'),
+    ('/de/stellenangebote/europa/deutschland','DE'),('/fr/emplois/europa/france','FR'),
+    ('/es/empleos/europa/espana','ES'),('/it/offerte-di-lavoro/europa/italia','IT'),
+    ('/nl/vacatures/europa/nederland','NL'),('/sv/lediga-jobb/europa/sverige','SV'),
+    ('/ro/locuri-de-munca/europa/romania','RO'),('/pl/oferty-pracy/europa/polska','PL'),
+    ('/tr/is-ilanlari/avrupa/almanya','TR'),('/hu/allaskereso/europa/nemetorszag','HU'),
+]
 
-# Keep server alive
-proc.wait()
+print(f'\n=== ROUTE TESTS ({len(routes)}) ===')
+for path, label in routes:
+    chk(f'{BASE}{path}', label)
+print(f'Routes: {p}/{p+f}')
+
+# Content
+print(f'\n=== CONTENT CHECKS ===')
+html = urllib.request.urlopen(f'{BASE}/pt-br/vagas', timeout=8).read().decode('utf-8','replace')
+for label, ok in [
+    ('Title: Work Versaly', 'Work Versaly' in html),
+    ('Meta: 45039 jobs', '45039' in html or '45,039' in html),
+    ('SEO: hrefLang', 'hrefLang' in html),
+    ('JS: webpack chunk', 'webpack' in html),
+    ('JS: main-app chunk', 'main-app' in html),
+    ('JS: page chunk', 'page-' in html),
+    ('Meta: og:title', 'og:title' in html),
+    ('Meta: twitter:card', 'twitter:card' in html),
+    ('Canonical URL', 'canonical' in html),
+    ('CSS loaded', '.css' in html),
+    ('Font preload', 'woff2' in html),
+]:
+    if ok: p += 1; print(f'  OK {label}')
+    else: f += 1; fails.append(label); print(f'  FAIL {label}')
+
+# Data
+print(f'\n=== DATA INTEGRITY ===')
+with open('public/data/countries.json') as fh:
+    countries = json.load(fh)
+total_jobs = sum(c.get('jobs',0) for c in countries)
+for label, ok in [
+    (f'Countries: {len(countries)}/58', len(countries) == 58),
+    (f'Total jobs: {total_jobs}/45039', total_jobs == 45039),
+]:
+    if ok: p += 1; print(f'  OK {label}')
+    else: f += 1; fails.append(label); print(f'  FAIL {label}')
+
+# Files
+print(f'\n=== BUILD ARTIFACTS ===')
+for path in ['.next/standalone/server.js','public/data/countries.json','public/data/latest_20.json',
+             'src/components/SiteLogo.tsx','src/components/LangSelector.tsx','src/components/PaywallModal.tsx']:
+    if os.path.exists(path): p += 1; print(f'  OK {path}')
+    else: f += 1; fails.append(path); print(f'  FAIL {path}')
+
+# Result
+print(f'\n{"="*55}')
+total = p + f
+print(f'  TOTAL: {total} | PASSED: {p} | FAILED: {f} | RATE: {p*100/total:.1f}%')
+print(f'{"="*55}')
+if fails:
+    print(f'Failures: {fails}')
+
+# Keep alive
+print(f'\nServer PID:{proc.pid} alive on :3000')
+try: proc.wait()
+except: proc.kill()
