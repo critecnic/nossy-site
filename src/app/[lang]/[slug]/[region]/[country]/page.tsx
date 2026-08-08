@@ -10,7 +10,6 @@ import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
 import PaywallModal from "@/components/PaywallModal";
 import countriesData from "@/data/countries.json";
-import { SLUG_TO_ENGLISH } from "@/lib/slug-map";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -43,8 +42,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   useEffect(() => {
     if (!rc || !cc) return;
     setLoading(true); setDataError(false); setLoadProgress(10);
-    const enSlug = SLUG_TO_ENGLISH[cc] || cc;
-    fetch("/api/data/country?file=" + encodeURIComponent(rc + "_" + enSlug + ".json"))
+    fetch("/api/data/country?file=" + encodeURIComponent(rc + "_" + cc + ".json"))
       .then(r => { setLoadProgress(50); if (!r.ok) throw new Error(); return r.json(); })
       .then((data: Job[]) => {
         setLoadProgress(90);

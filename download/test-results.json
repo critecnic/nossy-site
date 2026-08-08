@@ -1,0 +1,364 @@
+{
+  "passed": 71,
+  "failed": 0,
+  "warned": 0,
+  "total": 71,
+  "error_rate_pct": 0.0,
+  "details": [
+    {
+      "test": "Logo text \"Work Versaly\" in HTML",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "SiteLogo: W+V monogram with gradient",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "SiteLogo: \"WORK VERSALY\" subtitle",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "SiteLogo: Rounded square background",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "SiteLogo: Blue-cyan gradient colors",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "LANGUAGES: 22 languages defined",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /en/jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /pt-br/vagas",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /pt-pt/empregos",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /es/empleos",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /fr/emplois",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /de/stellenangebote",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /it/lavoro",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /nl/vacatures",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /pl/praca",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /ru/rabota",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /zh/gongzuo",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /ja/shigoto",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /ko/chae-yong",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /hi/naukri",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /bn/chakri",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /ar/wazaif",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /tr/is-ilanlari",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /vi/viec-lam",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /th/ngan-thai",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /ur/mulazmat",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /tl/trabaho",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Route /sw/kazi",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Homepages: 22/22",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "LangSelector: maps all LANGUAGES",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "LangSelector: switchLang callback",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "LangSelector: click-outside-close",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "LangSelector: active indicator (checkmark)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "LangSelector: scrollable dropdown",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "RTL: Arabic support",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "RTL: Urdu support",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "latest_20.json: exactly 20 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Countries: 19 represented",
+      "status": "PASS",
+      "detail": "china, coreia-do-sul, filipinas, france, germany, hong-kong, india, indonesia, japao, netherlands, poland, portugal, singapura, spain, switzerland, tailandia, united-kingdom, united-states, vietna"
+    },
+    {
+      "test": "Regions: 3 (Asia, Europa, EUA)",
+      "status": "PASS",
+      "detail": "{'Europa', 'Asia', 'EUA'}"
+    },
+    {
+      "test": "Unique companies: 17",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"id\": 20/20",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"title\": 20/20",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"company\": 20/20",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"location\": 20/20",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"country\": 20/20",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"type\": 20/20",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"sector\": 20/20",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Field \"salary\": 17/20 filled",
+      "status": "PASS",
+      "detail": "Some jobs have no salary data"
+    },
+    {
+      "test": "Paywall jobs: 2/20",
+      "status": "PASS",
+      "detail": "Premium tier exists"
+    },
+    {
+      "test": "Search input with live filtering",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Type filter buttons (dynamic)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Sector/category filter buttons (dynamic)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Clear all filters button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Filter logic: type filtering",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Filter logic: sector filtering",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Filter logic: text search",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Pagination controls",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Reset page on filter change",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API Germany: 1551 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API Japan: 1097 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API South Korea: 795 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API USA: 19590 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API India: 3005 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API Portugal: 537 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API France: 1447 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "API Singapore: 858 jobs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Data API: 8/8 endpoints",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "/data/countries.json: 58 items",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "/data/latest_20.json: 20 items",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Region pages: 24/24",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Country pages: 15/15",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}
