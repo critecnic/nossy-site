@@ -46,14 +46,7 @@ wait_for_service() {
     return 1
 }
 
-cleanup() {
-    if [ -n "${DEV_PID:-}" ] && kill -0 "$DEV_PID" >/dev/null 2>&1; then
-        echo "Stopping Next.js server (PID: $DEV_PID)..."
-        kill "$DEV_PID" >/dev/null 2>&1 || true
-    fi
-}
-
-trap cleanup EXIT INT TERM
+# No cleanup trap - let the server persist after dev.sh exits
 
 cd "$PROJECT_DIR"
 
@@ -82,9 +75,12 @@ else
     echo "Standalone build found at .next/standalone/server.js"
 fi
 
+# Always copy static assets to standalone/public
+cp -f public/favicon.ico public/logo.svg public/logo.png .next/standalone/public/ 2>/dev/null || true
+
 log_step_start "Starting Next.js server"
 echo "Starting server on port 3000..."
-PORT=3000 HOSTNAME=0.0.0.0 node .next/standalone/server.js &
+PORT=3000 HOSTNAME=0.0.0.0 bun .next/standalone/server.js &
 DEV_PID=$!
 log_step_end "Starting Next.js server"
 

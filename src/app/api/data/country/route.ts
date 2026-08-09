@@ -4,7 +4,7 @@ import path from "path";
 
 export async function GET(req: NextRequest) {
   const file = req.nextUrl.searchParams.get("file");
-  if (!file || !/^[a-z\-_.]+\.json$/.test(file)) {
+  if (!file || !/^[a-z0-9\-_.]+\.json$/.test(file)) {
     return NextResponse.json({ error: "Invalid file" }, { status: 400 });
   }
   try {
