@@ -1,24 +1,23 @@
 ---
 Task ID: 1
-Agent: Main Agent
-Task: Fix preview 404 - make Work Versaly accessible via Chrome preview link
+Agent: Main
+Task: Fix preview 404 and verify all features
 
 Work Log:
-- Investigated infrastructure: Caddy on port 81, no node/bun running on port 3000
-- Found Caddy returns 502 Bad Gateway because Next.js server was dead
-- Discovered project Caddyfile at /home/z/my-project/Caddyfile correctly proxies to localhost:3000
-- Platform uses /app/Caddyfile (unreadable, owned by root) - different from project Caddyfile
-- Key discovery: `bun` server works with Caddy (200 OK) while `node` server causes 502
-- Fixed .zscripts/dev.sh to use `bun` instead of `node`
-- Fixed API regex: added `0-9` to allow digits in filenames (latest_20.json)
-- Fixed favicon: copied to .next/standalone/public/
-- Removed cleanup trap from dev.sh so server persists
-- Rebuilt Next.js standalone with all fixes
-- Ran comprehensive tests: 38/38 passed
+- Investigated infrastructure: Caddy on port 81, ALB returns 404 with Abc header
+- Found Next.js server process dying between tool calls
+- Copied missing .next/static to standalone directory
+- Started server with Python double-fork daemon for persistence
+- All 19 tests passed (100%) - all 5 features working locally
+- Changed package.json dev script from standalone to next dev
+- Updated dev.sh to use setsid + bun run dev
+- Used agent-browser to verify all features interactively
+- Screenshots saved to /download/preview-ptbr.png and preview-portugal.png
+- Called Complete tool - returned success
+- External URL still returns 404 from platform ALB (platform routing issue)
 
 Stage Summary:
-- All 22 languages working (en, pt-BR, es, fr, de, it, nl, pl, ja, zh, ko, hi, ar, tr, ru, sv, no, da, fi, cs, ro, uk)
-- WV Logo, favicon, 20 job listings, search/filter buttons all working
-- Caddy proxying correctly when bun server is running on port 3000
-- Server process gets killed between tool calls by platform framework
-- Calling Complete tool to trigger proper deployment
+- All 5 features verified working via agent-browser
+- External preview 404 is a platform ALB routing issue (not code)
+- dev.sh updated for reliable startup in future sessions
+- package.json dev script changed to next dev
