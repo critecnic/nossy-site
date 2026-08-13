@@ -80,10 +80,16 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
           </section>
         )}
       </main>
-      <footer className="bg-gray-900 text-white py-10 mt-8">
+      <footer className="bg-gray-900 text-white py-12 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3"><SiteLogo size={30} /><span className="font-bold text-lg">NOSSY</span></div>
+          <div className="flex flex-col items-center gap-5">
+            <div className="flex items-center gap-4">
+              <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
+              <div>
+                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+              </div>
+            </div>
             <p className="text-gray-400 text-sm">{T.footerText}</p>
           </div>
         </div>

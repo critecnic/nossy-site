@@ -56,8 +56,12 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-300 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-5 leading-tight drop-shadow-lg">{T.heroTitle}</h1>
-          <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
+          <div className="flex justify-center mb-6">
+            <img src="/logo.png" alt="NOSSY" className="w-28 h-28 sm:w-36 sm:h-36 rounded-[22%] shadow-2xl ring-4 ring-white/20" />
+          </div>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-lg">NOSSY</h1>
+          <p className="text-lg sm:text-xl text-blue-100 max-w-xl mx-auto mb-2 italic">Seek and you shall find.</p>
+          <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
           <div className="flex items-center justify-center flex-wrap gap-x-8 gap-y-3 text-blue-100 text-sm">
             <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" /><strong>{TOTAL_JOBS.toLocaleString()}+</strong> {T.vacancies}</span>
             <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg><strong>58</strong> {T.countries}</span>
@@ -150,12 +154,23 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         </section>
       </main>
 
-      <footer className="bg-gray-900 text-white py-10 mt-8">
+      <footer className="bg-gray-900 text-white py-12 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3"><SiteLogo size={30} /><span className="font-bold text-lg">NOSSY</span></div>
-            <p className="text-gray-400 text-sm">{T.footerText}</p>
-            <div className="flex items-center gap-4 text-gray-400 text-xs"><span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span><span className="text-gray-600">|</span><span>58 {T.countries}</span></div>
+          <div className="flex flex-col items-center gap-5">
+            <div className="flex items-center gap-4">
+              <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
+              <div>
+                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 text-gray-400 text-sm">
+              <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
+              <span className="text-gray-600">|</span>
+              <span>58 {T.countries}</span>
+              <span className="text-gray-600">|</span>
+              <span>{T.footerText}</span>
+            </div>
           </div>
         </div>
       </footer>
