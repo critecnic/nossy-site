@@ -5,16 +5,16 @@ import React from 'react';
 let _uid = 0;
 
 /**
- * Work Versaly - Professional Logo
- * Modern WV monogram with gradient accents on dark rounded square.
+ * NOSSY - Seek and you shall find.
+ * Modern N monogram with gradient accents on dark rounded square.
  */
 export default function SiteLogo({ size = 40 }: { size?: number }) {
   const uid = typeof window !== "undefined" ? ++_uid : 0;
   const s = size;
-  const gp = "wvP" + uid;
-  const ga = "wvA" + uid;
-  const gb = "wvBg" + uid;
-  const gcl = "wvCl" + uid;
+  const gp = "nsP" + uid;
+  const ga = "nsA" + uid;
+  const gb = "nsBg" + uid;
+  const gcl = "nsCl" + uid;
 
   return (
     <svg width={s} height={s} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -44,9 +44,9 @@ export default function SiteLogo({ size = 40 }: { size?: number }) {
       <g clipPath={"url(#" + gcl + ")"} opacity="0.08">
         <circle cx="-5" cy="125" r="55" fill="#22d3ee" />
       </g>
-      <text x="6" y="80" fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif" fontSize="58" fontWeight="800" fill={"url(#" + gp + ")"} letterSpacing="-3">W</text>
-      <text x="52" y="80" fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif" fontSize="58" fontWeight="300" fill={"url(#" + ga + ")"} letterSpacing="-3">V</text>
-      <text x="60" y="106" fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif" fontSize="7.5" fontWeight="700" fill="rgba(59,130,246,0.45)" textAnchor="middle" letterSpacing="4.5">WORK VERSALY</text>
+      {/* N letter - bold modern monogram */}
+      <text x="16" y="82" fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif" fontSize="68" fontWeight="800" fill={"url(#" + gp + ")"} letterSpacing="-2">N</text>
+      <text x="60" y="106" fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif" fontSize="7" fontWeight="700" fill="rgba(59,130,246,0.45)" textAnchor="middle" letterSpacing="3">NOSSY</text>
     </svg>
   );
 }

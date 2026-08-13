@@ -44,7 +44,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <button onClick={() => router.push("/" + lang + "/" + LANG_SLUGS[lang])} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <SiteLogo size={38} />
-            <span className="text-xl font-bold text-gray-900 tracking-tight">Work Versaly</span>
+            <span className="text-xl font-bold text-gray-900 tracking-tight">NOSSY</span>
           </button>
           <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l])} />
         </div>
@@ -153,7 +153,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
       <footer className="bg-gray-900 text-white py-10 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3"><SiteLogo size={30} /><span className="font-bold text-lg">Work Versaly</span></div>
+            <div className="flex items-center gap-3"><SiteLogo size={30} /><span className="font-bold text-lg">NOSSY</span></div>
             <p className="text-gray-400 text-sm">{T.footerText}</p>
             <div className="flex items-center gap-4 text-gray-400 text-xs"><span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span><span className="text-gray-600">|</span><span>58 {T.countries}</span></div>
           </div>

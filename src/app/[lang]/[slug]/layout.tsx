@@ -15,8 +15,8 @@ export async function generateMetadata({
   const langCfg = LANGUAGES.find((l) => l.code === lang);
   const total = TOTAL_JOBS.toLocaleString();
   return {
-    title: "Work Versaly | " + (langCfg?.name || lang) + " | " + total + "+ " + (lang === "pt-br" || lang === "pt-pt" ? "Vagas" : "Jobs"),
-    description: "Browse " + total + "+ tech job vacancies across Europe, Asia and USA. " + (langCfg?.name || "") + " version by CRITECNIC. Free to browse!",
+    title: "NOSSY | " + (langCfg?.name || lang) + " | " + total + "+ " + (lang === "pt-br" || lang === "pt-pt" ? "Vagas" : "Jobs"),
+    description: "NOSSY - Seek and you shall find. Browse " + total + "+ tech job vacancies across Europe, Asia and USA. Free to browse!",
     alternates: {
       canonical: "/" + lang + "/" + slug,
       languages: Object.fromEntries(LANGUAGES.map((l) => [l.code, "/" + l.code + "/" + LANG_SLUGS[l.code]])),

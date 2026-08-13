@@ -1,4 +1,4 @@
-// Work Versaly Global Region Configuration
+// NOSSY Global Region Configuration - Seek and you shall find.
 // 3 major regions: Europa, Asia, EUA
 
 export interface CountryCurrency {
@@ -33,7 +33,7 @@ export const REGIONS: RegionConfig[] = [
     direction: 'ltr',
     jobCount: 14987,
     seoKeywords: ['jobs in Europe', 'European jobs 2025', 'tech jobs Europe', 'IT jobs EU', 'software engineer Europe', 'remote jobs Europe', 'developer jobs EU', 'careers Europe'],
-    seoTitle: 'Jobs in Europe | Latest Tech Job Vacancies & Careers 2025 - Work Versaly',
+    seoTitle: 'Jobs in Europe | Latest Tech Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest tech job vacancies in Europe. 14,987+ open positions across 40 countries. Top companies hiring in Software Engineering, Data Science, Cloud & more. Free to browse!',
     countries: {},
     topCategories: [
@@ -56,7 +56,7 @@ export const REGIONS: RegionConfig[] = [
     direction: 'ltr',
     jobCount: 10462,
     seoKeywords: ['jobs in Asia', 'Asian jobs 2025', 'tech jobs Asia', 'IT jobs Asia', 'software engineer Asia', 'remote jobs Asia', 'developer jobs India', 'careers Asia'],
-    seoTitle: 'Jobs in Asia | Latest Tech Job Vacancies & Careers 2025 - Work Versaly',
+    seoTitle: 'Jobs in Asia | Latest Tech Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest tech job vacancies in Asia. 10,462+ open positions across 17 countries. Top companies hiring in Software Engineering, Data Science, Cloud & more. Free to browse!',
     countries: {},
     topCategories: [
@@ -79,7 +79,7 @@ export const REGIONS: RegionConfig[] = [
     direction: 'ltr',
     jobCount: 19590,
     seoKeywords: ['jobs in USA', 'US jobs 2025', 'tech jobs United States', 'IT jobs USA', 'software engineer USA', 'remote jobs US', 'developer jobs America', 'careers USA'],
-    seoTitle: 'Jobs in USA | Latest Tech Job Vacancies & Careers 2025 - Work Versaly',
+    seoTitle: 'Jobs in USA | Latest Tech Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest tech job vacancies in the United States. 19,590+ open positions. Top companies hiring in Software Engineering, Data Science, Cloud & more. Free to browse!',
     countries: {},
     topCategories: [

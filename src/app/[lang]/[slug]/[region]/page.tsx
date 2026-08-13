@@ -43,7 +43,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={goHome} className="hover:opacity-80 transition-opacity"><SiteLogo size={38} /></button>
-            <button onClick={goHome} className="text-xl font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors">Work Versaly</button>
+            <button onClick={goHome} className="text-xl font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors">NOSSY</button>
             <span className="text-gray-300 mx-2 hidden sm:inline">/</span>
             <span className="text-sky-600 font-semibold hidden sm:inline">{rName}</span>
           </div>
@@ -83,7 +83,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
       <footer className="bg-gray-900 text-white py-10 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3"><SiteLogo size={30} /><span className="font-bold text-lg">Work Versaly</span></div>
+            <div className="flex items-center gap-3"><SiteLogo size={30} /><span className="font-bold text-lg">NOSSY</span></div>
             <p className="text-gray-400 text-sm">{T.footerText}</p>
           </div>
         </div>

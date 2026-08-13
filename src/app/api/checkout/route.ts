@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || 'sk_test_51U1XOpRjA2xJfO7NxWqTZhOEe3u6GjIfUgjwmSYqhVN9eRP3peJJ6Hho4bxHuigjFTc3oUrer2s3q8DOIeMXqh9u00BQegCITN';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://workversely.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.com';
 
 const PLANS: Record<string, { amount: number; name: string }> = {
   single: { amount: 299, name: 'Single Job Contact' },

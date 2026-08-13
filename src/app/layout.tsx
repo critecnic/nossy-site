@@ -6,24 +6,24 @@ import "./globals.css";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Work Versaly | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide | CRITECNIC",
-  description: "Work Versaly by CRITECNIC: Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA. Free global job search with real salaries and top companies. Find remote, hybrid and on-site positions in Software Engineering, Data Science, Cloud, AI and more.",
-  keywords: ["jobs", "tech jobs", "job search", "careers", "remote jobs", "Work Versaly", "CRITECNIC", "jobs in Europe", "jobs in Asia", "jobs in USA", "software engineer jobs", "data science jobs", "cloud jobs", "AI jobs", "developer jobs", "IT vacancies 2025", "work from home jobs"],
-  authors: [{ name: "CRITECNIC" }],
-  creator: "CRITECNIC",
-  publisher: "CRITECNIC",
-  metadataBase: new URL("https://workversely.com"),
+  title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide | Seek and you shall find.",
+  description: "NOSSY - Seek and you shall find. Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA. Free global job search with real salaries and top companies. Find remote, hybrid and on-site positions in Software Engineering, Data Science, Cloud, AI and more.",
+  keywords: ["jobs", "tech jobs", "job search", "careers", "remote jobs", "NOSSY", "seek and find", "jobs in Europe", "jobs in Asia", "jobs in USA", "software engineer jobs", "data science jobs", "cloud jobs", "AI jobs", "developer jobs", "IT vacancies 2025", "work from home jobs"],
+  authors: [{ name: "NOSSY" }],
+  creator: "NOSSY",
+  publisher: "NOSSY",
+  metadataBase: new URL("https://nossy.com"),
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    siteName: "Work Versaly",
-    title: "Work Versaly | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide",
-    description: "Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA by CRITECNIC.",
+    siteName: "NOSSY",
+    title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide | Seek and you shall find.",
+    description: "Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA. NOSSY - Seek and you shall find.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Work Versaly | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs",
-    description: "Find your dream tech job across Europe, Asia and USA.",
+    title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs",
+    description: "Find your dream tech job across Europe, Asia and USA. NOSSY - Seek and you shall find.",
   },
 };
 
@@ -31,14 +31,14 @@ function JsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Work Versaly",
-    "alternateName": "CRITECNIC Jobs",
-    "url": "https://workversely.com",
+    "name": "NOSSY",
+    "alternateName": "NOSSY Jobs",
+    "url": "https://nossy.com",
     "description": "Browse " + TOTAL_JOBS + "+ tech job vacancies across Europe, Asia and USA",
-    "publisher": { "@type": "Organization", "name": "CRITECNIC" },
+    "publisher": { "@type": "Organization", "name": "NOSSY" },
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://workversely.com/en/jobs?search={search_term_string}",
+      "target": "https://nossy.com/en/jobs?search={search_term_string}",
       "query-input": "required name=search_term_string"
     },
     "inLanguage": ["en", "pt-br", "pt-pt", "es", "fr", "de", "it", "nl", "pl", "ru", "zh", "ja", "ko", "hi", "bn", "ar", "tr", "vi", "th", "ur", "tl", "sw"],
