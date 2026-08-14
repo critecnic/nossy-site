@@ -6,10 +6,12 @@ import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
-import { getSectorMeta, getTypeStyle, getRegionName } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName } from "@/lib/shared";
+import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
+import LangUpdater from "@/components/LangUpdater";
 import latestData from "@/data/latest_20.json";
 import countriesData from "@/data/countries.json";
 
@@ -39,6 +41,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
+      <LangUpdater lang={lang} />
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href={homeHref} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -77,6 +80,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {REGIONS.map((r) => {
               const sm = getSectorMeta(r.topCategories?.[0]?.name || "Other");
+              const rc = byRegion[r.code] || [];
               return (
               <Link key={r.code} href={homeHref + "/" + r.code} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-300">
                 <div className={"absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity " + sm.color} />
@@ -85,7 +89,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <h2 className="text-xl font-bold text-gray-900 mb-1">{getRegionName(lang, r.code)}</h2>
                   <p className="text-3xl font-extrabold text-sky-600">{r.jobCount.toLocaleString()}+</p>
                   <p className="text-sm text-gray-500 mt-1">{T.vacancies}</p>
-                  {byRegion[r.code] && <p className="text-xs text-gray-400 mt-2">{byRegion[r.code].length} {T.countries}</p>}
+                  {rc.length > 0 && <p className="text-xs text-gray-400 mt-2">{getCountryCountLabel(rc.length, lang, T.countries)}</p>}
                 </div>
               </Link>);
             })}
@@ -118,7 +122,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
                     <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
                     <div className="p-4">
-                      <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{job.type}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
+                      <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
                       <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{job.title}</h3>
                       <p className="text-xs font-medium text-gray-600 mb-2">{job.company}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
@@ -140,13 +144,13 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <div key={region.code}>
                     <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
                       <span className="text-xl">{region.flag}</span> {getRegionName(lang, region.code)}
-                      <span className="text-sm font-normal text-gray-400">({rc.length} {T.countries})</span>
+                      <span className="text-sm font-normal text-gray-400"> ({getCountryCountLabel(rc.length, lang, T.countries)})</span>
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                       {rc.sort((a, b) => b.count - a.count).map((c) => (
                         <Link key={c.slug} href={homeHref + "/" + region.code + "/" + c.slug} className="group flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all">
                           <span className="text-3xl">{getFlag(c.slug)}</span>
-                          <span className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2 group-hover:text-sky-600 transition-colors">{c.name}</span>
+                          <span className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2 group-hover:text-sky-600 transition-colors">{getCountryNameTranslated(c.slug, lang, c.name)}</span>
                           <span className="text-xs font-bold text-sky-600">{c.count.toLocaleString()}</span>
                         </Link>))}
                     </div></div>);
