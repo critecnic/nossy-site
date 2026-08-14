@@ -54,34 +54,6 @@ function JsonLd() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-function HrefLangTags() {
-  const links = [
-    { hreflang: "x-default", href: "https://nossy.pro/en/jobs" },
-    { hreflang: "en", href: "https://nossy.pro/en/jobs" },
-    { hreflang: "pt-br", href: "https://nossy.pro/pt-br/vagas" },
-    { hreflang: "es", href: "https://nossy.pro/es/empleos" },
-    { hreflang: "fr", href: "https://nossy.pro/fr/emplois" },
-    { hreflang: "de", href: "https://nossy.pro/de/stellenangebote" },
-    { hreflang: "it", href: "https://nossy.pro/it/lavoro" },
-    { hreflang: "nl", href: "https://nossy.pro/nl/vacatures" },
-    { hreflang: "pl", href: "https://nossy.pro/pl/praca" },
-    { hreflang: "ru", href: "https://nossy.pro/ru/rabota" },
-    { hreflang: "zh", href: "https://nossy.pro/zh/gongzuo" },
-    { hreflang: "ja", href: "https://nossy.pro/ja/shigoto" },
-    { hreflang: "ko", href: "https://nossy.pro/ko/chae-yong" },
-    { hreflang: "hi", href: "https://nossy.pro/hi/naukri" },
-    { hreflang: "bn", href: "https://nossy.pro/bn/chakri" },
-    { hreflang: "ar", href: "https://nossy.pro/ar/wazaif" },
-    { hreflang: "tr", href: "https://nossy.pro/tr/is-ilanlari" },
-    { hreflang: "vi", href: "https://nossy.pro/vi/viec-lam" },
-    { hreflang: "th", href: "https://nossy.pro/th/ngan-thai" },
-    { hreflang: "ur", href: "https://nossy.pro/ur/mulazmat" },
-    { hreflang: "tl", href: "https://nossy.pro/tl/trabaho" },
-    { hreflang: "sw", href: "https://nossy.pro/sw/kazi" },
-  ];
-  return <>{links.map(l => <link key={l.hreflang} rel="alternate" hrefLang={l.hreflang} href={l.href} />)}</>;
-}
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -89,7 +61,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#0f172a" />
         <meta name="google" content="notranslate" />
-        <HrefLangTags />
         <JsonLd />
       </head>
       <body className={geistSans.variable + " antialiased bg-gray-50 text-gray-900"}>

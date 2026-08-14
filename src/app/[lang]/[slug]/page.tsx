@@ -85,7 +85,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <h2 className="text-xl font-bold text-gray-900 mb-1">{getRegionName(lang, r.code)}</h2>
                   <p className="text-3xl font-extrabold text-sky-600">{r.jobCount.toLocaleString()}+</p>
                   <p className="text-sm text-gray-500 mt-1">{T.vacancies}</p>
-                  {byRegion[r.code] && <p className="text-xs text-gray-400 mt-2">{byRegion[r.code].length === 1 ? ("1 " + T.countries.replace(/s$/, "")) : (byRegion[r.code].length + " " + T.countries)}</p>}
+                  {byRegion[r.code] && <p className="text-xs text-gray-400 mt-2">{byRegion[r.code].length} {T.countries}</p>}
                 </div>
               </Link>);
             })}
@@ -140,7 +140,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <div key={region.code}>
                     <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
                       <span className="text-xl">{region.flag}</span> {getRegionName(lang, region.code)}
-                      <span className="text-sm font-normal text-gray-400">({rc.length === 1 ? ("1 " + T.countries.replace(/s$/, "")) : (rc.length + " " + T.countries)})</span>
+                      <span className="text-sm font-normal text-gray-400">({rc.length} {T.countries})</span>
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                       {rc.sort((a, b) => b.count - a.count).map((c) => (
