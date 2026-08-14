@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 
-const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || 'sk_test_51U1XOpRjA2xJfO7NxWqTZhOEe3u6GjIfUgjwmSYqhVN9eRP3peJJ6Hho4bxHuigjFTc3oUrer2s3q8DOIeMXqh9u00BQegCITN';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.com';
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.pro';
 
 const PLANS: Record<string, { amount: number; name: string }> = {
-  single: { amount: 299, name: 'Single Job Contact' },
-  pack5: { amount: 999, name: '5 Job Contacts Pack' },
-  pack10: { amount: 1799, name: '10 Job Contacts Pack' },
-  unlimited: { amount: 4999, name: 'Unlimited Access (30 days)' },
+  single: { amount: 699, name: '1 Job Contact' },
+  pack5: { amount: 1199, name: '5 Job Contacts Pack' },
+  pack10: { amount: 1900, name: '10 Job Contacts Pack' },
+  lifetime: { amount: 11900, name: 'Lifetime Unlimited Access' },
 };
 
 export async function POST(request: Request) {
@@ -15,7 +15,13 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const { plan, jobId, lang } = body;
     const pk = plan || 'single';
-    const planCfg = PLANS[pk] || PLANS.single;
+    const planCfg = PLANS[pk];
+    if (!planCfg) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
+
+    if (!STRIPE_SECRET) {
+      return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
+    }
+
     const langCode = lang || 'en';
     const baseUrl = BASE_URL.replace(/\/$/, '');
 
