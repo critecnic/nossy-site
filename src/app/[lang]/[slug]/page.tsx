@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -27,14 +27,12 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
   const [countries, setCountries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
   const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState(false);
-  const router = useRouter();
 
   useEffect(() => { setLatest(latestData as Job[]); setCountries(countriesData as CountryInfo[]); }, []);
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
-  function goRegion(r: string) { router.push("/" + lang + "/" + LANG_SLUGS[lang] + "/" + r); }
-  function goCountry(r: string, c: string) { router.push("/" + lang + "/" + LANG_SLUGS[lang] + "/" + r + "/" + c); }
+  const homeHref = "/" + lang + "/" + LANG_SLUGS[lang];
 
   const byRegion: Record<string, CountryInfo[]> = {};
   for (const c of countries) { if (!byRegion[c.region]) byRegion[c.region] = []; byRegion[c.region].push(c); }
@@ -43,11 +41,11 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
     <div dir={isRtl ? "rtl" : "ltr"}>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <button onClick={() => router.push("/" + lang + "/" + LANG_SLUGS[lang])} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href={homeHref} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <SiteLogo size={38} />
             <NossyBrand variant="dark" size={28} className="h-7 w-auto" />
-          </button>
-          <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l])} />
+          </Link>
+          <LangSelector lang={lang} switchLang={(l) => window.location.href = "/" + l + "/" + LANG_SLUGS[l]} />
         </div>
       </header>
 
@@ -61,7 +59,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <img src="/logo.png" alt="NOSSY" className="w-28 h-28 sm:w-36 sm:h-36 rounded-[22%] shadow-2xl ring-4 ring-white/20" />
           </div>
           <div className="flex justify-center mb-4">
-            <img src="/brand/nossy-white-48.png" alt="NOSSY" className="w-48 sm:w-64 md:w-80 h-auto" draggable={false} />
+            <NossyBrand variant="white" size={48} className="w-48 sm:w-64 md:w-80 h-auto" />
           </div>
           <p className="text-lg sm:text-xl text-blue-100 max-w-xl mx-auto mb-2 italic">Seek and you shall find.</p>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
@@ -75,21 +73,21 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <section className="mb-14">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByRegion}</h2>
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByRegion}</h1>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {REGIONS.map((r) => {
               const sm = getSectorMeta(r.topCategories?.[0]?.name || "Other");
               return (
-              <button key={r.code} onClick={() => goRegion(r.code)} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-300">
+              <Link key={r.code} href={homeHref + "/" + r.code} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-300">
                 <div className={"absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity " + sm.color} />
                 <div className="relative">
                   <span className="text-4xl mb-3 block">{r.flag}</span>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{getRegionName(lang, r.code)}</h3>
+                  <h2 className="text-xl font-bold text-gray-900 mb-1">{getRegionName(lang, r.code)}</h2>
                   <p className="text-3xl font-extrabold text-sky-600">{r.jobCount.toLocaleString()}+</p>
                   <p className="text-sm text-gray-500 mt-1">{T.vacancies}</p>
-                  {byRegion[r.code] && <p className="text-xs text-gray-400 mt-2">{byRegion[r.code].length} {T.countries}</p>}
+                  {byRegion[r.code] && <p className="text-xs text-gray-400 mt-2">{byRegion[r.code].length === 1 ? ("1 " + T.countries.replace(/s$/, "")) : (byRegion[r.code].length + " " + T.countries)}</p>}
                 </div>
-              </button>);
+              </Link>);
             })}
           </div>
         </section>
@@ -97,14 +95,14 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         <section className="mb-14">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">{T.latestJobs}</h2>
-            <button onClick={() => goRegion("europa")} className="text-sky-600 hover:text-sky-700 text-sm font-semibold flex items-center gap-1 group">
+            <Link href={homeHref + "/europa"} className="text-sky-600 hover:text-sky-700 text-sm font-semibold flex items-center gap-1 group">
               {T.viewAllJobs}
               <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
+            </Link>
           </div>
           {dataError ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-3xl mb-2">⚠️</p>
+              <p className="text-3xl mb-2">&#9888;&#65039;</p>
               <p>{T.error}</p>
               <button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">Recarregar</button>
             </div>
@@ -142,15 +140,15 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <div key={region.code}>
                     <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
                       <span className="text-xl">{region.flag}</span> {getRegionName(lang, region.code)}
-                      <span className="text-sm font-normal text-gray-400">({rc.length} {T.countries})</span>
+                      <span className="text-sm font-normal text-gray-400">({rc.length === 1 ? ("1 " + T.countries.replace(/s$/, "")) : (rc.length + " " + T.countries)})</span>
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                       {rc.sort((a, b) => b.count - a.count).map((c) => (
-                        <button key={c.slug} onClick={() => goCountry(region.code, c.slug)} className="group flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all">
+                        <Link key={c.slug} href={homeHref + "/" + region.code + "/" + c.slug} className="group flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all">
                           <span className="text-3xl">{getFlag(c.slug)}</span>
                           <span className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2 group-hover:text-sky-600 transition-colors">{c.name}</span>
                           <span className="text-xs font-bold text-sky-600">{c.count.toLocaleString()}</span>
-                        </button>))}
+                        </Link>))}
                     </div></div>);
               })}
             </div>)}
@@ -160,13 +158,13 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
       <footer className="bg-gray-900 text-white py-12 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col items-center gap-5">
-            <div className="flex items-center gap-4">
-              <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
+            <Link href={homeHref} className="flex items-center gap-4">
+              <SiteLogo size={48} />
               <div>
                 <NossyBrand variant="white" size={36} className="h-9 w-auto" />
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
-            </div>
+            </Link>
             <div className="flex items-center gap-6 text-gray-400 text-sm">
               <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
               <span className="text-gray-600">|</span>

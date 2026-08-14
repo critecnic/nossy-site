@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, use, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -33,8 +33,11 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
   const [countries, setCountries] = useState<any[]>(countriesData);
-  const router = useRouter();
   const PER = 18;
+
+  const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
+  const regionHref = homeHref + "/" + rc;
+  const countryHref = regionHref + "/" + cc;
 
   useEffect(() => { setCountries(countriesData); }, []);
 
@@ -74,8 +77,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
 
-  const goHome = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs")), [lang, router]);
-  const goRegion = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc), [lang, router, rc]);
   useEffect(() => { setPage(1); }, [search, typeFilter, sectorFilter]);
 
   const hasActiveFilters = typeFilter || sectorFilter || search;
@@ -86,22 +87,22 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <button onClick={goHome} className="hover:opacity-80 transition-opacity flex-shrink-0"><SiteLogo size={36} /></button>
-            <button onClick={goHome} className="hover:opacity-80 transition-colors hidden sm:block"><NossyBrand variant="dark" size={24} className="h-6 w-auto" /></button>
+            <Link href={homeHref} className="hover:opacity-80 transition-opacity flex-shrink-0"><SiteLogo size={36} /></Link>
+            <Link href={homeHref} className="hover:opacity-80 transition-colors hidden sm:block"><NossyBrand variant="dark" size={24} className="h-6 w-auto" /></Link>
             <span className="text-gray-300 mx-1 hidden md:inline">/</span>
-            <button onClick={goRegion} className="text-sky-600 font-semibold hover:underline hidden md:inline truncate">{rName}</button>
+            <Link href={regionHref} className="text-sky-600 font-semibold hover:underline hidden md:inline truncate">{rName}</Link>
             <span className="text-gray-300 mx-1 hidden md:inline">/</span>
             <span className="text-gray-700 font-semibold hidden md:inline truncate">{countryName}</span>
           </div>
-          <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc)} />
+          <LangSelector lang={lang} switchLang={(l) => window.location.href = "/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc} />
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-          <button onClick={goHome} className="hover:text-sky-600 transition-colors">{T.backToHome}</button>
+          <Link href={homeHref} className="hover:text-sky-600 transition-colors">{T.backToHome}</Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          <button onClick={goRegion} className="hover:text-sky-600 transition-colors">{rName}</button>
+          <Link href={regionHref} className="hover:text-sky-600 transition-colors">{rName}</Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           <span className="text-gray-900 font-medium">{countryName || cc}</span>
         </nav>
@@ -157,12 +158,12 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
           </div>
         ) : dataError ? (
           <div className="text-center py-16 text-gray-400">
-            <p className="text-4xl mb-3">⚠️</p><p className="text-lg">{T.error}</p>
+            <p className="text-4xl mb-3">&#128269;</p><p className="text-lg">{T.error}</p>
             <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">Recarregar</button>
           </div>
         ) : actualTotal === 0 ? (
           <div className="text-center py-16 text-gray-400">
-            <p className="text-5xl mb-4">🔍</p>
+            <p className="text-5xl mb-4">&#128269;</p>
             <p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p>
             <p className="text-sm mt-1">Tente ajustar seus filtros</p>
             {hasActiveFilters && (<button onClick={clearFilters} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.allTypes}</button>)}
@@ -176,7 +177,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h3>
+                  <h2 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h2>
                   <p className="text-xs font-medium text-gray-600 mb-1">{job.company}</p>
                   <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job)}</span></div>
@@ -202,13 +203,13 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       <footer className="bg-gray-900 text-white py-12 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col items-center gap-5">
-            <div className="flex items-center gap-4">
-              <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
+            <Link href={homeHref} className="flex items-center gap-4">
+              <SiteLogo size={48} />
               <div>
                 <NossyBrand variant="white" size={36} className="h-9 w-auto" />
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
-            </div>
+            </Link>
             <p className="text-gray-400 text-sm">{T.footerText}</p>
           </div>
         </div>
