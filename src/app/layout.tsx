@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   authors: [{ name: "NOSSY" }],
   creator: "NOSSY",
   publisher: "NOSSY",
-  metadataBase: new URL("https://nossy.com"),
+  metadataBase: new URL("https://nossy.pro"),
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
@@ -33,12 +33,12 @@ function JsonLd() {
     "@type": "WebSite",
     "name": "NOSSY",
     "alternateName": "NOSSY Jobs",
-    "url": "https://nossy.com",
+    "url": "https://nossy.pro",
     "description": "Browse " + TOTAL_JOBS + "+ tech job vacancies across Europe, Asia and USA",
     "publisher": { "@type": "Organization", "name": "NOSSY" },
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://nossy.com/en/jobs?search={search_term_string}",
+      "target": "https://nossy.pro/en/jobs?search={search_term_string}",
       "query-input": "required name=search_term_string"
     },
     "inLanguage": ["en", "pt-br", "pt-pt", "es", "fr", "de", "it", "nl", "pl", "ru", "zh", "ja", "ko", "hi", "bn", "ar", "tr", "vi", "th", "ur", "tl", "sw"],
@@ -48,12 +48,12 @@ function JsonLd() {
 
 function HrefLangTags() {
   const links = [
-    { hreflang: "en", href: "/en/jobs" },
-    { hreflang: "pt-BR", href: "/pt-br/vagas" },
-    { hreflang: "es", href: "/es/empleos" },
-    { hreflang: "fr", href: "/fr/emplois" },
-    { hreflang: "de", href: "/de/stellenangebote" },
-    { hreflang: "x-default", href: "/en/jobs" },
+    { hreflang: "en", href: "https://nossy.pro/en/jobs" },
+    { hreflang: "pt-BR", href: "https://nossy.pro/pt-br/vagas" },
+    { hreflang: "es", href: "https://nossy.pro/es/empleos" },
+    { hreflang: "fr", href: "https://nossy.pro/fr/emplois" },
+    { hreflang: "de", href: "https://nossy.pro/de/stellenangebote" },
+    { hreflang: "x-default", href: "https://nossy.pro/en/jobs" },
   ];
   return <>{links.map(l => <link key={l.hreflang} rel="alternate" hrefLang={l.hreflang} href={l.href} />)}</>;
 }
