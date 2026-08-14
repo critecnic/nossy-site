@@ -8,6 +8,7 @@ import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
 import { getSectorMeta, getTypeStyle, getRegionName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
+import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
 import latestData from "@/data/latest_20.json";
 import countriesData from "@/data/countries.json";
@@ -44,7 +45,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <button onClick={() => router.push("/" + lang + "/" + LANG_SLUGS[lang])} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <SiteLogo size={38} />
-            <span className="text-xl font-bold text-gray-900 tracking-tight">NOSSY</span>
+            <NossyBrand variant="dark" size={28} className="h-7 w-auto" />
           </button>
           <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l])} />
         </div>
@@ -59,7 +60,9 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
           <div className="flex justify-center mb-6">
             <img src="/logo.png" alt="NOSSY" className="w-28 h-28 sm:w-36 sm:h-36 rounded-[22%] shadow-2xl ring-4 ring-white/20" />
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-lg">NOSSY</h1>
+          <div className="flex justify-center mb-4">
+            <img src="/brand/nossy-white-48.png" alt="NOSSY" className="w-48 sm:w-64 md:w-80 h-auto" draggable={false} />
+          </div>
           <p className="text-lg sm:text-xl text-blue-100 max-w-xl mx-auto mb-2 italic">Seek and you shall find.</p>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
           <div className="flex items-center justify-center flex-wrap gap-x-8 gap-y-3 text-blue-100 text-sm">
@@ -160,7 +163,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <div className="flex items-center gap-4">
               <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
               <div>
-                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+                <NossyBrand variant="white" size={36} className="h-9 w-auto" />
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
             </div>
