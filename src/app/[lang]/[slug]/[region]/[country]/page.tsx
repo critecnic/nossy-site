@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, formatSalary, getRegionName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
-import PaywallModal from "@/components/PaywallModal";
 import countriesData from "@/data/countries.json";
 
 interface Job {
@@ -33,7 +32,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [typeFilter, setTypeFilter] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [paywallJob, setPaywallJob] = useState<Job | null>(null);
   const [countries, setCountries] = useState<any[]>(countriesData);
   const router = useRouter();
   const PER = 18;
@@ -75,7 +73,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
-  const pw = getPaywallText(lang);
 
   const goHome = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs")), [lang, router]);
   const goRegion = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc), [lang, router, rc]);
@@ -86,8 +83,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
-      <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)} jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ''} lang={lang} company={paywallJob?.company || ''} />
-
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -179,7 +174,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             return (
               <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
-                {job.paywall && <div className="absolute top-3 right-3 z-10"><span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200 shadow-sm">{pw.premium}</span></div>}
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
                   <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h3>
@@ -187,18 +181,14 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                   <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
-                  {job.paywall ? (
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.description || ''}</p>
-                      <button onClick={() => setPaywallJob(job)} className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm flex items-center justify-center gap-1.5">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                        {pw.unlock}
-                      </button>
+                  {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
+                  {job.contactEmail && (
+                    <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      <a href={"mailto:" + job.contactEmail} className="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors truncate">{job.contactEmail}</a>
                     </div>
-                  ) : (<>
-                    {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
-                    {job.company && <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-gray-400">{job.company}</span>}
-                  </>)}
+                  )}
+                  {!job.contactEmail && job.company && <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-gray-400">{job.company}</span>}
                 </div></article>);
           })}</div>
           {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
