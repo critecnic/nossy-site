@@ -8,6 +8,7 @@ import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
 import { getRegionName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
+import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
 
 interface CountryInfo { name: string; slug: string; region: string; count: number; }
@@ -43,7 +44,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={goHome} className="hover:opacity-80 transition-opacity"><SiteLogo size={38} /></button>
-            <button onClick={goHome} className="text-xl font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors">NOSSY</button>
+            <button onClick={goHome} className="hover:text-sky-600 transition-colors"><NossyBrand variant="dark" size={28} className="h-7 w-auto" /></button>
             <span className="text-gray-300 mx-2 hidden sm:inline">/</span>
             <span className="text-sky-600 font-semibold hidden sm:inline">{rName}</span>
           </div>
@@ -86,7 +87,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
             <div className="flex items-center gap-4">
               <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
               <div>
-                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+                <NossyBrand variant="white" size={36} className="h-9 w-auto" />
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
             </div>

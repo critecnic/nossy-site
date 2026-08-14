@@ -7,6 +7,7 @@ import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
+import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
 import PaywallModal from "@/components/PaywallModal";
 import countriesData from "@/data/countries.json";
@@ -91,7 +92,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button onClick={goHome} className="hover:opacity-80 transition-opacity flex-shrink-0"><SiteLogo size={36} /></button>
-            <button onClick={goHome} className="text-lg font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors hidden sm:block">NOSSY</button>
+            <button onClick={goHome} className="hover:opacity-80 transition-colors hidden sm:block"><NossyBrand variant="dark" size={24} className="h-6 w-auto" /></button>
             <span className="text-gray-300 mx-1 hidden md:inline">/</span>
             <button onClick={goRegion} className="text-sky-600 font-semibold hover:underline hidden md:inline truncate">{rName}</button>
             <span className="text-gray-300 mx-1 hidden md:inline">/</span>
@@ -196,7 +197,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                     </div>
                   ) : (<>
                     {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
-                    {job.companyUrl && <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors">{T.applyNow}<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>}
+                    {job.company && <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-gray-400">{job.company}</span>}
                   </>)}
                 </div></article>);
           })}</div>
@@ -214,7 +215,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             <div className="flex items-center gap-4">
               <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
               <div>
-                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+                <NossyBrand variant="white" size={36} className="h-9 w-auto" />
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
             </div>
