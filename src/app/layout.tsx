@@ -64,6 +64,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#0f172a" />
+        <meta name="google" content="notranslate" />
         <HrefLangTags />
         <JsonLd />
       </head>
