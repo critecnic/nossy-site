@@ -19,19 +19,11 @@ export const metadata: Metadata = {
     siteName: "NOSSY",
     title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide | Seek and you shall find.",
     description: "Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA. NOSSY - Seek and you shall find.",
-    url: "https://nossy.pro",
-    images: [{ url: "/og/og-default.png", width: 1200, height: 630, alt: "NOSSY - 45,039+ Tech Jobs Worldwide" }],
-    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs",
     description: "Find your dream tech job across Europe, Asia and USA. NOSSY - Seek and you shall find.",
-    images: ["/og/og-default.png"],
-  },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -54,13 +46,25 @@ function JsonLd() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
+function HrefLangTags() {
+  const links = [
+    { hreflang: "en", href: "/en/jobs" },
+    { hreflang: "pt-BR", href: "/pt-br/vagas" },
+    { hreflang: "es", href: "/es/empleos" },
+    { hreflang: "fr", href: "/fr/emplois" },
+    { hreflang: "de", href: "/de/stellenangebote" },
+    { hreflang: "x-default", href: "/en/jobs" },
+  ];
+  return <>{links.map(l => <link key={l.hreflang} rel="alternate" hrefLang={l.hreflang} href={l.href} />)}</>;
+}
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#0f172a" />
-        <meta name="google" content="notranslate" />
+        <HrefLangTags />
         <JsonLd />
       </head>
       <body className={geistSans.variable + " antialiased bg-gray-50 text-gray-900"}>
