@@ -83,9 +83,63 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const hasActiveFilters = typeFilter || sectorFilter || search;
   function clearFilters() { setTypeFilter(""); setSectorFilter(""); setSearch(""); }
 
+  // JobPosting JSON-LD for Google Jobs
+  const jobPostingSchema = paged.slice(0, 10).map(job => ({
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    "title": job.title,
+    "description": job.description || `Tech job: ${job.title} at ${job.company} in ${job.location}`,
+    "datePosted": job.posted || undefined,
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": job.company,
+      "sameAs": job.companyUrl || undefined,
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": job.location?.split(',').pop()?.trim() || countryName,
+        "addressCountry": countryName,
+      },
+    },
+    ...(job.salaryMin || job.salaryMax ? {
+      "baseSalary": {
+        "@type": "MonetaryAmount",
+        "currency": job.salaryCurrency || "USD",
+        "value": {
+          "@type": "QuantitativeValue",
+          "minValue": job.salaryMin || undefined,
+          "maxValue": job.salaryMax || undefined,
+          "unitText": job.salaryPeriod === 'year' ? 'YEAR' : job.salaryPeriod === 'month' ? 'MONTH' : 'HOUR',
+        },
+      },
+    } : {}),
+    "employmentType": job.type === 'Remoto' || job.type === 'Remote' ? 'FULL_TIME' : 'FULL_TIME',
+    "workHours": job.type === 'Remoto' || job.type === 'Remote' ? 'FLEXIBLE' : undefined,
+    "url": job.companyUrl || undefined,
+  }));
+
+  // BreadcrumbList schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "NOSSY", "item": "https://nossy.pro" },
+      { "@type": "ListItem", "position": 2, "name": rName, "item": `https://nossy.pro/${lang}/${LANG_SLUGS[lang]}/${rc}` },
+      { "@type": "ListItem", "position": 3, "name": countryName || cc, "item": `https://nossy.pro/${lang}/${LANG_SLUGS[lang]}/${rc}/${cc}` },
+    ],
+  };
+
+  const allSchemas = [breadcrumbSchema, ...jobPostingSchema];
+
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
       <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)} jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ''} lang={lang} company={paywallJob?.company || ''} />
+
+      {allSchemas.map((schema, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      ))}
 
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
