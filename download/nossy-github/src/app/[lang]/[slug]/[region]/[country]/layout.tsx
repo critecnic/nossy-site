@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { LANGUAGES, LANG_SLUGS } from '@/lib/i18n';
 import type { Lang } from '@/lib/i18n';
-import { SLUG_TO_ENGLISH } from '@/lib/slug-map';
 import countriesData from '@/data/countries.json';
 
 interface CountryInfo { name: string; slug: string; region: string; count: number; }

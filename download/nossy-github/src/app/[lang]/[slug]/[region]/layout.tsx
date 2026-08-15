@@ -10,9 +10,9 @@ const REGION_EN: Record<string, string> = {
 };
 
 const REGION_META: Record<string, { flag: string; count: number }> = {
-  'europa': { flag: '\u{1F1EA}\u{1F1FA}', count: 14987 },
-  'asia': { flag: '\u{1F1E8}\u{1F1F3}', count: 10462 },
-  'eua': { flag: '\u{1F1FA}\u{1F1F8}', count: 19590 },
+  'europa': { flag: '\u{1F1EA}\u{1F1FA}', count: 14853 },
+  'asia': { flag: '\u{1F1E8}\u{1F1F3}', count: 10328 },
+  'eua': { flag: '\u{1F1FA}\u{1F1F8}', count: 19046 },
 };
 
 export function generateStaticParams() {

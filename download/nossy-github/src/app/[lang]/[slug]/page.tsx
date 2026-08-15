@@ -13,7 +13,7 @@ import latestData from "@/data/latest_20.json";
 import countriesData from "@/data/countries.json";
 
 interface Job {
-  id: number; title: string; company: string; companyUrl: string;
+  id: number; title: string; company: string;
   location: string; country: string; countryName: string;
   salary: string; description: string; sector: string; posted: string; type: string; paywall: boolean;
 }
