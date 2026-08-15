@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName, getLocalizedCountryName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
 import PaywallModal from "@/components/PaywallModal";
@@ -47,7 +47,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       .then((data: Job[]) => {
         setLoadProgress(90);
         setAllJobs(data || []);
-        if (data && data.length > 0) setCountryName(data[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc);
+        if (data && data.length > 0) setCountryName(getLocalizedCountryName(data[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc, lang));
         setLoadProgress(100); setLoading(false);
       }).catch(() => { setDataError(true); setLoading(false); });
   }, [rc, cc]);
@@ -55,7 +55,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   useEffect(() => {
     if (countryName || !cc || countries.length === 0) return;
     const m = countries.find((c: any) => c.slug === cc);
-    if (m) setCountryName(m.name);
+    if (m) setCountryName(getLocalizedCountryName(m.name, lang));
   }, [countries, cc, countryName]);
 
   const filtered = allJobs.filter(j => {
@@ -88,7 +88,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)} jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ''} lang={lang} company={paywallJob?.company || ''} />
 
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button onClick={goHome} className="hover:opacity-80 transition-opacity flex-shrink-0"><SiteLogo size={36} /></button>
             <button onClick={goHome} className="text-lg font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors hidden sm:block">NOSSY</button>
@@ -98,7 +98,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             <span className="text-gray-700 font-semibold hidden md:inline truncate">{countryName}</span>
           </div>
           <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc)} />
-        </div>
+        </nav>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">

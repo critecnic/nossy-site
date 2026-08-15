@@ -21,6 +21,13 @@ export async function generateMetadata({
       canonical: "/" + lang + "/" + slug,
       languages: Object.fromEntries(LANGUAGES.map((l) => [l.code, "/" + l.code + "/" + LANG_SLUGS[l.code]])),
     },
+    openGraph: {
+      url: "/" + lang + "/" + slug,
+      title: "NOSSY | " + (langCfg?.name || lang) + " | " + total + "+ " + (lang === "pt-br" || lang === "pt-pt" ? "Vagas" : "Jobs"),
+      description: "NOSSY - Seek and you shall find. Browse " + total + "+ tech job vacancies across Europe, Asia and USA. Free to browse!",
+      type: "website",
+      siteName: "NOSSY",
+    },
     robots: { index: true, follow: true },
   };
 }
