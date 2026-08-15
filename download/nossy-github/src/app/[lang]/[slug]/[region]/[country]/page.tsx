@@ -9,7 +9,6 @@ import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
 import PaywallModal from "@/components/PaywallModal";
-import JobDetailModal from "@/components/JobDetailModal";
 import countriesData from "@/data/countries.json";
 
 interface Job {
@@ -34,7 +33,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
   const [paywallJob, setPaywallJob] = useState<Job | null>(null);
-  const [detailJob, setDetailJob] = useState<Job | null>(null);
+
   const [countries, setCountries] = useState<any[]>(countriesData);
   const router = useRouter();
   const PER = 18;
@@ -135,7 +134,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
-      <JobDetailModal isOpen={!!detailJob} onClose={() => setDetailJob(null)} job={detailJob} lang={lang} />
       <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)} jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ''} lang={lang} company={paywallJob?.company || ''} />
 
       {allSchemas.map((schema, i) => (
@@ -231,7 +229,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
             const m = getSectorMeta(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = getTypeStyle(job.type);
             return (
-              <article key={job.id} onClick={() => !job.paywall && setDetailJob(job)} className={"group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100 " + (!job.paywall ? "cursor-pointer" : "")}>
+              <a key={job.id} href={"/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + job.id} target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100 block">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
                 {job.paywall && <div className="absolute top-3 right-3 z-10"><span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200 shadow-sm">{pw.premium}</span></div>}
                 <div className="p-4">
@@ -252,7 +250,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                   ) : (<>
                     {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
                   </>)}
-                </div></article>);
+                </div></a>);
           })}</div>
           {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.prevPage}</button>
