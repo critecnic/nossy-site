@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
+import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeLabel, getRegionName, getLocalizedCountryName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
