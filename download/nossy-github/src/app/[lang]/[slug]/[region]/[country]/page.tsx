@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, use, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName, getLocalizedCountryName } from "@/lib/shared";
@@ -19,8 +19,11 @@ interface Job {
   paywall: boolean; contactEmail: string;
 }
 
-export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
-  const { lang: langCode, region: rc, country: cc } = use(params);
+export default function CountryPage() {
+  const params = useParams();
+  const langCode = String(params.lang || "en");
+  const rc = String(params.region || "");
+  const cc = String(params.country || "");
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [countryName, setCountryName] = useState("");
@@ -56,7 +59,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     if (countryName || !cc || countries.length === 0) return;
     const m = countries.find((c: any) => c.slug === cc);
     if (m) setCountryName(getLocalizedCountryName(m.name, lang));
-  }, [countries, cc, countryName]);
+  }, [countries, cc, countryName, lang]);
 
   const filtered = allJobs.filter(j => {
     if (typeFilter && typeFilter !== 'all' && j.type?.toLowerCase() !== typeFilter.toLowerCase()) return false;
@@ -83,49 +86,25 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const hasActiveFilters = typeFilter || sectorFilter || search;
   function clearFilters() { setTypeFilter(""); setSectorFilter(""); setSearch(""); }
 
-  // JobPosting JSON-LD for Google Jobs
   const jobPostingSchema = paged.slice(0, 10).map(job => ({
     "@context": "https://schema.org",
     "@type": "JobPosting",
     "title": job.title,
-    "description": job.description || `Tech job: ${job.title} at ${job.company} in ${job.location}`,
+    "description": job.description || ("Tech job: " + job.title + " at " + job.company + " in " + job.location),
     "datePosted": job.posted || undefined,
-    "hiringOrganization": {
-      "@type": "Organization",
-      "name": job.company,
-    },
-    "jobLocation": {
-      "@type": "Place",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": job.location?.split(',').pop()?.trim() || countryName,
-        "addressCountry": countryName,
-      },
-    },
-    ...(job.salaryMin || job.salaryMax ? {
-      "baseSalary": {
-        "@type": "MonetaryAmount",
-        "currency": job.salaryCurrency || "USD",
-        "value": {
-          "@type": "QuantitativeValue",
-          "minValue": job.salaryMin || undefined,
-          "maxValue": job.salaryMax || undefined,
-          "unitText": job.salaryPeriod === 'year' ? 'YEAR' : job.salaryPeriod === 'month' ? 'MONTH' : 'HOUR',
-        },
-      },
-    } : {}),
-    "employmentType": job.type === 'Remoto' || job.type === 'Remote' ? 'FULL_TIME' : 'FULL_TIME',
-    "workHours": job.type === 'Remoto' || job.type === 'Remote' ? 'FLEXIBLE' : undefined,
+    "hiringOrganization": { "@type": "Organization", "name": job.company },
+    "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": job.location?.split(',').pop()?.trim() || countryName, "addressCountry": countryName } },
+    ...(job.salaryMin || job.salaryMax ? { "baseSalary": { "@type": "MonetaryAmount", "currency": job.salaryCurrency || "USD", "value": { "@type": "QuantitativeValue", "minValue": job.salaryMin || undefined, "maxValue": job.salaryMax || undefined, "unitText": job.salaryPeriod === 'year' ? 'YEAR' : job.salaryPeriod === 'month' ? 'MONTH' : 'HOUR' } } } : {}),
+    "employmentType": "FULL_TIME",
   }));
 
-  // BreadcrumbList schema
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "NOSSY", "item": "https://nossy.pro" },
-      { "@type": "ListItem", "position": 2, "name": rName, "item": `https://nossy.pro/${lang}/${LANG_SLUGS[lang]}/${rc}` },
-      { "@type": "ListItem", "position": 3, "name": countryName || cc, "item": `https://nossy.pro/${lang}/${LANG_SLUGS[lang]}/${rc}/${cc}` },
+      { "@type": "ListItem", "position": 2, "name": rName, "item": "https://nossy.pro/" + lang + "/" + LANG_SLUGS[lang] + "/" + rc },
+      { "@type": "ListItem", "position": 3, "name": countryName || cc, "item": "https://nossy.pro/" + lang + "/" + LANG_SLUGS[lang] + "/" + rc + "/" + cc },
     ],
   };
 
@@ -213,12 +192,12 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
           </div>
         ) : dataError ? (
           <div className="text-center py-16 text-gray-400">
-            <p className="text-4xl mb-3">⚠️</p><p className="text-lg">{T.error}</p>
+            <p className="text-4xl mb-3">&#9888;&#65039;</p><p className="text-lg">{T.error}</p>
             <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">Recarregar</button>
           </div>
         ) : actualTotal === 0 ? (
           <div className="text-center py-16 text-gray-400">
-            <p className="text-5xl mb-4">🔍</p>
+            <p className="text-5xl mb-4">&#128269;</p>
             <p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p>
             <p className="text-sm mt-1">Tente ajustar seus filtros</p>
             {hasActiveFilters && (<button onClick={clearFilters} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.allTypes}</button>)}

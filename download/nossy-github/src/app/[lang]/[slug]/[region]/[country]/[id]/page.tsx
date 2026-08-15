@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, use, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getTypeLabel, getRegionName, getLocalizedCountryName } from "@/lib/shared";
+import { getSectorMeta, getRegionName, getLocalizedCountryName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
-import countriesData from "@/data/countries.json";
 
 interface Job {
   id: number; title: string; company: string;
@@ -35,8 +34,12 @@ const fbEN = DL["en"];
 const langKeys = ["zh","ja","ko","hi","bn","ar","tr","vi","th","ur","tl","sw"];
 for (const k of langKeys) { if (!DL[k]) DL[k] = { ...fbEN }; }
 
-export default function JobDetailPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string; id: string }> }) {
-  const { lang: langCode, region: rc, country: cc, id: jobId } = use(params);
+export default function JobDetailPage() {
+  const params = useParams();
+  const langCode = String(params.lang || "en");
+  const rc = String(params.region || "");
+  const cc = String(params.country || "");
+  const jobId = String(params.id || "");
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
         else { setNotFound(true); }
         setLoading(false);
       }).catch(() => { setNotFound(true); setLoading(false); });
-  }, [rc, cc, jobId]);
+  }, [rc, cc, jobId, lang]);
 
   const getWorkType = (type: string) => {
     const t = type?.toLowerCase() || "";
@@ -74,7 +77,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
     return "--";
   };
 
-  const SI: Record<string, string> = { "Software Engineering": "SE", "Cloud & DevOps": "CD", "Data Science & Analytics": "DS", "AI & Machine Learning": "AI", "Cybersecurity": "CS", "Product Management": "PM", "Consulting": "CO", "Data Engineering": "DE", "UX/UI & Design": "UX", "QA & Testing": "QA", "Mobile Development": "MB", "Game Development": "GD", "Engineering Leadership": "EL", "Finance Technology": "FT", "Sales & Marketing": "SM", "Writing & Content": "WC", "IT Support & Operations": "IT", "R&D": "RD", "Other": "OT" };
   const sectorIcons: Record<string, string> = { "Software Engineering": "\u{1F4BB}", "Cloud & DevOps": "\u2601\uFE0F", "Data Science & Analytics": "\u{1F4CA}", "AI & Machine Learning": "\u{1F916}", "Cybersecurity": "\u{1F512}", "Product Management": "\u{1F4E6}", "Consulting": "\u{1F4BC}", "Data Engineering": "\u{1F5C2}", "UX/UI & Design": "\u{1F3A8}", "QA & Testing": "\u{1F9EA}", "Mobile Development": "\u{1F4F1}", "Game Development": "\u{1F3AE}", "Engineering Leadership": "\u{1F454}", "Finance Technology": "\u{1F4B0}", "Sales & Marketing": "\u{1F4E3}", "Writing & Content": "\u270D\uFE0F", "IT Support & Operations": "\u{1F5A5}", "R&D": "\u{1F52C}", "Other": "\u{1F4CC}" };
 
   const googleLink = job ? "https://www.google.com/search?q=" + encodeURIComponent(job.company + " careers") : "#";
@@ -105,7 +107,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
         {loading ? (
           <div className="space-y-4"><div className="animate-pulse h-8 bg-gray-200 rounded w-3/4" /><div className="animate-pulse h-5 bg-gray-200 rounded w-1/3" /><div className="animate-pulse h-40 bg-gray-100 rounded-xl" /></div>
         ) : notFound || !job ? (
-          <div className="text-center py-16 text-gray-400"><p className="text-5xl mb-4">\u{1F50D}</p><p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p><button onClick={goBack} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{L.backToJobs}</button></div>
+          <div className="text-center py-16 text-gray-400"><p className="text-5xl mb-4">&#128269;</p><p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p><button onClick={goBack} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{L.backToJobs}</button></div>
         ) : (<div className="space-y-6">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className={"h-2 w-full bg-gradient-to-r " + getSectorMeta(job.sector).color} />

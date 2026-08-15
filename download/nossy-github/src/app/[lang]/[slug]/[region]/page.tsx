@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -12,8 +12,10 @@ import LangSelector from "@/components/LangSelector";
 
 interface CountryInfo { name: string; slug: string; region: string; count: number; }
 
-export default function RegionPage({ params }: { params: Promise<{ lang: string; slug: string; region: string }> }) {
-  const { lang: langCode, region: rc } = use(params);
+export default function RegionPage() {
+  const params = useParams();
+  const langCode = String(params.lang || "en");
+  const rc = String(params.region || "");
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [regionCountries, setRegionCountries] = useState<CountryInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
           <p className="text-gray-500 mt-1">{rCfg?.jobCount.toLocaleString()}+ {T.vacancies}</p>
         </div>
         {dataError ? (
-          <div className="text-center py-12 text-gray-400"><p className="text-3xl mb-2">⚠️</p><p>{T.error}</p><button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">Recarregar</button></div>
+          <div className="text-center py-12 text-gray-400"><p className="text-3xl mb-2">&#9888;&#65039;</p><p>{T.error}</p><button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">Recarregar</button></div>
         ) : loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{Array.from({ length: 10 }).map((_, i) => (<div key={i} className="animate-pulse h-24 rounded-xl bg-gray-100" />))}</div>
         ) : (
