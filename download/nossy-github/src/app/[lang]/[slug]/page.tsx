@@ -6,7 +6,7 @@ import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
-import { getSectorMeta, getTypeStyle, getRegionName } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
 import latestData from "@/data/latest_20.json";
@@ -41,13 +41,13 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <button onClick={() => router.push("/" + lang + "/" + LANG_SLUGS[lang])} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <SiteLogo size={38} />
             <span className="text-xl font-bold text-gray-900 tracking-tight">NOSSY</span>
           </button>
           <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l])} />
-        </div>
+        </nav>
       </header>
 
       <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white py-16 sm:py-24 overflow-hidden">
@@ -71,6 +71,11 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
       </section>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        <div className="relative w-full sm:w-96 mb-8">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input type="text" placeholder={T.searchPlaceholder} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
+        </div>
+
         <section className="mb-14">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByRegion}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -117,7 +122,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
                     <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
                     <div className="p-4">
-                      <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{job.type}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
+                      <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
                       <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{job.title}</h3>
                       <p className="text-xs font-medium text-gray-600 mb-2">{job.company}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
@@ -139,7 +144,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                   <div key={region.code}>
                     <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
                       <span className="text-xl">{region.flag}</span> {getRegionName(lang, region.code)}
-                      <span className="text-sm font-normal text-gray-400">({rc.length} {T.countries})</span>
+                      <span className="text-sm font-normal text-gray-400">({rc.length} {rc.length === 1 ? (T.country || "country").toLowerCase() : T.countries})</span>
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                       {rc.sort((a, b) => b.count - a.count).map((c) => (

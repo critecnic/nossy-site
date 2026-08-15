@@ -40,7 +40,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={goHome} className="hover:opacity-80 transition-opacity"><SiteLogo size={38} /></button>
             <button onClick={goHome} className="text-xl font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors">NOSSY</button>
@@ -48,7 +48,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
             <span className="text-sky-600 font-semibold hidden sm:inline">{rName}</span>
           </div>
           <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc)} />
-        </div>
+        </nav>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">

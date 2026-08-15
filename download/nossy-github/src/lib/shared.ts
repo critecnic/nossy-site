@@ -125,6 +125,46 @@ export function getPaywallText(lang: string) {
   return PAYWALL_TEXT[lang] || PAYWALL_TEXT['en'];
 }
 
+// Maps Portuguese country names from data files to English
+export const COUNTRY_NAME_EN: Record<string, string> = {
+  "Japao": "Japan", "Coreia do Sul": "South Korea", "Singapura": "Singapore",
+  "Tailandia": "Thailand", "Malasia": "Malaysia", "Vietna": "Vietnam",
+  "Filipinas": "Philippines", "Paquistao": "Pakistan", "Remoto Global": "Remote Global",
+  "China": "China", "India": "India", "Indonesia": "Indonesia",
+  "Hong Kong": "Hong Kong", "Taiwan": "Taiwan", "Sri Lanka": "Sri Lanka",
+  "Bangladesh": "Bangladesh", "Nepal": "Nepal",
+};
+
+export const COUNTRY_NAME_PT: Record<string, string> = {
+  "Japan": "Japão", "South Korea": "Coreia do Sul", "Singapore": "Singapura",
+  "Thailand": "Tailândia", "Malaysia": "Malásia", "Vietnam": "Vietnã",
+  "Philippines": "Filipinas", "Pakistan": "Paquistão", "Remote Global": "Remoto Global",
+  "United States": "Estados Unidos", "China": "China", "India": "Índia",
+  "Indonesia": "Indonésia", "Hong Kong": "Hong Kong", "Taiwan": "Taiwan",
+  "Sri Lanka": "Sri Lanka", "Bangladesh": "Bangladesh", "Nepal": "Nepal",
+  "United Kingdom": "Reino Unido", "Germany": "Alemanha", "France": "França",
+  "Spain": "Espanha", "Italy": "Itália", "Netherlands": "Países Baixos",
+  "Poland": "Polônia", "Ireland": "Irlanda", "Finland": "Finlândia",
+  "Portugal": "Portugal", "Switzerland": "Suíça", "Denmark": "Dinamarca",
+  "Norway": "Noruega", "Sweden": "Suécia", "Belgium": "Bélgica",
+  "Austria": "Áustria", "Czech Republic": "República Tcheca", "Romania": "Romênia",
+  "Hungary": "Hungria", "Greece": "Grécia", "Bulgaria": "Bulgária",
+  "Croatia": "Croácia", "Slovakia": "Eslováquia", "Slovenia": "Eslovênia",
+  "Estonia": "Estônia", "Latvia": "Letônia", "Lithuania": "Lituânia",
+  "Luxembourg": "Luxemburgo", "Malta": "Malta", "Cyprus": "Chipre",
+  "Iceland": "Islândia", "Serbia": "Sérvia", "Ukraine": "Ucrânia",
+  "Bosnia and Herzegovina": "Bósnia e Herzegovina", "Montenegro": "Montenegro",
+  "Moldova": "Moldávia", "Albania": "Albânia", "North Macedonia": "Macedônia do Norte",
+  "Georgia": "Geórgia", "Remote": "Remoto",
+};
+
+export function getLocalizedCountryName(name: string, lang: string): string {
+  if (lang === 'pt-br' || lang === 'pt-pt') {
+    return COUNTRY_NAME_PT[name] || name;
+  }
+  return COUNTRY_NAME_EN[name] || name;
+}
+
 export function formatSalary(j: { salaryMin?: number; salaryMax?: number; salaryCurrency?: string; salaryPeriod?: string; salary?: string }): string {
   const S: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', BRL: 'R$', INR: '₹', JPY: '¥', CNY: '¥', SGD: 'S$', KRW: '₩' };
   const mn = j.salaryMin || 0, mx = j.salaryMax || 0;
