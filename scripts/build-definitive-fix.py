@@ -274,6 +274,7 @@ export default function LangSlugLayout({ children }: { children: React.ReactNode
   return children;
 }
 '''
+os.makedirs(os.path.join(STAGE, "src/app/[lang]/[slug]"), exist_ok=True)
 with open(os.path.join(STAGE, "src/app/[lang]/[slug]/layout.tsx"), "w") as f:
     f.write(slug_layout)
 print("slug layout escrito (generateStaticParams mantido - 22 paginas)")
@@ -310,6 +311,7 @@ export default function RegionLayout({ children }: { children: React.ReactNode }
   return children;
 }
 '''
+os.makedirs(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]"), exist_ok=True)
 with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/layout.tsx"), "w") as f:
     f.write(region_layout)
 print("region layout escrito (SEM generateStaticParams)")
@@ -363,6 +365,7 @@ export default function CountryLayout({ children }: { children: React.ReactNode 
   return children;
 }
 '''
+os.makedirs(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]"), exist_ok=True)
 with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]/layout.tsx"), "w") as f:
     f.write(country_layout)
 print("country layout escrito (SEM generateStaticParams - ELIMINADO 1254 paginas estaticas)")
@@ -576,6 +579,7 @@ export default function HomePage() {
     </div>);
 }
 '''
+os.makedirs(os.path.join(STAGE, "src/app/[lang]/[slug]"), exist_ok=True)
 with open(os.path.join(STAGE, "src/app/[lang]/[slug]/page.tsx"), "w") as f:
     f.write(homepage)
 print("homepage escrito (SEM imports estaticos de JSON)")
@@ -686,6 +690,7 @@ export default function RegionPage() {
     </div>);
 }
 '''
+os.makedirs(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]"), exist_ok=True)
 with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/page.tsx"), "w") as f:
     f.write(region_page)
 print("region page escrito")
@@ -898,7 +903,7 @@ export default function CountryPage() {
           </div>
         ) : (<>
           <p className="text-sm text-gray-500 mb-4">{T.showing.replace("{0}", String((page - 1) * PER + 1)).replace("{1}", String(Math.min(page * PER, actualTotal))).replace("{2}", actualTotal.toLocaleString())}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">paged.map((job) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
             const m = getSectorMeta(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = getTypeStyle(job.type);
             return (
               <a key={job.id} href={"/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + job.id} target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100 block">
@@ -949,6 +954,7 @@ export default function CountryPage() {
     </div>);
 }
 '''
+os.makedirs(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]"), exist_ok=True)
 with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]/page.tsx"), "w") as f:
     f.write(country_page)
 print("country page escrito (SEM import estatico de countries.json)")
@@ -1017,7 +1023,7 @@ export default function JobDetailPage() {
     return "--";
   };
 
-  const sectorIcons: Record<string, string> = { "Software Engineering": "\u{1F4BB}", "Cloud & DevOps": "\u2601\uFE0F", "Data Science & Analytics": "\u{1F4CA}", "AI & Machine Learning": "\u{1F916}", "Cybersecurity": "\u{1F512}", "Product Management": "\u{1F4E6}", "Consulting": "\u{1F4BC}", "Data Engineering": "\u{1F5C2}", "UX/UI & Design": "\u{1F3A8}", "QA & Testing": "\u{1F9EA}", "Mobile Development": "\u{1F4F1}", "Game Development": "\u{1F3AE}", "Engineering Leadership": "\u{1F454}", "Finance Technology": "\u{1F4B0}", "Sales & Marketing": "\u{1F4E3}", "Writing & Content": "\u270D\uFE0F", "IT Support & Operations": "\u{1F5A5}", "R&D": "\u{1F52C}", "Other": "\u{1F4CC}" };
+  const sectorIcons: Record<string, string> = { "Software Engineering": "\U0001F4BB", "Cloud & DevOps": "\u2601\uFE0F", "Data Science & Analytics": "\U0001F4CA", "AI & Machine Learning": "\U0001F916", "Cybersecurity": "\U0001F512", "Product Management": "\U0001F4E6", "Consulting": "\U0001F4BC", "Data Engineering": "\U0001F5C2", "UX/UI & Design": "\U0001F3A8", "QA & Testing": "\U0001F9EA", "Mobile Development": "\U0001F4F1", "Game Development": "\U0001F3AE", "Engineering Leadership": "\U0001F454", "Finance Technology": "\U0001F4B0", "Sales & Marketing": "\U0001F4E3", "Writing & Content": "\u270D\uFE0F", "IT Support & Operations": "\U0001F5A5", "R&D": "\U0001F52C", "Other": "\U0001F4CC" };
 
   const googleLink = job ? "https://www.google.com/search?q=" + encodeURIComponent(job.company + " careers") : "#";
   const jobSchema = job ? { "@context": "https://schema.org", "@type": "JobPosting", "title": job.title, "description": job.description, "datePosted": job.posted || undefined, "hiringOrganization": { "@type": "Organization", "name": job.company }, "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": job.location, "addressCountry": countryName } } } : null;
@@ -1075,7 +1081,7 @@ export default function JobDetailPage() {
             <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.location}</p><p className="text-sm font-semibold text-gray-800 mt-1">{job.location}</p></div>
             <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.salary}</p><p className="text-sm font-bold text-sky-600 mt-1">{getSalaryText(job)}</p></div>
             <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.workType}</p><p className="text-sm font-semibold text-gray-800 mt-1">{getWorkType(job.type)}</p></div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.category}</p><p className="text-sm text-gray-700 mt-1">{sectorIcons[job.sector] || "\u{1F4CC}"} {job.sector}</p></div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.category}</p><p className="text-sm text-gray-700 mt-1">{sectorIcons[job.sector] || "\U0001F4CC"} {job.sector}</p></div>
             <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.company}</p><p className="text-sm text-gray-700 mt-1">{job.company}</p></div>
             {job.posted && <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.posted}</p><p className="text-sm text-gray-700 mt-1">{job.posted}</p></div>}
           </div>
@@ -1089,6 +1095,7 @@ export default function JobDetailPage() {
     </div>);
 }
 '''
+os.makedirs(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]/[id]"), exist_ok=True)
 with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]/[id]/page.tsx"), "w") as f:
     f.write(job_detail)
 print("job detail page escrito (limpo, com fetch e cancel cleanup)")

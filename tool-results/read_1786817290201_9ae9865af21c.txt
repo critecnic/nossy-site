@@ -1,0 +1,914 @@
+   305→    robots: { index: true, follow: true },
+   306→  };
+   307→}
+   308→
+   309→export default function RegionLayout({ children }: { children: React.ReactNode }) {
+   310→  return children;
+   311→}
+   312→'''
+   313→with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/layout.tsx"), "w") as f:
+   314→    f.write(region_layout)
+   315→print("region layout escrito (SEM generateStaticParams)")
+   316→
+   317→# --- Country Layout (SEM generateStaticParams - era 1254 paginas!) ---
+   318→country_layout = '''import { Metadata } from "next";
+   319→import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
+   320→import type { Lang } from "@/lib/i18n";
+   321→
+   322→const COUNTRY_EN: Record<string, string> = {
+   323→  "japao": "Japan", "coreia-do-sul": "South Korea", "singapura": "Singapore",
+   324→  "tailandia": "Thailand", "malasia": "Malaysia", "vietna": "Vietnam",
+   325→  "filipinas": "Philippines", "paquistao": "Pakistan", "remoto-global": "Remote",
+   326→  "india": "India", "china": "China", "indonesia": "Indonesia",
+   327→  "hong-kong": "Hong Kong", "taiwan": "Taiwan", "sri-lanka": "Sri Lanka",
+   328→  "bangladesh": "Bangladesh", "nepal": "Nepal",
+   329→  "united-states": "United States", "united-kingdom": "United Kingdom",
+   330→  "germany": "Germany", "france": "France", "spain": "Spain", "italy": "Italy",
+   331→  "netherlands": "Netherlands", "poland": "Poland", "ireland": "Ireland",
+   332→  "finland": "Finland", "portugal": "Portugal", "switzerland": "Switzerland",
+   333→  "denmark": "Denmark", "norway": "Norway", "sweden": "Sweden", "belgium": "Belgium",
+   334→  "austria": "Austria", "czech-republic": "Czech Republic", "romania": "Romania",
+   335→  "hungary": "Hungary", "greece": "Greece", "bulgaria": "Bulgaria", "croatia": "Croatia",
+   336→  "slovakia": "Slovakia", "slovenia": "Slovenia", "estonia": "Estonia",
+   337→  "latvia": "Latvia", "lithuania": "Lithuania", "luxembourg": "Luxembourg",
+   338→  "malta": "Malta", "cyprus": "Cyprus", "iceland": "Iceland", "serbia": "Serbia",
+   339→  "ukraine": "Ukraine", "bosnia-and-herzegovina": "Bosnia and Herzegovina",
+   340→  "montenegro": "Montenegro", "moldova": "Moldova", "albania": "Albania",
+   341→  "north-macedonia": "North Macedonia", "georgia": "Georgia",
+   342→};
+   343→
+   344→export async function generateMetadata({
+   345→  params,
+   346→}: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }): Promise<Metadata> {
+   347→  const { lang: langCode, region: rc, country: cc } = await params;
+   348→  const lang = langCode as Lang;
+   349→  const countryEn = COUNTRY_EN[cc] || cc;
+   350→  const slug = LANG_SLUGS[lang] || "jobs";
+   351→  const pageUrl = "/" + lang + "/" + slug + "/" + rc + "/" + cc;
+   352→  return {
+   353→    title: "Jobs in " + countryEn + " | NOSSY",
+   354→    description: "Find tech jobs in " + countryEn + ". Remote, hybrid and on-site positions. Updated daily on NOSSY.",
+   355→    alternates: {
+   356→      canonical: pageUrl,
+   357→    },
+   358→    robots: { index: true, follow: true },
+   359→  };
+   360→}
+   361→
+   362→export default function CountryLayout({ children }: { children: React.ReactNode }) {
+   363→  return children;
+   364→}
+   365→'''
+   366→with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]/layout.tsx"), "w") as f:
+   367→    f.write(country_layout)
+   368→print("country layout escrito (SEM generateStaticParams - ELIMINADO 1254 paginas estaticas)")
+   369→
+   370→# --- Homepage (slug/page.tsx) - SEM imports estaticos de JSON ---
+   371→homepage = '''"use client";
+   372→
+   373→import React, { useState, useEffect } from "react";
+   374→import { useRouter, useParams } from "next/navigation";
+   375→import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
+   376→import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
+   377→import type { Lang } from "@/lib/i18n";
+   378→import { getFlag } from "@/lib/flags";
+   379→import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName } from "@/lib/shared";
+   380→import SiteLogo from "@/components/SiteLogo";
+   381→import LangSelector from "@/components/LangSelector";
+   382→
+   383→interface Job {
+   384→  id: number; title: string; company: string;
+   385→  location: string; country: string; countryName: string;
+   386→  salary: string; description: string; sector: string; posted: string; type: string; paywall: boolean;
+   387→}
+   388→interface CountryInfo { name: string; slug: string; region: string; count: number; }
+   389→
+   390→export default function HomePage() {
+   391→  const params = useParams();
+   392→  const langCode = String(params.lang || "en");
+   393→  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+   394→  const [latest, setLatest] = useState<Job[]>([]);
+   395→  const [countries, setCountries] = useState<CountryInfo[]>([]);
+   396→  const [loading, setLoading] = useState(true);
+   397→  const [dataError, setDataError] = useState(false);
+   398→  const router = useRouter();
+   399→
+   400→  useEffect(() => {
+   401→    let cancelled = false;
+   402→    setLoading(true);
+   403→    Promise.all([
+   404→      fetch("/data/latest_20.json").then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+   405→      fetch("/data/countries.json").then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+   406→    ]).then(([jobs, ctry]) => {
+   407→      if (cancelled) return;
+   408→      setLatest(jobs || []);
+   409→      setCountries(ctry || []);
+   410→      setLoading(false);
+   411→    }).catch(() => {
+   412→      if (!cancelled) { setDataError(true); setLoading(false); }
+   413→    });
+   414→    return () => { cancelled = true; };
+   415→  }, []);
+   416→
+   417→  const T = i18n[lang] || i18n["en"];
+   418→  const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
+   419→  function goRegion(r: string) { router.push("/" + lang + "/" + LANG_SLUGS[lang] + "/" + r); }
+   420→  function goCountry(r: string, c: string) { router.push("/" + lang + "/" + LANG_SLUGS[lang] + "/" + r + "/" + c); }
+   421→
+   422→  const byRegion: Record<string, CountryInfo[]> = {};
+   423→  for (const c of countries) { if (!byRegion[c.region]) byRegion[c.region] = []; byRegion[c.region].push(c); }
+   424→
+   425→  if (dataError) {
+   426→    return (
+   427→      <div dir={isRtl ? "rtl" : "ltr"}>
+   428→        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+   429→          <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+   430→            <div className="flex items-center gap-3"><SiteLogo size={38} /><span className="text-xl font-bold text-gray-900">NOSSY</span></div>
+   431→          </nav>
+   432→        </header>
+   433→        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-20 text-center">
+   434→          <p className="text-4xl mb-3">&#9888;&#65039;</p>
+   435→          <p className="text-lg text-gray-500">{T.error}</p>
+   436→          <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600">Reload</button>
+   437→        </main>
+   438→      </div>
+   439→    );
+   440→  }
+   441→
+   442→  return (
+   443→    <div dir={isRtl ? "rtl" : "ltr"}>
+   444→      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+   445→        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+   446→          <button onClick={() => router.push("/" + lang + "/" + LANG_SLUGS[lang])} className="flex items-center gap-3 hover:opacity-80">
+   447→            <SiteLogo size={38} /><span className="text-xl font-bold text-gray-900 tracking-tight">NOSSY</span>
+   448→          </button>
+   449→          <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l])} />
+   450→        </nav>
+   451→      </header>
+   452→
+   453→      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white py-16 sm:py-24 overflow-hidden">
+   454→        <div className="absolute inset-0 opacity-10">
+   455→          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
+   456→          <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-300 rounded-full blur-3xl" />
+   457→        </div>
+   458→        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
+   459→          <div className="flex justify-center mb-6">
+   460→            <img src="/logo.png" alt="NOSSY" className="w-28 h-28 sm:w-36 sm:h-36 rounded-[22%] shadow-2xl ring-4 ring-white/20" />
+   461→          </div>
+   462→          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-lg">NOSSY</h1>
+   463→          <p className="text-lg sm:text-xl text-blue-100 max-w-xl mx-auto mb-2 italic">Seek and you shall find.</p>
+   464→          <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
+   465→          <div className="flex items-center justify-center flex-wrap gap-x-8 gap-y-3 text-blue-100 text-sm">
+   466→            <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" /><strong>{TOTAL_JOBS.toLocaleString()}+</strong> {T.vacancies}</span>
+   467→            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg><strong>57</strong> {T.countries}</span>
+   468→            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg><strong>3</strong> {T.allRegions}</span>
+   469→          </div>
+   470→        </div>
+   471→      </section>
+   472→
+   473→      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+   474→        <div className="relative w-full sm:w-96 mb-8">
+   475→          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+   476→          <input type="text" placeholder={T.searchPlaceholder} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
+   477→        </div>
+   478→
+   479→        <section className="mb-14">
+   480→          <h2 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByRegion}</h2>
+   481→          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+   482→            {REGIONS.map((r) => {
+   483→              const sm = getSectorMeta(r.topCategories?.[0]?.name || "Other");
+   484→              return (
+   485→              <button key={r.code} onClick={() => goRegion(r.code)} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-300">
+   486→                <div className={"absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity " + sm.color} />
+   487→                <div className="relative">
+   488→                  <span className="text-4xl mb-3 block">{r.flag}</span>
+   489→                  <h3 className="text-xl font-bold text-gray-900 mb-1">{getRegionName(lang, r.code)}</h3>
+   490→                  <p className="text-3xl font-extrabold text-sky-600">{r.jobCount.toLocaleString()}+</p>
+   491→                  <p className="text-sm text-gray-500 mt-1">{T.vacancies}</p>
+   492→                  {byRegion[r.code] && <p className="text-xs text-gray-400 mt-2">{byRegion[r.code].length} {T.countries}</p>}
+   493→                </div>
+   494→              </button>);
+   495→            })}
+   496→          </div>
+   497→        </section>
+   498→
+   499→        <section className="mb-14">
+   500→          <div className="flex items-center justify-between mb-6">
+   501→            <h2 className="text-2xl font-bold text-gray-900">{T.latestJobs}</h2>
+   502→            <button onClick={() => goRegion("europa")} className="text-sky-600 hover:text-sky-700 text-sm font-semibold flex items-center gap-1 group">
+   503→              {T.viewAllJobs}
+   504→              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+   505→            </button>
+   506→          </div>
+   507→          {loading ? (
+   508→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   509→              {Array.from({ length: 8 }).map((_, i) => (<div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5"><div className="h-4 bg-gray-200 rounded w-1/3 mb-3" /><div className="h-5 bg-gray-200 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-200 rounded w-1/2 mb-3" /><div className="h-3 bg-gray-200 rounded w-full" /></div>))}
+   510→            </div>
+   511→          ) : (
+   512→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   513→              {latest.slice(0, 20).map((job) => {
+   514→                const m = getSectorMeta(job.sector); const tc = getTypeStyle(job.type);
+   515→                return (
+   516→                  <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
+   517→                    <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
+   518→                    <div className="p-4">
+   519→                      <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
+   520→                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{job.title}</h3>
+   521→                      <p className="text-xs font-medium text-gray-600 mb-2">{job.company}</p>
+   522→                      <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
+   523→                      <div className="mt-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sectorNames[lang]?.[job.sector] || job.sector}</span></div>
+   524→                    </div></article>);
+   525→              })}
+   526→            </div>)}
+   527→        </section>
+   528→
+   529→        <section className="mb-10">
+   530→          <h2 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByCountry}</h2>
+   531→          {loading ? (
+   532→            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">{Array.from({ length: 12 }).map((_, i) => (<div key={i} className="animate-pulse h-24 rounded-xl bg-gray-100" />))}</div>
+   533→          ) : (
+   534→            <div className="space-y-8">
+   535→              {REGIONS.map((region) => {
+   536→                const rc = byRegion[region.code] || []; if (!rc.length) return null;
+   537→                return (
+   538→                  <div key={region.code}>
+   539→                    <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+   540→                      <span className="text-xl">{region.flag}</span> {getRegionName(lang, region.code)}
+   541→                      <span className="text-sm font-normal text-gray-400">({rc.length} {T.countries})</span>
+   542→                    </h3>
+   543→                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+   544→                      {rc.sort((a, b) => b.count - a.count).map((c) => (
+   545→                        <button key={c.slug} onClick={() => goCountry(region.code, c.slug)} className="group flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all">
+   546→                          <span className="text-3xl">{getFlag(c.slug)}</span>
+   547→                          <span className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2 group-hover:text-sky-600 transition-colors">{c.name}</span>
+   548→                          <span className="text-xs font-bold text-sky-600">{c.count.toLocaleString()}</span>
+   549→                        </button>))}
+   550→                    </div></div>);
+   551→              })}
+   552→            </div>)}
+   553→        </section>
+   554→      </main>
+   555→
+   556→      <footer className="bg-gray-900 text-white py-12 mt-8">
+   557→        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+   558→          <div className="flex flex-col items-center gap-5">
+   559→            <div className="flex items-center gap-4">
+   560→              <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
+   561→              <div>
+   562→                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+   563→                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+   564→              </div>
+   565→            </div>
+   566→            <div className="flex items-center gap-6 text-gray-400 text-sm">
+   567→              <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
+   568→              <span className="text-gray-600">|</span>
+   569→              <span>57 {T.countries}</span>
+   570→              <span className="text-gray-600">|</span>
+   571→              <span>{T.footerText}</span>
+   572→            </div>
+   573→          </div>
+   574→        </div>
+   575→      </footer>
+   576→    </div>);
+   577→}
+   578→'''
+   579→with open(os.path.join(STAGE, "src/app/[lang]/[slug]/page.tsx"), "w") as f:
+   580→    f.write(homepage)
+   581→print("homepage escrito (SEM imports estaticos de JSON)")
+   582→
+   583→# --- Region Page (ja usa fetch, apenas verificar) ---
+   584→region_page = '''"use client";
+   585→
+   586→import React, { useState, useEffect } from "react";
+   587→import { useRouter, useParams } from "next/navigation";
+   588→import { REGIONS } from "@/lib/countries";
+   589→import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
+   590→import type { Lang } from "@/lib/i18n";
+   591→import { getFlag } from "@/lib/flags";
+   592→import { getRegionName } from "@/lib/shared";
+   593→import SiteLogo from "@/components/SiteLogo";
+   594→import LangSelector from "@/components/LangSelector";
+   595→
+   596→interface CountryInfo { name: string; slug: string; region: string; count: number; }
+   597→
+   598→export default function RegionPage() {
+   599→  const params = useParams();
+   600→  const langCode = String(params.lang || "en");
+   601→  const rc = String(params.region || "");
+   602→  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+   603→  const [regionCountries, setRegionCountries] = useState<CountryInfo[]>([]);
+   604→  const [loading, setLoading] = useState(true);
+   605→  const [dataError, setDataError] = useState(false);
+   606→  const router = useRouter();
+   607→
+   608→  useEffect(() => {
+   609→    if (!rc) return;
+   610→    let cancelled = false;
+   611→    setLoading(true); setDataError(false);
+   612→    fetch("/data/countries.json")
+   613→      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+   614→      .then((cd: CountryInfo[]) => {
+   615→        if (cancelled) return;
+   616→        const ac = (cd || []).filter((c) => c.region === rc).sort((a, b) => b.count - a.count);
+   617→        setRegionCountries(ac); setLoading(false);
+   618→      }).catch(() => { if (!cancelled) { setDataError(true); setLoading(false); } });
+   619→    return () => { cancelled = true; };
+   620→  }, [rc]);
+   621→
+   622→  const T = i18n[lang] || i18n["en"];
+   623→  const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
+   624→  const rCfg = REGIONS.find(r => r.code === rc);
+   625→  const rName = getRegionName(lang, rc);
+   626→  function goHome() { router.push("/" + lang + "/" + LANG_SLUGS[lang]); }
+   627→  function goCountry(s: string) { router.push("/" + lang + "/" + LANG_SLUGS[lang] + "/" + rc + "/" + s); }
+   628→
+   629→  return (
+   630→    <div dir={isRtl ? "rtl" : "ltr"}>
+   631→      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+   632→        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+   633→          <div className="flex items-center gap-3">
+   634→            <button onClick={goHome} className="hover:opacity-80 transition-opacity"><SiteLogo size={38} /></button>
+   635→            <button onClick={goHome} className="text-xl font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors">NOSSY</button>
+   636→            <span className="text-gray-300 mx-2 hidden sm:inline">/</span>
+   637→            <span className="text-sky-600 font-semibold hidden sm:inline">{rName}</span>
+   638→          </div>
+   639→          <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc)} />
+   640→        </nav>
+   641→      </header>
+   642→      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+   643→        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+   644→          <button onClick={goHome} className="hover:text-sky-600 transition-colors">{T.backToHome}</button>
+   645→          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+   646→          <span className="text-gray-900 font-medium">{rName}</span>
+   647→        </nav>
+   648→        <div className="mb-8">
+   649→          <h1 className="text-3xl font-extrabold text-gray-900">{rCfg?.flag} {rName}</h1>
+   650→          <p className="text-gray-500 mt-1">{rCfg?.jobCount.toLocaleString()}+ {T.vacancies}</p>
+   651→        </div>
+   652→        {dataError ? (
+   653→          <div className="text-center py-12 text-gray-400"><p className="text-3xl mb-2">&#9888;&#65039;</p><p>{T.error}</p><button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">Reload</button></div>
+   654→        ) : loading ? (
+   655→          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{Array.from({ length: 10 }).map((_, i) => (<div key={i} className="animate-pulse h-24 rounded-xl bg-gray-100" />))}</div>
+   656→        ) : (
+   657→          <section>
+   658→            <h2 className="text-xl font-bold text-gray-900 mb-4">{T.browseByCountry}</h2>
+   659→            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+   660→              {regionCountries.map((c) => (
+   661→                <button key={c.slug} onClick={() => goCountry(c.slug)} className="group flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all text-left">
+   662→                  <span className="text-3xl">{getFlag(c.slug)}</span>
+   663→                  <div className="flex-1 min-w-0">
+   664→                    <p className="text-sm font-medium text-gray-800 truncate group-hover:text-sky-600 transition-colors">{c.name}</p>
+   665→                    <p className="text-xs font-bold text-sky-600">{c.count.toLocaleString()} {T.jobCount}</p>
+   666→                  </div>
+   667→                </button>))}
+   668→            </div>
+   669→          </section>
+   670→        )}
+   671→      </main>
+   672→      <footer className="bg-gray-900 text-white py-12 mt-8">
+   673→        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+   674→          <div className="flex flex-col items-center gap-5">
+   675→            <div className="flex items-center gap-4">
+   676→              <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
+   677→              <div>
+   678→                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+   679→                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+   680→              </div>
+   681→            </div>
+   682→            <p className="text-gray-400 text-sm">{T.footerText}</p>
+   683→          </div>
+   684→        </div>
+   685→      </footer>
+   686→    </div>);
+   687→}
+   688→'''
+   689→with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/page.tsx"), "w") as f:
+   690→    f.write(region_page)
+   691→print("region page escrito")
+   692→
+   693→# --- Country Page (SEM import estatico de countries.json) ---
+   694→country_page = '''"use client";
+   695→
+   696→import React, { useState, useEffect, useCallback } from "react";
+   697→import { useRouter, useParams } from "next/navigation";
+   698→import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
+   699→import type { Lang } from "@/lib/i18n";
+   700→import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName, getLocalizedCountryName } from "@/lib/shared";
+   701→import SiteLogo from "@/components/SiteLogo";
+   702→import LangSelector from "@/components/LangSelector";
+   703→import PaywallModal from "@/components/PaywallModal";
+   704→
+   705→interface Job {
+   706→  id: number; title: string; company: string;
+   707→  location: string; country: string; countryName: string;
+   708→  salary: string; salaryMin: number; salaryMax: number;
+   709→  salaryCurrency: string; salaryPeriod: string;
+   710→  description: string; sector: string; posted: string; type: string;
+   711→  paywall: boolean; contactEmail: string;
+   712→}
+   713→interface CountryInfo { name: string; slug: string; region: string; count: number; }
+   714→
+   715→export default function CountryPage() {
+   716→  const params = useParams();
+   717→  const langCode = String(params.lang || "en");
+   718→  const rc = String(params.region || "");
+   719→  const cc = String(params.country || "");
+   720→  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+   721→  const [allJobs, setAllJobs] = useState<Job[]>([]);
+   722→  const [countryName, setCountryName] = useState("");
+   723→  const [loading, setLoading] = useState(true);
+   724→  const [dataError, setDataError] = useState(false);
+   725→  const [loadProgress, setLoadProgress] = useState(0);
+   726→  const [search, setSearch] = useState("");
+   727→  const [typeFilter, setTypeFilter] = useState("");
+   728→  const [sectorFilter, setSectorFilter] = useState("");
+   729→  const [page, setPage] = useState(1);
+   730→  const [paywallJob, setPaywallJob] = useState<Job | null>(null);
+   731→  const [countries, setCountries] = useState<CountryInfo[]>([]);
+   732→  const router = useRouter();
+   733→  const PER = 18;
+   734→
+   735→  useEffect(() => {
+   736→    if (!rc || !cc) return;
+   737→    let cancelled = false;
+   738→    setLoading(true); setDataError(false); setLoadProgress(10);
+   739→    Promise.all([
+   740→      fetch("/api/data/country?file=" + encodeURIComponent(rc + "_" + cc + ".json")).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+   741→      fetch("/data/countries.json").then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+   742→    ]).then(([data, ctry]) => {
+   743→      if (cancelled) return;
+   744→      setLoadProgress(90);
+   745→      setAllJobs(data || []);
+   746→      setCountries(ctry || []);
+   747→      if (data && data.length > 0) {
+   748→        const cInfo = (ctry || []).find((c: CountryInfo) => c.slug === cc);
+   749→        setCountryName(getLocalizedCountryName(data[0].countryName || cInfo?.name || cc, lang));
+   750→      }
+   751→      setLoadProgress(100); setLoading(false);
+   752→    }).catch(() => { if (!cancelled) { setDataError(true); setLoading(false); } });
+   753→    return () => { cancelled = true; };
+   754→  }, [rc, cc]);
+   755→
+   756→  useEffect(() => {
+   757→    if (countryName || !cc || countries.length === 0) return;
+   758→    const m = countries.find((c: CountryInfo) => c.slug === cc);
+   759→    if (m) setCountryName(getLocalizedCountryName(m.name, lang));
+   760→  }, [countries, cc, countryName, lang]);
+   761→
+   762→  const filtered = allJobs.filter(j => {
+   763→    if (typeFilter && typeFilter !== "all" && j.type?.toLowerCase() !== typeFilter.toLowerCase()) return false;
+   764→    if (sectorFilter && sectorFilter !== "all" && j.sector !== sectorFilter) return false;
+   765→    if (search) { const s = search.toLowerCase(); if (!j.title?.toLowerCase().includes(s) && !j.company?.toLowerCase().includes(s) && !j.sector?.toLowerCase().includes(s)) return false; }
+   766→    return true;
+   767→  });
+   768→
+   769→  const actualTotal = filtered.length;
+   770→  const totalPages = Math.max(1, Math.ceil(actualTotal / PER));
+   771→  const paged = filtered.slice((page - 1) * PER, page * PER);
+   772→  const workTypes = [...new Set(allJobs.map(j => j.type).filter(Boolean))];
+   773→  const sectors = [...new Set(allJobs.map(j => j.sector).filter(Boolean))].sort();
+   774→
+   775→  const T = i18n[lang] || i18n["en"];
+   776→  const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
+   777→  const rName = getRegionName(lang, rc);
+   778→  const pw = getPaywallText(lang);
+   779→
+   780→  const goHome = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs")), [lang, router]);
+   781→  const goRegion = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc), [lang, router, rc]);
+   782→  useEffect(() => { setPage(1); }, [search, typeFilter, sectorFilter]);
+   783→
+   784→  const hasActiveFilters = typeFilter || sectorFilter || search;
+   785→  function clearFilters() { setTypeFilter(""); setSectorFilter(""); setSearch(""); }
+   786→
+   787→  const jobPostingSchema = paged.slice(0, 10).map(job => ({
+   788→    "@context": "https://schema.org",
+   789→    "@type": "JobPosting",
+   790→    "title": job.title,
+   791→    "description": job.description || ("Tech job: " + job.title + " at " + job.company + " in " + job.location),
+   792→    "datePosted": job.posted || undefined,
+   793→    "hiringOrganization": { "@type": "Organization", "name": job.company },
+   794→    "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": job.location?.split(",").pop()?.trim() || countryName, "addressCountry": countryName } },
+   795→  }));
+   796→
+   797→  const breadcrumbSchema = {
+   798→    "@context": "https://schema.org",
+   799→    "@type": "BreadcrumbList",
+   800→    "itemListElement": [
+   801→      { "@type": "ListItem", "position": 1, "name": "NOSSY", "item": "https://nossy.pro" },
+   802→      { "@type": "ListItem", "position": 2, "name": rName, "item": "https://nossy.pro/" + lang + "/" + LANG_SLUGS[lang] + "/" + rc },
+   803→      { "@type": "ListItem", "position": 3, "name": countryName || cc, "item": "https://nossy.pro/" + lang + "/" + LANG_SLUGS[lang] + "/" + rc + "/" + cc },
+   804→    ],
+   805→  };
+   806→
+   807→  return (
+   808→    <div dir={isRtl ? "rtl" : "ltr"}>
+   809→      <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)} jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ""} lang={lang} company={paywallJob?.company || ""} />
+   810→
+   811→      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+   812→      {jobPostingSchema.map((schema, i) => (
+   813→        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+   814→      ))}
+   815→
+   816→      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+   817→        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+   818→          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+   819→            <button onClick={goHome} className="hover:opacity-80 transition-opacity flex-shrink-0"><SiteLogo size={36} /></button>
+   820→            <button onClick={goHome} className="text-lg font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors hidden sm:block">NOSSY</button>
+   821→            <span className="text-gray-300 mx-1 hidden md:inline">/</span>
+   822→            <button onClick={goRegion} className="text-sky-600 font-semibold hover:underline hidden md:inline truncate">{rName}</button>
+   823→            <span className="text-gray-300 mx-1 hidden md:inline">/</span>
+   824→            <span className="text-gray-700 font-semibold hidden md:inline truncate">{countryName}</span>
+   825→          </div>
+   826→          <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc)} />
+   827→        </nav>
+   828→      </header>
+   829→
+   830→      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+   831→        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+   832→          <button onClick={goHome} className="hover:text-sky-600 transition-colors">{T.backToHome}</button>
+   833→          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+   834→          <button onClick={goRegion} className="hover:text-sky-600 transition-colors">{rName}</button>
+   835→          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+   836→          <span className="text-gray-900 font-medium">{countryName || cc}</span>
+   837→        </nav>
+   838→
+   839→        <div className="mb-6">
+   840→          <h1 className="text-3xl font-extrabold text-gray-900">{T.jobsIn.replace("{0}", countryName || cc)}</h1>
+   841→          <p className="text-gray-500 mt-1">{actualTotal.toLocaleString()} {T.vacancies}</p>
+   842→        </div>
+   843→
+   844→        <div className="relative w-full sm:w-80 mb-5">
+   845→          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+   846→          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={T.searchPlaceholder} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
+   847→        </div>
+   848→
+   849→        <div className="mb-4">
+   850→          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{T.filterByType}</p>
+   851→          <div className="flex flex-wrap gap-2">
+   852→            <button onClick={() => setTypeFilter("")} className={"px-4 py-2 rounded-full text-sm font-medium border transition-all " + (!typeFilter ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300 hover:bg-sky-50")}>{T.allWorkTypes}</button>
+   853→            {workTypes.map((t) => (
+   854→              <button key={t} onClick={() => setTypeFilter(typeFilter === t ? "" : t)} className={"px-4 py-2 rounded-full text-sm font-medium border transition-all " + (typeFilter === t ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300 hover:bg-sky-50")}>{getTypeLabel(lang, t)}</button>
+   855→            ))}
+   856→          </div>
+   857→        </div>
+   858→
+   859→        {sectors.length > 1 && (
+   860→          <div className="mb-5">
+   861→            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{T.filterByCategory}</p>
+   862→            <div className="flex flex-wrap gap-2">
+   863→              <button onClick={() => setSectorFilter("")} className={"px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all " + (!sectorFilter ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300")}>{T.allCategories}</button>
+   864→              {sectors.map((s) => {
+   865→                const si = getSectorMeta(s);
+   866→                return (<button key={s} onClick={() => setSectorFilter(sectorFilter === s ? "" : s)} className={"px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 " + (sectorFilter === s ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300")}><span>{si.icon}</span>{sectorNames[lang]?.[s] || s}</button>);
+   867→              })}
+   868→            </div>
+   869→          </div>
+   870→        )}
+   871→
+   872→        {hasActiveFilters && (
+   873→          <div className="mb-4 flex items-center gap-3">
+   874→            <span className="text-xs text-gray-500">{filtered.length} {T.vacancies}</span>
+   875→            <button onClick={clearFilters} className="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1">
+   876→              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+   877→              {T.allTypes}
+   878→            </button>
+   879→          </div>
+   880→        )}
+   881→
+   882→        {loading ? (
+   883→          <div className="space-y-4">
+   884→            <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-sky-500 h-1.5 rounded-full transition-all" style={{ width: loadProgress + "%" }} /></div>
+   885→            <p className="text-center text-sm text-gray-400">{T.loading}</p>
+   886→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5"><div className="h-4 bg-gray-200 rounded w-1/3 mb-3" /><div className="h-5 bg-gray-200 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-200 rounded w-1/2 mb-3" /></div>))}</div>
+   887→          </div>
+   888→        ) : dataError ? (
+   889→          <div className="text-center py-16 text-gray-400">
+   890→            <p className="text-4xl mb-3">&#9888;&#65039;</p><p className="text-lg">{T.error}</p>
+   891→            <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">Reload</button>
+   892→          </div>
+   893→        ) : actualTotal === 0 ? (
+   894→          <div className="text-center py-16 text-gray-400">
+   895→            <p className="text-5xl mb-4">&#128269;</p>
+   896→            <p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p>
+   897→            {hasActiveFilters && (<button onClick={clearFilters} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.allTypes}</button>)}
+   898→          </div>
+   899→        ) : (<>
+   900→          <p className="text-sm text-gray-500 mb-4">{T.showing.replace("{0}", String((page - 1) * PER + 1)).replace("{1}", String(Math.min(page * PER, actualTotal))).replace("{2}", actualTotal.toLocaleString())}</p>
+   901→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
+   902→            const m = getSectorMeta(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = getTypeStyle(job.type);
+   903→            return (
+   904→              <a key={job.id} href={"/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + job.id} target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100 block">
+   905→                <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
+   906→                {job.paywall && <div className="absolute top-3 right-3 z-10"><span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200 shadow-sm">{pw.premium}</span></div>}
+   907→                <div className="p-4">
+   908→                  <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
+   909→                  <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h3>
+   910→                  <p className="text-xs font-medium text-gray-600 mb-1">{job.company}</p>
+   911→                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
+   912→                  <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job)}</span></div>
+   913→                  <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
+   914→                  {job.paywall ? (
+   915→                    <div className="mt-3 pt-3 border-t border-gray-100">
+   916→                      <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.description || ""}</p>
+   917→                      <button onClick={(e) => { e.stopPropagation(); setPaywallJob(job); }} className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm flex items-center justify-center gap-1.5">
+   918→                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+   919→                        {pw.unlock}
+   920→                      </button>
+   921→                    </div>
+   922→                  ) : (<>
+   923→                    {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
+   924→                  </>)}
+   925→                </div></a>);
+   926→          })}</div>
+   927→          {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
+   928→            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.prevPage}</button>
+   929→            <span className="text-sm text-gray-600">{T.pageOf.replace("{0}", String(page)).replace("{1}", String(totalPages))}</span>
+   930→            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.nextPage}</button>
+   931→          </div>)}
+   932→        </>)}
+   933→      </main>
+   934→
+   935→      <footer className="bg-gray-900 text-white py-12 mt-8">
+   936→        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+   937→          <div className="flex flex-col items-center gap-5">
+   938→            <div className="flex items-center gap-4">
+   939→              <img src="/logo.png" alt="NOSSY" className="w-12 h-12 rounded-[22%]" />
+   940→              <div>
+   941→                <span className="font-extrabold text-2xl tracking-tight">NOSSY</span>
+   942→                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+   943→              </div>
+   944→            </div>
+   945→            <p className="text-gray-400 text-sm">{T.footerText}</p>
+   946→          </div>
+   947→        </div>
+   948→      </footer>
+   949→    </div>);
+   950→}
+   951→'''
+   952→with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]/page.tsx"), "w") as f:
+   953→    f.write(country_page)
+   954→print("country page escrito (SEM import estatico de countries.json)")
+   955→
+   956→# --- Job Detail Page (ja usa fetch, manter limpo) ---
+   957→job_detail = '''"use client";
+   958→
+   959→import React, { useState, useEffect, useCallback } from "react";
+   960→import { useRouter, useParams } from "next/navigation";
+   961→import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
+   962→import type { Lang } from "@/lib/i18n";
+   963→import { getSectorMeta, getRegionName, getLocalizedCountryName } from "@/lib/shared";
+   964→import SiteLogo from "@/components/SiteLogo";
+   965→import LangSelector from "@/components/LangSelector";
+   966→
+   967→interface Job {
+   968→  id: number; title: string; company: string;
+   969→  location: string; country: string; countryName: string;
+   970→  salary: string; salaryMin: number; salaryMax: number;
+   971→  salaryCurrency: string; salaryPeriod: string;
+   972→  description: string; sector: string; posted: string; type: string;
+   973→  paywall: boolean; contactEmail: string;
+   974→}
+   975→
+   976→export default function JobDetailPage() {
+   977→  const params = useParams();
+   978→  const langCode = String(params.lang || "en");
+   979→  const rc = String(params.region || "");
+   980→  const cc = String(params.country || "");
+   981→  const jobId = String(params.id || "");
+   982→  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+   983→  const [job, setJob] = useState<Job | null>(null);
+   984→  const [loading, setLoading] = useState(true);
+   985→  const [notFound, setNotFound] = useState(false);
+   986→  const [countryName, setCountryName] = useState("");
+   987→  const router = useRouter();
+   988→  const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
+   989→  const T = i18n[lang] || i18n["en"];
+   990→  const goBack = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc), [lang, router, rc, cc]);
+   991→
+   992→  useEffect(() => {
+   993→    if (!rc || !cc) return;
+   994→    let cancelled = false;
+   995→    fetch("/api/data/country?file=" + encodeURIComponent(rc + "_" + cc + ".json"))
+   996→      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+   997→      .then((data: Job[]) => {
+   998→        if (cancelled) return;
+   999→        const found = data.find((j: Job) => String(j.id) === String(jobId));
+  1000→        if (found) { setJob(found); setCountryName(getLocalizedCountryName(found.countryName || cc, lang)); }
+  1001→        else { setNotFound(true); }
+  1002→        setLoading(false);
+  1003→      }).catch(() => { if (!cancelled) { setNotFound(true); setLoading(false); } });
+  1004→    return () => { cancelled = true; };
+  1005→  }, [rc, cc, jobId, lang]);
+  1006→
+  1007→  const getWorkType = (type: string) => {
+  1008→    const t = type?.toLowerCase() || "";
+  1009→    if (t === "remoto" || t === "remote") return "Remote";
+  1010→    if (t === "hibrido" || t === "hybrid") return "Hybrid";
+  1011→    return "On-site";
+  1012→  };
+  1013→
+  1014→  const getSalaryText = (j: Job) => {
+  1015→    if (j.salaryMin && j.salaryMax) return Number(j.salaryMin).toLocaleString() + " - " + Number(j.salaryMax).toLocaleString() + " " + (j.salaryCurrency || "");
+  1016→    if (j.salary) return j.salary + " " + (j.salaryCurrency || "");
+  1017→    return "--";
+  1018→  };
+  1019→
+  1020→  const sectorIcons: Record<string, string> = { "Software Engineering": "\U0001F4BB", "Cloud & DevOps": "\u2601\uFE0F", "Data Science & Analytics": "\U0001F4CA", "AI & Machine Learning": "\U0001F916", "Cybersecurity": "\U0001F512", "Product Management": "\U0001F4E6", "Consulting": "\U0001F4BC", "Data Engineering": "\U0001F5C2", "UX/UI & Design": "\U0001F3A8", "QA & Testing": "\U0001F9EA", "Mobile Development": "\U0001F4F1", "Game Development": "\U0001F3AE", "Engineering Leadership": "\U0001F454", "Finance Technology": "\U0001F4B0", "Sales & Marketing": "\U0001F4E3", "Writing & Content": "\u270D\uFE0F", "IT Support & Operations": "\U0001F5A5", "R&D": "\U0001F52C", "Other": "\U0001F4CC" };
+  1021→
+  1022→  const googleLink = job ? "https://www.google.com/search?q=" + encodeURIComponent(job.company + " careers") : "#";
+  1023→  const jobSchema = job ? { "@context": "https://schema.org", "@type": "JobPosting", "title": job.title, "description": job.description, "datePosted": job.posted || undefined, "hiringOrganization": { "@type": "Organization", "name": job.company }, "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": job.location, "addressCountry": countryName } } } : null;
+  1024→
+  1025→  const detailLabels: Record<string, string> = {
+  1026→    title: "Job Details", company: "Company", location: "Location", salary: "Salary",
+  1027→    category: "Category", workType: "Work Type", posted: "Posted", description: "Description",
+  1028→    contact: "Contact", noContact: "Contact not available", backToJobs: "Back to Jobs",
+  1029→    searchCompany: "Search {0} on Google",
+  1030→  };
+  1031→  const L = detailLabels;
+  1032→
+  1033→  return (
+  1034→    <div dir={isRtl ? "rtl" : "ltr"}>
+  1035→      {jobSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jobSchema) }} />}
+  1036→      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+  1037→        <nav className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+  1038→          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+  1039→            <button onClick={goBack} className="hover:opacity-80 transition-opacity flex-shrink-0"><SiteLogo size={36} /></button>
+  1040→            <button onClick={goBack} className="text-lg font-bold text-gray-900 tracking-tight hover:text-sky-600 transition-colors hidden sm:block">NOSSY</button>
+  1041→            <span className="text-gray-300 mx-1 hidden md:inline">/</span>
+  1042→            <button onClick={goBack} className="text-sky-600 font-semibold hover:underline hidden md:inline truncate">{countryName}</button>
+  1043→            <span className="text-gray-300 mx-1 hidden md:inline">/</span>
+  1044→            <span className="text-gray-700 font-semibold hidden md:inline truncate">{L.title}</span>
+  1045→          </div>
+  1046→          <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc + "/" + jobId)} />
+  1047→        </nav>
+  1048→      </header>
+  1049→      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+  1050→        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+  1051→          <button onClick={goBack} className="hover:text-sky-600 transition-colors">{L.backToJobs}</button>
+  1052→          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+  1053→          <span className="text-gray-900 font-medium">{job?.title || "..."}</span>
+  1054→        </nav>
+  1055→        {loading ? (
+  1056→          <div className="space-y-4"><div className="animate-pulse h-8 bg-gray-200 rounded w-3/4" /><div className="animate-pulse h-5 bg-gray-200 rounded w-1/3" /><div className="animate-pulse h-40 bg-gray-100 rounded-xl" /></div>
+  1057→        ) : notFound || !job ? (
+  1058→          <div className="text-center py-16 text-gray-400"><p className="text-5xl mb-4">&#128269;</p><p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p><button onClick={goBack} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{L.backToJobs}</button></div>
+  1059→        ) : (<div className="space-y-6">
+  1060→          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  1061→            <div className={"h-2 w-full bg-gradient-to-r " + getSectorMeta(job.sector).color} />
+  1062→            <div className="p-6 sm:p-8">
+  1063→              <div className="flex flex-wrap items-center gap-2 mb-3">
+  1064→                <span className="rounded-full px-3 py-1 text-xs font-medium border bg-sky-50 text-sky-700 border-sky-200">{getWorkType(job.type)}</span>
+  1065→                {job.posted && <span className="text-xs text-gray-400">{L.posted}: {job.posted}</span>}
+  1066→              </div>
+  1067→              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">{job.title}</h1>
+  1068→              <a href={googleLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-lg font-semibold text-sky-600 hover:text-sky-700 transition-colors">
+  1069→                {job.company}
+  1070→                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+  1071→              </a>
+  1072→            </div>
+  1073→          </div>
+  1074→          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+  1075→            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.location}</p><p className="text-sm font-semibold text-gray-800 mt-1">{job.location}</p></div>
+  1076→            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.salary}</p><p className="text-sm font-bold text-sky-600 mt-1">{getSalaryText(job)}</p></div>
+  1077→            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.workType}</p><p className="text-sm font-semibold text-gray-800 mt-1">{getWorkType(job.type)}</p></div>
+  1078→            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.category}</p><p className="text-sm text-gray-700 mt-1">{sectorIcons[job.sector] || "\U0001F4CC"} {job.sector}</p></div>
+  1079→            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.company}</p><p className="text-sm text-gray-700 mt-1">{job.company}</p></div>
+  1080→            {job.posted && <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.posted}</p><p className="text-sm text-gray-700 mt-1">{job.posted}</p></div>}
+  1081→          </div>
+  1082→          {job.description && <div className="bg-white rounded-xl border border-gray-100 p-6"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{L.description}</p><p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p></div>}
+  1083→          <div className="bg-white rounded-xl border border-gray-100 p-6"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{L.contact}</p>{job.contactEmail ? <p className="text-sm font-semibold text-sky-600">{job.contactEmail}</p> : <p className="text-sm text-gray-400 italic">{L.noContact}</p>}</div>
+  1084→          <a href={googleLink} target="_blank" rel="noopener noreferrer" className="block bg-sky-50 border border-sky-200 rounded-xl p-5 hover:bg-sky-100 transition-colors text-center"><p className="text-sm font-semibold text-sky-700">{L.searchCompany.replace("{0}", job.company)}</p></a>
+  1085→          <button onClick={goBack} className="w-full py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm">{L.backToJobs}</button>
+  1086→        </div>)}
+  1087→      </main>
+  1088→      <footer className="bg-gray-900 text-white py-10 mt-8"><div className="max-w-4xl mx-auto px-4 sm:px-6 text-center"><p className="text-gray-400 text-sm">{T.footerText}</p></div></footer>
+  1089→    </div>);
+  1090→}
+  1091→'''
+  1092→with open(os.path.join(STAGE, "src/app/[lang]/[slug]/[region]/[country]/[id]/page.tsx"), "w") as f:
+  1093→    f.write(job_detail)
+  1094→print("job detail page escrito (limpo, com fetch e cancel cleanup)")
+  1095→
+  1096→# ============================================================
+  1097→# 3. VERIFICACOES FINAIS
+  1098→# ============================================================
+  1099→
+  1100→# Garantir que nao existe bun.lock
+  1101→for lockfile in ["bun.lock", "bun.lockb", "package-lock.json", "yarn.lock"]:
+  1102→    p = os.path.join(STAGE, lockfile)
+  1103→    if os.path.exists(p):
+  1104→        os.remove(p)
+  1105→        print(f"REMOVIDO: {lockfile}")
+  1106→
+  1107→# Verificar arquivos criticos
+  1108→print("\n=== VERIFICACOES ===")
+  1109→critical = [
+  1110→    "package.json",
+  1111→    "next.config.ts",
+  1112→    "tsconfig.json",
+  1113→    "src/app/layout.tsx",
+  1114→    "src/app/page.tsx",
+  1115→    "src/components/ErrorBoundary.tsx",
+  1116→    "src/app/[lang]/[slug]/layout.tsx",
+  1117→    "src/app/[lang]/[slug]/page.tsx",
+  1118→    "src/app/[lang]/[slug]/[region]/layout.tsx",
+  1119→    "src/app/[lang]/[slug]/[region]/page.tsx",
+  1120→    "src/app/[lang]/[slug]/[region]/[country]/layout.tsx",
+  1121→    "src/app/[lang]/[slug]/[region]/[country]/page.tsx",
+  1122→    "src/app/[lang]/[slug]/[region]/[country]/[id]/page.tsx",
+  1123→    "src/lib/i18n.ts",
+  1124→    "src/lib/shared.ts",
+  1125→    "src/lib/countries.ts",
+  1126→    "src/lib/flags.ts",
+  1127→    "src/components/LangSelector.tsx",
+  1128→    "src/components/SiteLogo.tsx",
+  1129→    "src/components/PaywallModal.tsx",
+  1130→    "src/app/api/data/country/route.ts",
+  1131→    "src/app/globals.css",
+  1132→    "public/logo.png",
+  1133→    "public/favicon.ico",
+  1134→]
+  1135→
+  1136→missing = []
+  1137→for f in critical:
+  1138→    p = os.path.join(STAGE, f)
+  1139→    if os.path.exists(p):
+  1140→        print(f"  OK: {f}")
+  1141→    else:
+  1142→        print(f"  FALTANDO: {f}")
+  1143→        missing.append(f)
+  1144→
+  1145→if missing:
+  1146→    print(f"\n!!! ATENCAO: {len(missing)} arquivos criticos faltando !!!")
+  1147→    for m in missing:
+  1148→        print(f"  - {m}")
+  1149→else:
+  1150→    print(f"\n  Todos os {len(critical)} arquivos criticos presentes.")
+  1151→
+  1152→# Verificar que NAO tem generateStaticParams nos layouts de country/region
+  1153→for check_file in [
+  1154→    "src/app/[lang]/[slug]/[region]/[country]/layout.tsx",
+  1155→    "src/app/[lang]/[slug]/[region]/layout.tsx",
+  1156→]:
+  1157→    p = os.path.join(STAGE, check_file)
+  1158→    with open(p) as f:
+  1159→        content = f.read()
+  1160→    if "generateStaticParams" in content:
+  1161→        print(f"  ERRO: {check_file} ainda tem generateStaticParams!")
+  1162→    else:
+  1163→        print(f"  OK: {check_file} SEM generateStaticParams")
+  1164→
+  1165→# Verificar que slug layout AINDA tem generateStaticParams
+  1166→p = os.path.join(STAGE, "src/app/[lang]/[slug]/layout.tsx")
+  1167→with open(p) as f:
+  1168→    content = f.read()
+  1169→if "generateStaticParams" in content:
+  1170→    print(f"  OK: slug layout MANTÉM generateStaticParams (22 paginas)")
+  1171→else:
+  1172→    print(f"  AVISO: slug layout sem generateStaticParams")
+  1173→
+  1174→# Verificar que paginas cliente NAO importam JSON estaticamente
+  1175→for check_file in [
+  1176→    "src/app/[lang]/[slug]/page.tsx",
+  1177→    "src/app/[lang]/[slug]/[region]/[country]/page.tsx",
+  1178→]:
+  1179→    p = os.path.join(STAGE, check_file)
+  1180→    with open(p) as f:
+  1181→        content = f.read()
+  1182→    if 'from "@/data/' in content:
+  1183→        print(f"  ERRO: {check_file} ainda importa JSON estaticamente!")
+  1184→    else:
+  1185→        print(f"  OK: {check_file} SEM imports estaticos de JSON")
+  1186→
+  1187→# Contar arquivos public/data
+  1188→public_data = [f for f in os.listdir(os.path.join(STAGE, "public", "data")) if f.endswith(".json")]
+  1189→print(f"\n  Arquivos public/data/: {len(public_data)}")
+  1190→
+  1191→# ============================================================
+  1192→# 4. GERAR ZIP
+  1193→# ============================================================
+  1194→print(f"\nGerando ZIP: {OUT}")
+  1195→with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as zf:
+  1196→    for root, dirs, files in os.walk(STAGE):
+  1197→        for f in files:
+  1198→            src = os.path.join(root, f)
+  1199→            arcname = os.path.relpath(src, STAGE)
+  1200→            zf.write(src, arcname)
+  1201→
+  1202→zip_size = os.path.getsize(OUT)
+  1203→file_count = sum(len(files) for _, _, files in os.walk(STAGE))
+  1204→print(f"\n=== ZIP GERADO ===")
+  1205→print(f"  Arquivo: {OUT}")
+  1206→print(f"  Tamanho: {zip_size / 1024 / 1024:.1f} MB")
+  1207→print(f"  Arquivos: {file_count}")
+  1208→print(f"\n=== MUDANCAS CRITICAS ===")
+  1209→print(f"  1. REMOVIDO generateStaticParams do layout de pais (era 1254 paginas)")
+  1210→print(f"  2. REMOVIDO generateStaticParams do layout de regiao (era 66 paginas)")
+  1211→print(f"  3. MANTIDO generateStaticParams no layout slug (22 paginas)")
+  1212→print(f"  4. REMOVIDO imports estaticos de JSON em paginas cliente")
+  1213→print(f"  5. ADICIONADO ErrorBoundary global no root layout")
+  1214→print(f"  6. PINADO React 19.1.0 + Next 15.3.3 (sem caret)")
+  1215→print(f"  7. REMOVIDO ignoreBuildErrors (erros agora sao visiveis)")
+  1216→print(f"  8. NENHUM bun.lock incluido")
+  1217→print(f"\nPRONTO PARA DEPLOY NO GITHUB/VERCEL.")
+  1218→
