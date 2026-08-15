@@ -9,10 +9,11 @@ import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
 import PaywallModal from "@/components/PaywallModal";
+import JobDetailModal from "@/components/JobDetailModal";
 import countriesData from "@/data/countries.json";
 
 interface Job {
-  id: number; title: string; company: string; companyUrl: string;
+  id: number; title: string; company: string;
   location: string; country: string; countryName: string;
   salary: string; salaryMin: number; salaryMax: number;
   salaryCurrency: string; salaryPeriod: string;
@@ -33,6 +34,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
   const [paywallJob, setPaywallJob] = useState<Job | null>(null);
+  const [detailJob, setDetailJob] = useState<Job | null>(null);
   const [countries, setCountries] = useState<any[]>(countriesData);
   const router = useRouter();
   const PER = 18;
@@ -93,7 +95,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     "hiringOrganization": {
       "@type": "Organization",
       "name": job.company,
-      "sameAs": job.companyUrl || undefined,
     },
     "jobLocation": {
       "@type": "Place",
@@ -117,7 +118,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     } : {}),
     "employmentType": job.type === 'Remoto' || job.type === 'Remote' ? 'FULL_TIME' : 'FULL_TIME',
     "workHours": job.type === 'Remoto' || job.type === 'Remote' ? 'FLEXIBLE' : undefined,
-    "url": job.companyUrl || undefined,
   }));
 
   // BreadcrumbList schema
@@ -135,6 +135,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
+      <JobDetailModal isOpen={!!detailJob} onClose={() => setDetailJob(null)} job={detailJob} lang={lang} />
       <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)} jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ''} lang={lang} company={paywallJob?.company || ''} />
 
       {allSchemas.map((schema, i) => (
@@ -230,7 +231,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
             const m = getSectorMeta(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = getTypeStyle(job.type);
             return (
-              <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
+              <article key={job.id} onClick={() => !job.paywall && setDetailJob(job)} className={"group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100 " + (!job.paywall ? "cursor-pointer" : "")}>
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
                 {job.paywall && <div className="absolute top-3 right-3 z-10"><span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200 shadow-sm">{pw.premium}</span></div>}
                 <div className="p-4">
@@ -243,14 +244,13 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                   {job.paywall ? (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.description || ''}</p>
-                      <button onClick={() => setPaywallJob(job)} className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm flex items-center justify-center gap-1.5">
+                      <button onClick={(e) => { e.stopPropagation(); setPaywallJob(job); }} className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm flex items-center justify-center gap-1.5">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         {pw.unlock}
                       </button>
                     </div>
                   ) : (<>
                     {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
-                    {job.companyUrl && <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors">{T.applyNow}<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>}
                   </>)}
                 </div></article>);
           })}</div>
