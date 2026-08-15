@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -19,8 +19,9 @@ interface Job {
 }
 interface CountryInfo { name: string; slug: string; region: string; count: number; }
 
-export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
-  const { lang: langCode } = use(params);
+export default function HomePage() {
+  const params = useParams();
+  const langCode = String(params.lang || "en");
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [latest, setLatest] = useState<Job[]>(latestData as Job[]);
   const [countries, setCountries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
@@ -64,7 +65,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
           <div className="flex items-center justify-center flex-wrap gap-x-8 gap-y-3 text-blue-100 text-sm">
             <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" /><strong>{TOTAL_JOBS.toLocaleString()}+</strong> {T.vacancies}</span>
-            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg><strong>58</strong> {T.countries}</span>
+            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg><strong>57</strong> {T.countries}</span>
             <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg><strong>3</strong> {T.allRegions}</span>
           </div>
         </div>
@@ -106,7 +107,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
           </div>
           {dataError ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-3xl mb-2">⚠️</p>
+              <p className="text-3xl mb-2">&#9888;&#65039;</p>
               <p>{T.error}</p>
               <button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">Recarregar</button>
             </div>
@@ -172,7 +173,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <div className="flex items-center gap-6 text-gray-400 text-sm">
               <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
               <span className="text-gray-600">|</span>
-              <span>58 {T.countries}</span>
+              <span>57 {T.countries}</span>
               <span className="text-gray-600">|</span>
               <span>{T.footerText}</span>
             </div>
