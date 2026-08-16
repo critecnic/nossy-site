@@ -1,0 +1,39 @@
+============================================================
+NOSSY.PRO - PACOTE DE ATUALIZAÇÃO COMPLETA
+============================================================
+
+O QUE ESTÁ INCLUSO:
+- 4 arquivos de dados dos EUA (Parte C que faltava)
+- next.config.ts com 7 security headers
+- route.ts com correção de vulnerabilidade crítica
+- layout.tsx para SEO metadata nas páginas de vaga
+
+COMO ENVIAR TUDO DE UMA VEZ:
+
+OPÇÃO 1 - Upload via GitHub (recomendado):
+1. Acesse https://github.com/critecnic/nossy-site
+2. Clique em "Add file" → "Upload files"
+3. Selecione TODOS os arquivos e pastas deste ZIP
+4. O GitHub vai manter a estrutura de pastas automaticamente
+5. Commit message: "feat: security headers + EUA data + SEO metadata"
+
+OPÇÃO 2 - Upload por pasta separada:
+
+Arquivo: next.config.ts
+→ Substituir na RAIZ do repositório
+
+Arquivo: src/app/api/data/country/route.ts
+→ Substituir no caminho indicado
+
+Arquivo: src/app/[lang]/[slug]/[region]/[country]/[id]/layout.tsx
+→ Novo arquivo (pode precisar criar a pasta [id])
+
+Arquivos: public/data/eua_united-states-{1,2,3,4}.json
+→ Enviar para public/data/
+
+APÓS O COMMIT:
+- Vercel vai re-deployar automaticamente (1-2 min)
+- Verifique: https://nossy.pro/en/jobs/eua/united-states
+- As vagas dos EUA devem aparecer
+- Security headers estarão ativos
+============================================================
