@@ -1,0 +1,559 @@
+     1→#!/usr/bin/env python3
+     2→"""Generate jobs for 12 developed countries."""
+     3→
+     4→import json
+     5→import random
+     6→
+     7→SECTORS = ["Technology", "Finance", "Design", "Marketing", "Data Science", "Sales", "Management", "Healthcare", "Education", "Engineering", "Legal", "HR"]
+     8→TYPES = ["Full-time", "Part-time", "Contract", "Remote", "Internship"]
+     9→
+    10→COUNTRIES = {
+    11→    "us": {
+    12→        "name": "United States", "currency": "USD", "symbol": "$", "period": "year",
+    13→        "cities": [
+    14→            ("San Francisco, CA", 37.7749, -122.4194),
+    15→            ("New York, NY", 40.7128, -74.0060),
+    16→            ("Seattle, WA", 47.6062, -122.3321),
+    17→            ("Austin, TX", 30.2672, -97.7431),
+    18→            ("Chicago, IL", 41.8781, -87.6298),
+    19→            ("Boston, MA", 42.3601, -71.0589),
+    20→            ("Los Angeles, CA", 34.0522, -118.2437),
+    21→            ("Denver, CO", 39.7392, -104.9903),
+    22→            ("Miami, FL", 25.7617, -80.1918),
+    23→            ("Washington, DC", 38.9072, -77.0369),
+    24→        ],
+    25→        "companies": {
+    26→            "Technology": [("Google", "https://google.com/careers"), ("Microsoft", "https://microsoft.com/careers"), ("Apple", "https://apple.com/careers"), ("Meta", "https://meta.com/careers"), ("Amazon", "https://amazon.jobs")],
+    27→            "Finance": [("JPMorgan Chase", "https://jpmorgan.com/careers"), ("Goldman Sachs", "https://goldmansachs.com/careers"), ("Morgan Stanley", "https://morganstanley.com/careers")],
+    28→            "Design": [("Airbnb", "https://airbnb.com/careers"), ("Figma", "https://figma.com/careers")],
+    29→            "Marketing": [("Netflix", "https://netflix.com/careers"), ("Salesforce", "https://salesforce.com/careers")],
+    30→            "Data Science": [("Palantir", "https://palantir.com/careers"), ("NVIDIA", "https://nvidia.com/careers")],
+    31→            "Sales": [("Oracle", "https://oracle.com/careers"), ("Adobe", "https://adobe.com/careers")],
+    32→            "Management": [("McKinsey", "https://mckinsey.com/careers"), ("Deloitte", "https://deloitte.com/careers")],
+    33→            "Healthcare": [("Johnson & Johnson", "https://jnj.com/careers"), ("Pfizer", "https://pfizer.com/careers")],
+    34→            "Education": [("Coursera", "https://coursera.org/careers"), ("edX", "https://edx.org/careers")],
+    35→            "Engineering": [("Tesla", "https://tesla.com/careers"), ("SpaceX", "https://spacex.com/careers")],
+    36→            "Legal": [("Baker McKenzie", "https://bakermckenzie.com/careers"), ("Latham Watkins", "https://lathamwatkins.com/careers")],
+    37→            "HR": [("Workday", "https://workday.com/careers"), ("Gusto", "https://gusto.com/careers")],
+    38→        },
+    39→        "salary_ranges": {"year": (55000, 280000)},
+    40→    },
+    41→    "gb": {
+    42→        "name": "United Kingdom", "currency": "GBP", "symbol": "£", "period": "year",
+    43→        "cities": [
+    44→            ("London", 51.5074, -0.1278),
+    45→            ("Manchester", 53.4808, -2.2426),
+    46→            ("Edinburgh", 55.9533, -3.1883),
+    47→            ("Birmingham", 52.4862, -1.8904),
+    48→            ("Bristol", 51.4545, -2.5879),
+    49→            ("Leeds", 53.8008, -1.5491),
+    50→        ],
+    51→        "companies": {
+    52→            "Technology": [("DeepMind", "https://deepmind.com/careers"), ("ARM", "https://arm.com/careers"), ("Revolut", "https://revolut.com/careers")],
+    53→            "Finance": [("Barclays", "https://barclays.com/careers"), ("HSBC", "https://hsbc.com/careers"), ("Standard Chartered", "https://standardchartered.com/careers")],
+    54→            "Design": [("BBC Creative", "https://bbc.co.uk/careers"), ("Shazam", "https://shazam.com/careers")],
+    55→            "Marketing": [("Unilever", "https://unilever.com/careers"), ("Diageo", "https://diageo.com/careers")],
+    56→            "Data Science": [("Quantcast", "https://quantcast.com/careers"), ("Improbable", "https://improbable.io/careers")],
+    57→            "Sales": [("SAP UK", "https://sap.com/careers"), ("Cisco UK", "https://cisco.com/careers")],
+    58→            "Management": [("PwC UK", "https://pwc.co.uk/careers"), ("KPMG UK", "https://kpmg.co.uk/careers")],
+    59→            "Healthcare": [("GSK", "https://gsk.com/careers"), ("AstraZeneca", "https://astrazeneca.com/careers")],
+    60→            "Education": [("Open University", "https://open.ac.uk/careers"), ("FutureLearn", "https://futurelearn.com/careers")],
+    61→            "Engineering": [(("Rolls-Royce", "https://rolls-royce.com/careers")), ("BAE Systems", "https://baesystems.com/careers")],
+    62→            "Legal": [("Clifford Chance", "https://cliffordchance.com/careers"), ("Allen Overy", "https://allenovery.com/careers")],
+    63→            "HR": [("Hays", "https://hays.com/careers"), ("Michael Page", "https://michaelpage.com/careers")],
+    64→        },
+    65→        "salary_ranges": {"year": (35000, 180000)},
+    66→    },
+    67→    "de": {
+    68→        "name": "Germany", "currency": "EUR", "symbol": "€", "period": "year",
+    69→        "cities": [
+    70→            ("Berlin", 52.5200, 13.4050),
+    71→            ("Munich", 48.1351, 11.5820),
+    72→            ("Frankfurt", 50.1109, 8.6821),
+    73→            ("Hamburg", 53.5511, 9.9937),
+    74→            ("Stuttgart", 48.7758, 9.1829),
+    75→            ("Dusseldorf", 51.2277, 6.7735),
+    76→        ],
+    77→        "companies": {
+    78→            "Technology": [("SAP", "https://sap.com/careers"), ("Siemens", "https://siemens.com/careers"), ("Bosch", "https://bosch.com/careers")],
+    79→            "Finance": [("Deutsche Bank", "https://db.com/careers"), ("Allianz", "https://allianz.com/careers"), ("Commerzbank", "https://commerzbank.com/careers")],
+    80→            "Design": [("BMW Design", "https://bmw.com/careers"), ("Porsche Design", "https://porsche.com/careers")],
+    81→            "Marketing": [("Adidas", "https://adidas.com/careers"), ("Lufthansa", "https://lufthansa.com/careers")],
+    82→            "Data Science": [("Delivery Hero", "https://deliveryhero.com/careers"), ("Celonis", "https://celonis.com/careers")],
+    83→            "Sales": [("Siemens Healthineers", "https://siemens-healthineers.com/careers")],
+    84→            "Management": [("McKinsey DE", "https://mckinsey.de/careers"), ("BCG DE", "https://bcg.com/careers")],
+    85→            "Healthcare": [("Bayer", "https://bayer.com/careers"), ("Merck", "https://merck.com/careers")],
+    86→            "Education": [("Humboldt University", "https://hu-berlin.de/careers")],
+    87→            "Engineering": [("Volkswagen", "https://volkswagen.com/careers"), ("BMW Group", "https://bmwgroup.com/careers")],
+    88→            "Legal": [("Freshfields", "https://freshfields.com/careers")],
+    89→            "HR": [("Personio", "https://personio.com/careers")],
+    90→        },
+    91→        "salary_ranges": {"year": (40000, 160000)},
+    92→    },
+    93→    "ca": {
+    94→        "name": "Canada", "currency": "CAD", "symbol": "C$", "period": "year",
+    95→        "cities": [
+    96→            ("Toronto, ON", 43.6532, -79.3832),
+    97→            ("Vancouver, BC", 49.2827, -123.1207),
+    98→            ("Montreal, QC", 45.5017, -73.5673),
+    99→            ("Calgary, AB", 51.0447, -114.0719),
+   100→            ("Ottawa, ON", 45.4215, -75.6972),
+   101→        ],
+   102→        "companies": {
+   103→            "Technology": [("Shopify", "https://shopify.com/careers"), ("BlackBerry", "https://blackberry.com/careers"), ("Canonical", "https://canonical.com/careers")],
+   104→            "Finance": [("RBC", "https://rbc.com/careers"), ("TD Bank", "https://td.com/careers"), ("CIBC", "https://cibc.com/careers")],
+   105→            "Design": [("Hootsuite", "https://hootsuite.com/careers")],
+   106→            "Marketing": [("Bell Canada", "https://bell.ca/careers")],
+   107→            "Data Science": [("Element AI", "https://elementai.com/careers")],
+   108→            "Sales": [("Salesforce Canada", "https://salesforce.com/careers")],
+   109→            "Management": [("Deloitte Canada", "https://deloitte.ca/careers")],
+   110→            "Healthcare": [("Sun Life", "https://sunlife.com/careers")],
+   111→            "Education": [("Udemy", "https://udemy.com/careers")],
+   112→            "Engineering": [("SNC-Lavalin", "https://snclavalin.com/careers")],
+   113→            "Legal": [("Blake Cassels", "https://blakes.com/careers")],
+   114→            "HR": [(("Ceridian", "https://ceridian.com/careers"))],
+   115→        },
+   116→        "salary_ranges": {"year": (45000, 170000)},
+   117→    },
+   118→    "au": {
+   119→        "name": "Australia", "currency": "AUD", "symbol": "A$", "period": "year",
+   120→        "cities": [
+   121→            ("Sydney, NSW", -33.8688, 151.2093),
+   122→            ("Melbourne, VIC", -37.8136, 144.9631),
+   123→            ("Brisbane, QLD", -27.4698, 153.0251),
+   124→            ("Perth, WA", -31.9505, 115.8605),
+   125→            ("Canberra, ACT", -35.2809, 149.1300),
+   126→        ],
+   127→        "companies": {
+   128→            "Technology": [("Atlassian", "https://atlassian.com/careers"), ("Canva", "https://canva.com/careers"), ("SafetyCulture", "https://safetyculture.com/careers")],
+   129→            "Finance": [("Commonwealth Bank", "https://commbank.com.au/careers"), ("Westpac", "https://westpac.com.au/careers"), ("ANZ", "https://anz.com/careers")],
+   130→            "Design": [(("Canva Design", "https://canva.com/careers"))],
+   131→            "Marketing": [("Telstra", "https://telstra.com/careers")],
+   132→            "Data Science": [(("CSIRO", "https://csiro.au/careers"))],
+   133→            "Sales": [("BHP", "https://bhp.com/careers")],
+   134→            "Management": [("PwC Australia", "https://pwc.com.au/careers")],
+   135→            "Healthcare": [("Bupa", "https://bupa.com/careers")],
+   136→            "Education": [("University of Melbourne", "https://unimelb.edu.au/careers")],
+   137→            "Engineering": [("Rio Tinto", "https://riotinto.com/careers"), ("Fortescue", "https://fortescue.com/careers")],
+   138→            "Legal": [("Allens", "https://allens.com.au/careers")],
+   139→            "HR": [("SEEK", "https://seek.com.au/careers")],
+   140→        },
+   141→        "salary_ranges": {"year": (55000, 190000)},
+   142→    },
+   143→    "jp": {
+   144→        "name": "Japan", "currency": "JPY", "symbol": "¥", "period": "year",
+   145→        "cities": [
+   146→            ("Tokyo", 35.6762, 139.6503),
+   147→            ("Osaka", 34.6937, 135.5023),
+   148→            ("Kyoto", 35.0116, 135.7681),
+   149→            ("Yokohama", 35.4437, 139.6380),
+   150→            ("Nagoya", 35.1815, 136.9066),
+   151→        ],
+   152→        "companies": {
+   153→            "Technology": [("Sony", "https://sony.com/careers"), ("SoftBank", "https://softbank.jp/careers"), ("Rakuten", "https://rakuten.co.jp/careers")],
+   154→            "Finance": [("MUFG", "https://mufg.jp/careers"), ("Nomura", "https://nomura.com/careers"), ("SMBC", "https://smbc.co.jp/careers")],
+   155→            "Design": [("Nintendo", "https://nintendo.com/careers")],
+   156→            "Marketing": [("Toyota Marketing", "https://toyota-global.com/careers")],
+   157→            "Data Science": [("Preferred Networks", "https://preferred-networks.jp/careers")],
+   158→            "Sales": [("Honda", "https://honda.com/careers")],
+   159→            "Management": [("McKinsey Japan", "https://mckinsey.jp/careers")],
+   160→            "Healthcare": [("Takeda", "https://takeda.com/careers")],
+   161→            "Education": [(("Benesse", "https://benesse.jp/careers"))],
+   162→            "Engineering": [("Toyota", "https://toyota-global.com/careers"), ("Mitsubishi Heavy", "https://mhps.com/careers")],
+   163→            "Legal": [("Nishimura Asahi", "https://nashimalaw.com/careers")],
+   164→            "HR": [(("PERSOL", "https://persol.co.jp/careers"))],
+   165→        },
+   166→        "salary_ranges": {"year": (4000000, 15000000)},
+   167→    },
+   168→    "ch": {
+   169→        "name": "Switzerland", "currency": "CHF", "symbol": "CHF", "period": "year",
+   170→        "cities": [
+   171→            ("Zurich", 47.3769, 8.5417),
+   172→            ("Geneva", 46.2044, 6.1432),
+   173→            ("Basel", 47.5596, 7.5886),
+   174→            ("Bern", 46.9480, 7.4474),
+   175→            ("Lausanne", 46.5197, 6.6323),
+   176→        ],
+   177→        "companies": {
+   178→            "Technology": [("Google Zurich", "https://google.ch/careers"), ("EPFL Spinoffs", "https://epfl.ch/careers"), ("IBM Zurich", "https://ibm.com/ch/careers")],
+   179→            "Finance": [("UBS", "https://ubs.com/careers"), ("Credit Suisse", "https://credit-suisse.com/careers"), ("Julius Baer", "https://juliusbaer.com/careers")],
+   180→            "Design": [("Rolex", "https://rolex.com/careers")],
+   181→            "Marketing": [("Nestle", "https://nestle.com/careers")],
+   182→            "Data Science": [("ETH Zurich", "https://ethz.ch/careers")],
+   183→            "Sales": [("Novartis", "https://novartis.com/careers")],
+   184→            "Management": [(("McKinsey CH", "https://mckinsey.ch/careers"))],
+   185→            "Healthcare": [("Roche", "https://roche.com/careers"), ("Novartis", "https://novartis.com/careers")],
+   186→            "Education": [("IMD", "https://imd.org/careers")],
+   187→            "Engineering": [("ABB", "https://abb.com/careers"), ("Alstom", "https://alstom.com/careers")],
+   188→            "Legal": [("Homburger", "https://homburger.ch/careers")],
+   189→            "HR": [("Globe 24h", "https://globe24h.com/careers")],
+   190→        },
+   191→        "salary_ranges": {"year": (70000, 250000)},
+   192→    },
+   193→    "fr": {
+   194→        "name": "France", "currency": "EUR", "symbol": "€", "period": "year",
+   195→        "cities": [
+   196→            ("Paris", 48.8566, 2.3522),
+   197→            ("Lyon", 45.7640, 4.8357),
+   198→            ("Marseille", 43.2965, 5.3698),
+   199→            ("Toulouse", 43.6047, 1.4442),
+   200→            ("Bordeaux", 44.8378, -0.5792),
+   201→        ],
+   202→        "companies": {
+   203→            "Technology": [("Capgemini", "https://capgemini.com/careers"), ("Thales", "https://thalesgroup.com/careers"), ("Orange", "https://orange.com/careers")],
+   204→            "Finance": [("BNP Paribas", "https://bnpparibas.com/careers"), ("Societe Generale", "https://societegenerale.com/careers"), ("AXA", "https://axa.com/careers")],
+   205→            "Design": [("L'Oreal Design", "https://loreal.com/careers")],
+   206→            "Marketing": [("LVMH", "https://lvmh.com/careers"), ("Kering", "https://kering.com/careers")],
+   207→            "Data Science": [("Criteo", "https://criteo.com/careers")],
+   208→            "Sales": [(("Airbus", "https://airbus.com/careers"))],
+   209→            "Management": [("McKinsey France", "https://mckinsey.fr/careers")],
+   210→            "Healthcare": [("Sanofi", "https://sanofi.com/careers"), ("Danone", "https://danone.com/careers")],
+   211→            "Education": [(("INSEAD", "https://insead.edu/careers"))],
+   212→            "Engineering": [("TotalEnergies", "https://totalenergies.com/careers"), ("Alstom France", "https://alstom.com/careers")],
+   213→            "Legal": [("Gide", "https://gide.com/careers")],
+   214→            "HR": [("Manpower France", "https://manpower.fr/careers")],
+   215→        },
+   216→        "salary_ranges": {"year": (32000, 140000)},
+   217→    },
+   218→    "nl": {
+   219→        "name": "Netherlands", "currency": "EUR", "symbol": "€", "period": "year",
+   220→        "cities": [
+   221→            ("Amsterdam", 52.3676, 4.9041),
+   222→            ("Rotterdam", 51.9244, 4.4777),
+   223→            ("The Hague", 52.0705, 4.3007),
+   224→            ("Utrecht", 52.0907, 5.1214),
+   225→            ("Eindhoven", 51.4416, 5.4697),
+   226→        ],
+   227→        "companies": {
+   228→            "Technology": [("Booking.com", "https://booking.com/careers"), ("ASML", "https://asml.com/careers"), ("Adyen", "https://adyen.com/careers")],
+   229→            "Finance": [("ING", "https://ing.com/careers"), ("Rabobank", "https://rabobank.com/careers"), ("ABN AMRO", "https://abnamro.com/careers")],
+   230→            "Design": [("Philips Design", "https://philips.com/careers")],
+   231→            "Marketing": [("Heineken", "https://heineken.com/careers")],
+   232→            "Data Science": [(("Elsevier", "https://elsevier.com/careers"))],
+   233→            "Sales": [("AkzoNobel", "https://akzonobel.com/careers")],
+   234→            "Management": [("PwC Netherlands", "https://pwc.nl/careers")],
+   235→            "Healthcare": [("Philips Healthcare", "https://philips.com/careers")],
+   236→            "Education": [("TU Delft", "https://tudelft.nl/careers")],
+   237→            "Engineering": [("Shell", "https://shell.com/careers"), ("Uniper", "https://uniper.com/careers")],
+   238→            "Legal": [("De Brauw", "https://debrauw.com/careers")],
+   239→            "HR": [("Randstad", "https://randstad.com/careers")],
+   240→        },
+   241→        "salary_ranges": {"year": (38000, 150000)},
+   242→    },
+   243→    "sg": {
+   244→        "name": "Singapore", "currency": "SGD", "symbol": "S$", "period": "year",
+   245→        "cities": [
+   246→            ("Singapore Central", 1.2903, 103.8520),
+   247→            ("Singapore Marina", 1.2814, 103.8636),
+   248→            ("Singapore Jurong", 1.3329, 103.7436),
+   249→        ],
+   250→        "companies": {
+   251→            "Technology": [("Grab", "https://grab.com/careers"), ("Shopee", "https://shopee.com/careers"), ("Sea Group", "https://seagroup.com/careers")],
+   252→            "Finance": [("DBS", "https://dbs.com/careers"), ("OCBC", "https://ocbc.com/careers"), ("UOB", "https://uob.com.sg/careers")],
+   253→            "Design": [("Razer Design", "https://razer.com/careers")],
+   254→            "Marketing": [("Singapore Airlines", "https://singaporeair.com/careers")],
+   255→            "Data Science": [(("GovTech", "https://tech.gov.sg/careers"))],
+   256→            "Sales": [(("SingTel", "https://singtel.com/careers"))],
+   257→            "Management": [("McKinsey Singapore", "https://mckinsey.sg/careers")],
+   258→            "Healthcare": [("SingHealth", "https://singhealth.com.sg/careers")],
+   259→            "Education": [("NUS", "https://nus.edu.sg/careers")],
+   260→            "Engineering": [(("ST Engineering", "https://stengg.com/careers"))],
+   261→            "Legal": [("Rajah Tann", "https://rajahtann.com/careers")],
+   262→            "HR": [(("JobStreet SG", "https://jobstreet.com.sg/careers"))],
+   263→        },
+   264→        "salary_ranges": {"year": (42000, 200000)},
+   265→    },
+   266→    "ae": {
+   267→        "name": "United Arab Emirates", "currency": "AED", "symbol": "AED", "period": "month",
+   268→        "cities": [
+   269→            ("Dubai", 25.2048, 55.2708),
+   270→            ("Abu Dhabi", 24.4539, 54.3773),
+   271→            ("Sharjah", 25.3463, 55.4209),
+   272→        ],
+   273→        "companies": {
+   274→            "Technology": [("Careem", "https://careem.com/careers"), ("Emirates NBD", "https://emiratesnbd.com/careers")],
+   275→            "Finance": [("Emirates NBD", "https://emiratesnbd.com/careers"), ("ADCB", "https://adcb.com/careers"), ("FAB", "https://bankfab.com/careers")],
+   276→            "Design": [("Emaar", "https://emaar.com/careers")],
+   277→            "Marketing": [("Emirates Airlines", "https://emirates.com/careers")],
+   278→            "Data Science": [("DEWA", "https://dewa.gov.ae/careers")],
+   279→            "Sales": [("Chalhoub Group", "https://chalhoubgroup.com/careers")],
+   280→            "Management": [(("McKinsey ME", "https://mckinsey.ae/careers"))],
+   281→            "Healthcare": [("Cleveland Clinic Abu Dhabi", "https://clevelandclinicabudhabi.com/careers")],
+   282→            "Education": [("NYU Abu Dhabi", "https://nyuad.nyu.edu/careers")],
+   283→            "Engineering": [("ADNOC", "https://adnoc.ae/careers"), ("DP World", "https://dpworld.com/careers")],
+   284→            "Legal": [(("Al Tamimi", "https://tamimi.com/careers"))],
+   285→            "HR": [("Adecco Middle East", "https://adecco.com/careers")],
+   286→        },
+   287→        "salary_ranges": {"month": (8000, 60000)},
+   288→    },
+   289→    "br": {
+   290→        "name": "Brazil", "currency": "BRL", "symbol": "R$", "period": "month",
+   291→        "cities": [
+   292→            ("Sao Paulo, SP", -23.5505, -46.6333),
+   293→            ("Rio de Janeiro, RJ", -22.9068, -43.1729),
+   294→            ("Belo Horizonte, MG", -19.9167, -43.9345),
+   295→            ("Curitiba, PR", -25.4284, -49.2733),
+   296→            ("Porto Alegre, RS", -30.0346, -51.2177),
+   297→            ("Brasilia, DF", -15.7975, -47.8919),
+   298→            ("Salvador, BA", -12.9714, -38.5124),
+   299→            ("Recife, PE", -8.0476, -34.8770),
+   300→            ("Campinas, SP", -22.9099, -47.0626),
+   301→            ("Florianopolis, SC", -27.5954, -48.5480),
+   302→        ],
+   303→        "companies": {
+   304→            "Technology": [("Nubank", "https://nubank.com.br/careers"), ("iFood", "https://ifood.com.br/careers"), ("Mercado Livre", "https://mercadolivre.com.br/careers")],
+   305→            "Finance": [("Itau Unibanco", "https://itau.com.br/careers"), ("Bradesco", "https://bradesco.com.br/careers"), ("BTG Pactual", "https://btgpactual.com/careers")],
+   306→            "Design": [(("Totvs", "https://totvs.com.br/careers"))],
+   307→            "Marketing": [("Ambev", "https://ambev.com.br/careers")],
+   308→            "Data Science": [(("Stone", "https://stone.com.br/careers"))],
+   309→            "Sales": [("Magazine Luiza", "https://magazineluiza.com.br/careers")],
+   310→            "Management": [(("McKinsey Brasil", "https://mckinsey.com.br/careers"))],
+   311→            "Healthcare": [("Hapvida", "https://hapvida.com.br/careers"), ("Rede D'Or", "https://reachedor.com.br/careers")],
+   312→            "Education": [(("EBAC", "https://ebac.com.br/careers"))],
+   313→            "Engineering": [("Petrobras", "https://petrobras.com.br/careers"), ("Vale", "https://vale.com/careers")],
+   314→            "Legal": [(("Mattos Filho", "https://mattosfilho.com.br/careers"))],
+   315→            "HR": [("Gupy", "https://gupy.io/careers")],
+   316→        },
+   317→        "salary_ranges": {"month": (3000, 35000)},
+   318→    },
+   319→}
+   320→
+   321→TITLES = {
+   322→    "Technology": ["Senior Software Engineer", "Full Stack Developer", "Cloud Architect", "DevOps Engineer", "Frontend Developer", "Backend Developer", "Mobile Developer", "ML Engineer", "Cybersecurity Analyst", "Platform Engineer", "QA Engineer", "Tech Lead"],
+   323→    "Finance": ["Financial Analyst", "Investment Banker", "Risk Manager", "Portfolio Manager", "Compliance Officer", "Credit Analyst", "Treasury Analyst", "Wealth Manager"],
+   324→    "Design": ["UX Designer", "UI Designer", "Product Designer", "Design Lead", "UX Researcher", "Brand Designer"],
+   325→    "Marketing": ["Marketing Manager", "Growth Hacker", "Content Strategist", "Digital Marketing Lead", "Brand Manager", "SEO Specialist"],
+   326→    "Data Science": ["Data Scientist", "Data Engineer", "ML Researcher", "Analytics Manager", "BI Analyst", "NLP Engineer"],
+   327→    "Sales": ["Account Executive", "Sales Manager", "Business Development Rep", "Enterprise Sales Lead", "Key Account Manager"],
+   328→    "Management": ["Product Manager", "Project Manager", "Program Manager", "Operations Director", "Strategy Consultant", "Business Analyst"],
+   329→    "Healthcare": ["Registered Nurse", "Medical Doctor", "Pharmacist", "Clinical Researcher", "Health Informatics Specialist", "Biomedical Engineer"],
+   330→    "Education": ["Curriculum Developer", "E-learning Specialist", "Academic Researcher", "Instructional Designer", "Education Technology Manager"],
+   331→    "Engineering": ["Mechanical Engineer", "Electrical Engineer", "Civil Engineer", "Chemical Engineer", "Aerospace Engineer", "Systems Engineer"],
+   332→    "Legal": ["Corporate Lawyer", "Legal Counsel", "Compliance Officer", "Patent Attorney", "Contract Specialist"],
+   333→    "HR": ["HR Business Partner", "Talent Acquisition Lead", "People Operations Manager", "Compensation Analyst", "L&D Specialist"],
+   334→}
+   335→
+   336→DESCS = {
+   337→    "Technology": [
+   338→        "Build and scale distributed systems serving millions of users. Work with cutting-edge cloud infrastructure on AWS/Azure/GCP. Collaborate with cross-functional teams in an agile environment.",
+   339→        "Design and implement user-facing features using React, TypeScript, and modern web frameworks. Optimize performance and deliver pixel-perfect interfaces for global users.",
+   340→        "Lead the design and implementation of microservices architecture. Mentor junior engineers and drive technical decisions across multiple product teams.",
+   341→    ],
+   342→    "Finance": [
+   343→        "Analyze financial statements and market trends to support investment decisions. Prepare detailed reports for C-level stakeholders and present quarterly performance reviews.",
+   344→        "Manage risk assessment frameworks and ensure regulatory compliance across multiple jurisdictions. Develop strategies to mitigate financial and operational risks.",
+   345→    ],
+   346→    "Design": [
+   347→        "Create intuitive user experiences through research-driven design. Conduct user interviews, build wireframes and prototypes, and collaborate with engineering to ship polished products.",
+   348→        "Lead the visual identity and design system for the product. Ensure brand consistency across all touchpoints and mentor the design team.",
+   349→    ],
+   350→    "Marketing": [
+   351→        "Develop and execute multi-channel marketing strategies to drive user acquisition and retention. Manage campaigns across digital platforms with measurable KPIs.",
+   352→        "Create compelling content strategies that engage target audiences. Manage social media, email campaigns, and SEO optimization for maximum reach.",
+   353→    ],
+   354→    "Data Science": [
+   355→        "Build predictive models and analyze large datasets to drive business decisions. Use Python, TensorFlow, and SQL to extract insights and present findings to leadership.",
+   356→        "Design and maintain data pipelines and ETL processes. Build dashboards and reporting systems for real-time business intelligence.",
+   357→    ],
+   358→    "Sales": [
+   359→        "Drive revenue growth by identifying and closing enterprise deals. Build relationships with C-suite executives and manage the full sales cycle from prospecting to close.",
+   360→        "Develop strategic partnerships and expand market presence. Lead a team of sales representatives to exceed quarterly targets.",
+   361→    ],
+   362→    "Management": [
+   363→        "Own the product roadmap and prioritize features based on user research and business impact. Manage cross-functional teams and drive product launches.",
+   364→        "Lead complex consulting engagements with Fortune 500 clients. Deliver actionable recommendations and manage project delivery across global teams.",
+   365→    ],
+   366→    "Healthcare": [
+   367→        "Provide high-quality patient care and collaborate with multidisciplinary medical teams. Contribute to clinical research and quality improvement initiatives.",
+   368→        "Conduct clinical trials and research studies to advance medical treatments. Analyze data and publish findings in peer-reviewed journals.",
+   369→    ],
+   370→    "Education": [
+   371→        "Develop innovative curriculum and learning materials for online and in-person programs. Leverage technology to create engaging educational experiences.",
+   372→        "Manage educational technology platforms and ensure seamless learning experiences. Analyze student data to improve course outcomes.",
+   373→    ],
+   374→    "Engineering": [
+   375→        "Design and oversee construction projects from conception to completion. Ensure compliance with safety standards and manage engineering teams on-site.",
+   376→        "Develop innovative engineering solutions for complex technical challenges. Lead testing, validation, and quality assurance processes.",
+   377→    ],
+   378→    "Legal": [
+   379→        "Provide expert legal counsel on corporate transactions, M&A deals, and regulatory matters. Draft and negotiate complex commercial agreements.",
+   380→        "Ensure organizational compliance with local and international regulations. Manage legal risk and advise on strategic business decisions.",
+   381→    ],
+   382→    "HR": [
+   383→        "Develop and implement talent acquisition strategies to attract top candidates. Manage the full recruitment lifecycle and build employer branding.",
+   384→        "Design compensation and benefits programs that attract and retain talent. Analyze market data and ensure competitive positioning.",
+   385→    ],
+   386→}
+   387→
+   388→POSTED = ["1 day ago", "2 days ago", "3 days ago", "4 days ago", "5 days ago", "1 week ago"]
+   389→
+   390→def fmt_salary(val, symbol, period, code):
+   391→    if period == "year":
+   392→        if code == "JPY":
+   393→            return f"¥{val//10000:,}0,000/yr"
+   394→        return f"{symbol}{val:,.0f}/yr"
+   395→    else:
+   396→        return f"{symbol}{val:,.0f}/mo"
+   397→
+   398→def gen_jobs():
+   399→    jobs = []
+   400→    job_id = 1
+   401→    random.seed(42)
+   402→
+   403→    for cc, cfg in COUNTRIES.items():
+   404→        used = set()
+   405→        sectors_shuffled = list(SECTORS)
+   406→        random.shuffle(sectors_shuffled)
+   407→
+   408→        for sector in sectors_shuffled:
+   409→            if sector not in cfg["companies"]:
+   410→                continue
+   411→            comps = cfg["companies"][sector]
+   412→            comp = random.choice(comps)
+   413→            title = random.choice(TITLES.get(sector, ["Analyst"]))
+   414→            city = random.choice(cfg["cities"])
+   415→            jtype = random.choice(TYPES)
+   416→            smin, smax = cfg["salary_ranges"][cfg["period"]]
+   417→            sal_min = random.randint(smin, int(smin + (smax - smin) * 0.4))
+   418→            sal_max = random.randint(int(smin + (smax - smin) * 0.5), smax)
+   419→            desc = random.choice(DESCS.get(sector, ["Responsible for key business operations and delivering results."]))
+   420→            paywall = random.random() < 0.3
+   421→            posted = random.choice(POSTED)
+   422→
+   423→            key = f"{cc}-{sector}-{comp[0]}"
+   424→            if key in used:
+   425→                continue
+   426→            used.add(key)
+   427→
+   428→            jobs.append({
+   429→                "id": job_id,
+   430→                "title": title,
+   431→                "company": comp[0],
+   432→                "companyUrl": comp[1],
+   433→                "location": city[0],
+   434→                "country": cc,
+   435→                "countryName": cfg["name"],
+   436→                "lat": city[1],
+   437→                "lng": city[2],
+   438→                "salary": fmt_salary(sal_max, cfg["symbol"], cfg["period"], cfg["currency"]),
+   439→                "salaryMin": sal_min,
+   440→                "salaryMax": sal_max,
+   441→                "salaryCurrency": cfg["currency"],
+   442→                "salaryPeriod": cfg["period"],
+   443→                "description": desc,
+   444→                "sector": sector,
+   445→                "posted": posted,
+   446→                "type": jtype,
+   447→                "contactEmail": f"careers@{comp[0].lower().replace(' ', '').replace('.','').replace("'","")}.com",
+   448→                "paywall": paywall,
+   449→            })
+   450→            job_id += 1
+   451→
+   452→    return jobs
+   453→
+   454→jobs = gen_jobs()
+   455→
+   456→# Write TypeScript file
+   457→lines = []
+   458→lines.append('import { NextResponse } from "next/server";')
+   459→lines.append('')
+   460→lines.append('export interface Job {')
+   461→lines.append('  id: number; title: string; company: string; companyUrl: string;')
+   462→lines.append('  location: string; country: string; countryName: string;')
+   463→lines.append('  lat: number; lng: number;')
+   464→lines.append('  salary: string; salaryMin: number; salaryMax: number;')
+   465→lines.append('  salaryCurrency: string; salaryPeriod: string;')
+   466→lines.append('  description: string; sector: string; posted: string; type: string;')
+   467→lines.append('  contactEmail: string;')
+   468→lines.append('  paywall: boolean;')
+   469→lines.append('}')
+   470→lines.append('')
+   471→lines.append('export const jobs: Job[] = [')
+   472→
+   473→for i, j in enumerate(jobs):
+   474→    comma = "," if i < len(jobs) - 1 else ""
+   475→    lines.append('  {')
+   476→    lines.append(f'    id: {j["id"]}, title: "{j["title"]}", company: "{j["company"]}",')
+   477→    lines.append(f'    companyUrl: "{j["companyUrl"]}", location: "{j["location"]}",')
+   478→    lines.append(f'    country: "{j["country"]}", countryName: "{j["countryName"]}",')
+   479→    lines.append(f'    lat: {j["lat"]}, lng: {j["lng"]},')
+   480→    lines.append(f'    salary: "{j["salary"]}", salaryMin: {j["salaryMin"]}, salaryMax: {j["salaryMax"]},')
+   481→    lines.append(f'    salaryCurrency: "{j["salaryCurrency"]}", salaryPeriod: "{j["salaryPeriod"]}",')
+   482→    desc = j["description"].replace('"', '\\"')
+   483→    lines.append(f'    description: "{desc}",')
+   484→    lines.append(f'    sector: "{j["sector"]}", posted: "{j["posted"]}", type: "{j["type"]}",')
+   485→    lines.append(f'    contactEmail: "{j["contactEmail"]}",')
+   486→    lines.append(f'    paywall: {"true" if j["paywall"] else "false"},')
+   487→    lines.append(f'  }}{comma}')
+   488→    lines.append('')
+   489→
+   490→lines.append('];')
+   491→lines.append('')
+   492→lines.append('// In-memory store for company-submitted jobs')
+   493→lines.append('const companyJobs: Job[] = [];')
+   494→lines.append('')
+   495→lines.append('export async function GET(request: Request) {')
+   496→lines.append('  const { searchParams } = new URL(request.url);')
+   497→lines.append('  const country = searchParams.get("country");')
+   498→lines.append('  const type = searchParams.get("type");')
+   499→lines.append('  const sector = searchParams.get("sector");')
+   500→lines.append('  let filtered = [...jobs, ...companyJobs];')
+   501→lines.append('  if (country) {')
+   502→lines.append('    filtered = filtered.filter(j => j.country === country);')
+   503→lines.append('  }')
+   504→lines.append('  if (type && type !== "all") {')
+   505→lines.append('    filtered = filtered.filter(j => j.type.toLowerCase() === type.toLowerCase());')
+   506→lines.append('  }')
+   507→lines.append('  if (sector && sector !== "all") {')
+   508→lines.append('    filtered = filtered.filter(j => j.sector === sector);')
+   509→lines.append('  }')
+   510→lines.append('  return NextResponse.json(filtered);')
+   511→lines.append('}')
+   512→lines.append('')
+   513→lines.append('export async function POST(request: Request) {')
+   514→lines.append('  try {')
+   515→lines.append('    const body = await request.json();')
+   516→lines.append('    const {')
+   517→lines.append('      companyName, companyUrl, companyEmail,')
+   518→lines.append('      title, location, country, countryName,')
+   519→lines.append('      salary, salaryMin, salaryMax, salaryCurrency, salaryPeriod,')
+   520→lines.append('      description, sector, type, remote')
+   521→lines.append('    } = body;')
+   522→lines.append('')
+   523→lines.append('    if (!companyName || !title || !location || !country || !description || !sector || !type) {')
+   524→lines.append('      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });')
+   525→lines.append('    }')
+   526→lines.append('')
+   527→lines.append('    const newJob: Job = {')
+   528→lines.append('      id: jobs.length + companyJobs.length + 1,')
+   529→lines.append('      title,')
+   530→lines.append('      company: companyName,')
+   531→lines.append('      companyUrl: companyUrl || "",')
+   532→lines.append('      location,')
+   533→lines.append('      country,')
+   534→lines.append('      countryName: countryName || country,')
+   535→lines.append('      lat: 0, lng: 0,')
+   536→lines.append('      salary: salary || "Negotiable",')
+   537→lines.append('      salaryMin: salaryMin || 0,')
+   538→lines.append('      salaryMax: salaryMax || 0,')
+   539→lines.append('      salaryCurrency: salaryCurrency || "USD",')
+   540→lines.append('      salaryPeriod: salaryPeriod || "month",')
+   541→lines.append('      description,')
+   542→lines.append('      sector,')
+   543→lines.append('      type: type === "remote" ? "Remote" : type,')
+   544→lines.append('      contactEmail: companyEmail || "",')
+   545→lines.append('      paywall: false,')
+   546→lines.append('    };')
+   547→lines.append('')
+   548→lines.append('    companyJobs.push(newJob);')
+   549→lines.append('    return NextResponse.json({ success: true, job: newJob }, { status: 201 });')
+   550→lines.append('  } catch {')
+   551→lines.append('    return NextResponse.json({ error: "Invalid request" }, { status: 400 });')
+   552→lines.append('  }')
+   553→lines.append('}')
+   554→
+   555→with open('/home/z/my-project/src/app/api/jobs/route.ts', 'w') as f:
+   556→    f.write('\n'.join(lines))
+   557→
+   558→print(f'Generated {len(jobs)} jobs')
+   559→print(f'Countries: {sorted(set(j["country"] for j in jobs))}')
