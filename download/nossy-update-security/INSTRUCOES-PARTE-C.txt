@@ -1,0 +1,80 @@
+===============================================================================
+INSTRUÇÕES: CORREÇÃO DOS FICHEIROS DA PARTE C (EUA - UNITED STATES)
+===============================================================================
+
+PROBLEMA IDENTIFICADO
+----------------------
+Os 4 ficheiros JSON da Parte C (dados dos Estados Unidos) NÃO foram
+enviados para o repositório GitHub. Consequentemente, os empregos dos EUA
+não aparecem no site em produção (nossy.pro).
+
+EVIDÊNCIAS DO PROBLEMA
+-----------------------
+
+1. A palavra "América" aparece 0 (ZERO) vezes no site em produção.
+   Apenas "Europa" e "Ásia" estão presentes como regiões com dados.
+
+2. O número total de empregos no site é 44.227, mas deveria ser 44.337.
+   Estão em falta exatamente 110 empregos dos Estados Unidos.
+
+3. Os ficheiros em falta são:
+   - eua_united-states-1.json
+   - eua_united-states-2.json
+   - eua_united-states-3.json
+   - eua_united-states-4.json
+
+PASSOS PARA CORRIGIR
+--------------------
+
+Passo 1: Aceda ao repositório GitHub
+  - Abra o navegador e vá para: https://github.com/critecnic/nossy-site
+  - Certifique-se de que tem permissões de escrita no repositório.
+
+Passo 2: Navegue até à pasta de dados
+  - No repositório, navegue para: public/data/
+  - Verifique que os ficheiros eua_united-states-*.json NÃO existem.
+
+Passo 3: Carregue os 4 ficheiros
+  - Clique em "Add file" → "Upload files"
+  - Selecione e carregue ESTES 4 ficheiros da Parte C:
+      ► eua_united-states-1.json
+      ► eua_united-states-2.json
+      ► eua_united-states-3.json
+      ► eua_united-states-4.json
+  - Certifique-se de que o destino é a pasta public/data/
+  - Escreva uma mensagem de commit como:
+    "feat: add US job data files (Parte C)"
+  - Clique em "Commit changes"
+
+Passo 4: Aguarde a implantação automática
+  - O Vercel deteta automaticamente o novo commit no GitHub.
+  - A implantação (deploy) inicia-se automaticamente.
+  - Normalmente demora 1-2 minutos a concluir.
+  - Pode acompanhar o progresso em: https://vercel.com/dashboard
+
+Passo 5: Verifique a correção
+  - Após a implantação estar concluída, abra:
+    https://nossy.pro/en/jobs/eua/united-states
+  - Confirme que:
+    ✔ Empregos dos EUA aparecem na página
+    ✔ O número total de empregos volta a ser 44.337
+    ✔ A região "América" aparece no site
+
+NOTAS IMPORTANTES
+-----------------
+- NÃO altere o nome dos ficheiros. Eles devem manter exatamente o nome
+  eua_united-states-{n}.json para que o sistema os reconheça.
+
+- Os ficheiros devem ser colocados EXATAMENTE na pasta public/data/.
+  Não os coloque noutra pasta.
+
+- Após o upload, pode levar alguns minutos até que o Vercel reflita
+  as alterações. Se não aparecerem imediatamente, aguarde 5 minutos
+  e limpe o cache do navegador (Ctrl+Shift+R).
+
+- Se encontrar problemas, verifique o log de implantação no Vercel
+  para confirmar que o deploy foi concluído com sucesso.
+
+===============================================================================
+Fim das instruções
+===============================================================================

@@ -1,0 +1,20 @@
+{
+  "code": 200,
+  "data": {
+    "description": "",
+    "html": "<html><head><meta name=\"color-scheme\" content=\"light dark\"></head><body><pre style=\"word-wrap: break-word; white-space: pre-wrap;\">User-Agent: *\nAllow: /\n\nSitemap: https://nossy.pro/sitemap.xml\n</pre></body></html>",
+    "httpStatus": 200,
+    "httpStatusText": "",
+    "title": "",
+    "url": "https://nossy.pro/robots.txt",
+    "usage": {
+      "tokens": 62
+    }
+  },
+  "meta": {
+    "usage": {
+      "tokens": 62
+    }
+  },
+  "status": 200
+}
