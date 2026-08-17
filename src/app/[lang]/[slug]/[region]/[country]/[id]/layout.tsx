@@ -36,15 +36,25 @@ function getCountryEnglish(slug: string): string {
 
 async function fetchJob(rc: string, cc: string, jobId: string) {
   try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-    const res = await fetch(
-      `${baseUrl}/api/data/country?file=${encodeURIComponent(rc + "_" + cc + ".json")}`,
-      { next: { revalidate: 3600 } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
+    const domain = "https://nossy.pro";
+    let data: any[] = [];
+
+    if (rc === "eua" && cc === "united-states") {
+      const parts = await Promise.all([
+        fetch(`${domain}/data/eua_united-states-1.json`).then(r => r.ok ? r.json() : []),
+        fetch(`${domain}/data/eua_united-states-2.json`).then(r => r.ok ? r.json() : []),
+        fetch(`${domain}/data/eua_united-states-3.json`).then(r => r.ok ? r.json() : []),
+        fetch(`${domain}/data/eua_united-states-4.json`).then(r => r.ok ? r.json() : []),
+      ]);
+      data = parts.flat();
+    } else {
+      const res = await fetch(`${domain}/data/${rc}_${cc}.json`, {
+        next: { revalidate: 3600 },
+      });
+      if (!res.ok) return null;
+      data = await res.json();
+    }
+
     return data.find((j: { id: number }) => String(j.id) === String(jobId)) || null;
   } catch {
     return null;
