@@ -1,0 +1,21 @@
+FIX 2 - CORRIGIR METADATA DAS PAGINAS DE VAGA
+=================================================
+
+PROBLEMA: Paginas de vaga individual herdam metadata da pagina do pais
+
+COMO CORRIGIR:
+1. No GitHub, navegue ate: src/app/[lang]/[slug]/[region]/[country]/
+2. Se existir uma pasta [id], entre nela e substitua o layout.tsx
+3. Se NAO existir a pasta [id]:
+   - Clique "Add file" → "Create new file"
+   - No campo do nome, digite: [id]/layout.tsx
+   - Cole o conteudo do arquivo layout.tsx deste ZIP
+   - Clique "Commit changes"
+4. Se a pasta [id] ja existir com layout.tsx:
+   - Clique no layout.tsx → lapis → delete tudo → cole novo → Commit
+5. Aguarde 1-2 min e teste: https://nossy.pro/en/jobs/eua/united-states/3
+
+VERIFICACAO:
+- Title deve conter o nome da vaga (ex: "Remote React.JS Jobs at Jsjobbs | NOSSY")
+- Canonical deve ser: https://nossy.pro/en/jobs/eua/united-states/3
+- Description deve ser sobre a vaga especifica

@@ -1,0 +1,18 @@
+FIX 1 - CORRIGIR BUG UNDEFINED NA HOMEPAGE
+===========================================
+
+PROBLEMA: Homepage mostra "Job Listing | NOSSY" e canonical com "/undefined/undefined/undefined"
+CAUSA: O arquivo layout.tsx da pasta [slug] foi sobrescrito acidentalmente
+
+COMO CORRIGIR:
+1. No GitHub, navegue ate: src/app/[lang]/[slug]/
+2. Clique no arquivo layout.tsx
+3. Clique no lapis (Edit) no canto superior direito
+4. DELETE todo o conteudo existente
+5. Cole o conteudo do arquivo layout.tsx deste ZIP
+6. Clique "Commit changes"
+7. Aguarde 1-2 minutos e teste: https://nossy.pro/en/jobs
+
+VERIFICACAO:
+- Title deve ser: "NOSSY | English | 44,337+ Jobs"
+- Canonical deve ser: https://nossy.pro/en/jobs (sem undefined)

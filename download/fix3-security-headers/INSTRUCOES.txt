@@ -1,0 +1,27 @@
+FIX 3 - SECURITY HEADERS
+========================
+
+PROBLEMA: Apenas HSTS funcionou. Faltam 5 headers essenciais.
+
+IMPORTANTE: No Windows, ao salvar o next.config, confirme que o nome
+ficou next.config.ts (com .ts). O Windows pode esconder a extensao.
+
+COMO CORRIGIR:
+1. No GitHub, abra next.config.ts na raiz do repositorio
+2. Clique no lapis → DELETE tudo → cole o novo conteudo → Commit
+3. Depois, va na raiz do repositorio
+4. Clique Add file → Create new file
+5. Nome: vercel.json → cole o conteudo do vercel.json deste ZIP → Commit
+6. Aguarde 2-3 min (Vercel re-deploya)
+
+O vercel.json garante que os headers funcionem mesmo se
+o next.config.ts falhar. Ambos sao necessarios.
+
+VERIFICACAO (use ferramenta de desenvolvedor do navegador → Network → Headers):
+- X-Frame-Options: DENY
+- X-Content-Type-Options: nosniff
+- Referrer-Policy: strict-origin-when-cross-origin
+- Permissions-Policy: camera=(), microphone=(), geolocation=()
+- Strict-Transport-Security: max-age=31536000...
+- Content-Security-Policy: default-src 'self'...
+- NAO deve aparecer: X-Powered-By

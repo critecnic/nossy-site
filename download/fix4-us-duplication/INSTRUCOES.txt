@@ -1,0 +1,17 @@
+FIX 4 - CORRIGIR "UNITED STATES" DUPLICADO
+============================================
+
+PROBLEMA: Description mostra "United States, United States"
+CAUSA: Regiao 'eua' e pais 'united-states' resolvem para o mesmo nome
+
+COMO CORRIGIR:
+1. No GitHub, navegue ate: src/app/[lang]/[slug]/[region]/[country]/
+2. Clique em layout.tsx → lapis (Edit)
+3. DELETE todo o conteudo
+4. Cole o conteudo do layout.tsx deste ZIP
+5. Commit changes
+6. Aguarde 1-2 min e teste: https://nossy.pro/en/jobs/eua/united-states
+
+VERIFICACAO:
+- Description deve ser: "Find 19,046+ tech jobs in United States, North America."
+- NAO deve aparecer: "United States, United States"
