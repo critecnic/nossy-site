@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://support.stripe.com/questions/physical-presence-requirement-faq",
+    "name": "Physical presence requirement FAQ",
+    "snippet": "We no longer allow addresses associated with mailbox services and virtual address services as a physical presence . Why is Stripe making these changes? The ... Read more",
+    "host_name": "support.stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/issuing/compliance-us/address-validation",
+    "name": "Validate addresses for money management products",
+    "snippet": "May 28, 2025 — Stripe can no longer allow addresses for registered agents, mailbox services, or virtual address services.",
+    "host_name": "docs.stripe.com",
+    "rank": 1,
+    "date": "May 28, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.thefarmsoho.com/product/stripe-account-verification",
+    "name": "Business Address for Latest Stripe Verification Requirements",
+    "snippet": "Physical Presence is Mandatory: The address must be a real, operational business location. Rejected Addresses : P.O. Boxes, standard virtual mailboxes , ... Read more",
+    "host_name": "www.thefarmsoho.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/smallbusiness/comments/1q4qhfm/stripe_keeps_rejecting_my_business_address",
+    "name": "Stripe keeps rejecting my business address verification",
+    "snippet": "Also this requirement ( physical presence ) is only for advanced Stripe features - for basic payment processing you'll been good with virtual ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nvinc.com/2026-kyc-reality-check-why-non-resident-sellers-need-a-u-s-operational-presence",
+    "name": "2026 KYC Reality Check for Non-Residents",
+    "snippet": "Stripe will not accept registered agents, mailbox services, or virtual addresses for those capabilities. Even Payments-only accounts now require documents ... Read more",
+    "host_name": "nvinc.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]
