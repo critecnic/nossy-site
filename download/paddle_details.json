@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://www.paddle.com/help/manage/get-paid/when-and-how-do-i-get-paid",
+    "name": "When and how do I get paid? - Help Center",
+    "snippet": "When and how do I get paid?",
+    "host_name": "www.paddle.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/payouts",
+    "name": "Receive payouts",
+    "snippet": "The limit is 10 same- day manual payouts per day with a maximum of 1 million USD each. All other manual payouts typically arrive within 1 business day .",
+    "host_name": "docs.stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/onsen/paddle-review-2026-pros-cons-pricing-explained-4cgk",
+    "name": "Paddle Review 2026: Pros, Cons & Pricing Explained",
+    "snippet": "Mar 11, 2026 — Paddle pays out on a rolling schedule — typically weekly , with a holding period . You pay 5% + $0.50 per transaction. There are no setup fees . a ...",
+    "host_name": "dev.to",
+    "rank": 2,
+    "date": "Mar 11, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/SaaS/comments/1gq199t/paddle_payout_15_charge",
+    "name": "Paddle payout $15 charge : r/SaaS",
+    "snippet": "Since Paddle is UK-based, they typically use SWIFT for international transfers, which leads to that extra charge for accounts outside the UK. Read more",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dodopayments.com/blogs/paddle-fees-explained",
+    "name": "Paddle Fees 2026: The Real Cost of 5% + 50¢ (Hidden",
+    "snippet": "Mar 21, 2026 — Paddle generally does not charge a direct fee to send money to your bank account. However, they fulfill payouts after deducting their own fees . Read more",
+    "host_name": "dodopayments.com",
+    "rank": 4,
+    "date": "Mar 21, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://partner.steamgames.com/doc/finance/payments_salesreporting/faq",
+    "name": "Reporting and Payments FAQ (Steamworks Documentation)",
+    "snippet": "we may hold your payment until a minimum of $100 payout is earned. Your account needs to be able to accept payment via SWIFT wire transfer in USD.",
+    "host_name": "partner.steamgames.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.paddle.com/help/manage/get-paid/is-there-a-fee-taken-for-payouts",
+    "name": "Is there a fee taken for payouts? - Help Center",
+    "snippet": "Is there a fee taken for payouts?",
+    "host_name": "www.paddle.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://wise.com/help/articles/2978013/what-are-the-fees-and-limits-for-receiving-money",
+    "name": "What are the fees and limits for receiving money?",
+    "snippet": "When getting paid to your Wise account, most payment types are free to receive, and you can receive almost any amount. Read on to see exceptions.",
+    "host_name": "wise.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.facebook.com/business/help/1664302973836952",
+    "name": "About Meta Audience Network Payments",
+    "snippet": "The minimum payment is $100 US dollars (USD), totaled across all your apps. If you earn less, we'll add it to the following month until you reach $100 USD. You ... Read more",
+    "host_name": "www.facebook.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  }
+]
