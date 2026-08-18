@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://developer.paddle.com/build/transactions/custom-data",
+    "name": "Work with custom data - Paddle Developer Docs",
+    "snippet": "Pass custom_data as a valid JSON object to transactions via the API or to checkouts via Paddle.js — the data is stored against the transaction entity.",
+    "host_name": "developer.paddle.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.partnerstack.com/docs/paddle-checkout",
+    "name": "Paddle checkout - the PartnerStack Docs",
+    "snippet": "Paddle Custom Fields attach structured key-value data to each Paddle checkout instance. To send custom fields to Paddle, you can pass valid structured JSON ...",
+    "host_name": "docs.partnerstack.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/79427675/how-to-send-custom-data-for-customer-via-javascript",
+    "name": "How to send custom data for customer via javascript - Stack Overflow",
+    "snippet": "Feb 10, 2025 · My aim is to send the crmId (some kind of customer id) of my application to Paddle on checkout in order to 'link' the customer in my database ...",
+    "host_name": "stackoverflow.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.paddle.com/build/checkout/prefill-checkout-properties",
+    "name": "Prefill checkout properties - Paddle Developer Docs",
+    "snippet": "Prefill checkout fields to save customers time and increase checkout conversion. ... For example, you should pass either customer ID or customer email — not both.",
+    "host_name": "developer.paddle.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://help.moonclerk.com/en/articles/12045428-how-do-i-programmatically-pre-fill-data-into-custom-fields-at-checkout",
+    "name": "How do I programmatically pre-fill data into custom fields at checkout?",
+    "snippet": "Aug 19, 2025 · we also allow you to programmatically pre-fill data into those fields at checkout. You can pass through data in the URL.",
+    "host_name": "help.moonclerk.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/thunderbird/thunderbird-accounts/issues/417",
+    "name": "prefill alternate email on Paddle subscription form #417 - GitHub",
+    "snippet": "Nov 12, 2025 · If we pre-fill the customer email for Paddle's checkout open function it will hard set that value and not even show it. There's an ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@girish1729/using-overlay-checkout-in-paddle-and-configuring-webhook-for-one-time-payments-3ea02f099624",
+    "name": "Using overlay checkout in Paddle and configuring webhook for one",
+    "snippet": "Jan 1, 2026 · Paddle payments use webhook to notify us that a payment has been successful. Before we proceed we must configure the paddle webhook URL in the ...",
+    "host_name": "medium.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=MoAKSoup5m4",
+    "name": "How to Build a Custom Web Checkout with Paddle + Vercel - YouTube",
+    "snippet": "May 22, 2025 · Start building now with the Checkout Starter Kit: https://bit.ly/42Sg26n Want more control over your in-app purchase flow? Paddle's new ...",
+    "host_name": "www.youtube.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]
