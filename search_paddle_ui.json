@@ -1,0 +1,29 @@
+[
+  {
+    "url": "https://developer.paddle.com/build/checkout/handle-success-post-checkout",
+    "name": "Handle checkout success",
+    "snippet": "Paddle Checkout includes a final screen that lets customers know their purchase was successful . You can redirect to your own page or build a more advanced ... Read more",
+    "host_name": "developer.paddle.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@girish1729/using-overlay-checkout-in-paddle-and-configuring-webhook-for-one-time-payments-3ea02f099624",
+    "name": "Using overlay checkout in Paddle and configuring",
+    "snippet": "We are doing a total lowdown on Paddle payments, including the overlay checkout from payment page on frontend and a webhook backend with user DB ... Read more",
+    "host_name": "medium.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.revenuecat.com/changelog/release/customize-paddle-checkout-inside-your-purchase-flows-2026-07-31",
+    "name": "Customize Paddle checkout inside your purchase flows",
+    "snippet": "Jul 31, 2026 — Inline checkout lets you create a payment experience that feels more consistent with the rest of your funnel or paywall instead of being ...",
+    "host_name": "www.revenuecat.com",
+    "rank": 2,
+    "date": "Jul 31, 2026",
+    "favicon": ""
+  }
+]

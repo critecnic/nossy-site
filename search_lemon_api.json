@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://docs.lemonsqueezy.com/guides/developer-guide/taking-payments",
+    "name": "Guides: Taking Payments",
+    "snippet": "Learn how to integrate Lemon Squeezy's checkout system into your app or product, from creating checkout URLs to handling post-purchase processes and ...",
+    "host_name": "docs.lemonsqueezy.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/shreyvijayvargiya/lemon-squeey-react-nextjs-payments-2k3a",
+    "name": "Lemon Squeey React Next.js Payments",
+    "snippet": "Jun 6, 2025 — payment integration either for subscription or a one - time payment . Integrating payments can be executed ・ we will be using Lemon Squeezy . ...",
+    "host_name": "dev.to",
+    "rank": 1,
+    "date": "Jun 6, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.lemonsqueezy.com/ecommerce/checkout-overlays",
+    "name": "Checkout Overlays • Lemon Squeezy",
+    "snippet": "Use the checkout overlay with modern JavaScript frameworks such as React, Next.js, Vue, Laravel and others with minimal additional implementation.",
+    "host_name": "www.lemonsqueezy.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/SaaS/comments/14jek0z/lemon_squeezy_and_nextjs_13_a_detailed_guide_to",
+    "name": "Lemon Squeezy and Next.js 13: A Detailed Guide to",
+    "snippet": "In this guide, I'll walk you through the process step-by-step, showing you how to create API keys, manage subscriptions, handle webhooks, and ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://shreyvijayvargiya26.medium.com/lemon-squeezy-payment-with-next-js-f8919869be64",
+    "name": "Lemon Squeezy Payment with Next.js | by shrey vijayvargiya",
+    "snippet": "Payment with Next . js ・ a one - time payment . Integrating payments can be executed through 2 steps Custom -made API endpoints. Create a Next . js ...",
+    "host_name": "shreyvijayvargiya26.medium.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

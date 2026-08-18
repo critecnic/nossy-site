@@ -1,0 +1,29 @@
+[
+  {
+    "url": "https://developer.paddle.com/build/checkout/build-branded-inline-checkout",
+    "name": "Build inline checkout",
+    "snippet": "Build a complete inline checkout that embeds Paddle's payment form directly into your page, using Paddle . js to display items, totals, and dynamically update ... Read more",
+    "host_name": "developer.paddle.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/PaddleHQ/paddle-nextjs-starter-kit",
+    "name": "PaddleHQ/paddle-nextjs-starter-kit: A",
+    "snippet": "Go to Paddle > Developer tools > Authentication and create a new API key. ... Click Get started to launch a checkout for a plan, then take a test payment . Read more",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/78127558/presenting-custom-prices-with-paddle-coms-v2-javascript-api-billing-api",
+    "name": "Presenting custom prices with Paddle.com's v2 JavaScript",
+    "snippet": "When you open a checkout, Paddle.js automatically creates a transaction for you . Now you can add a \"name\" parameter to the price record, and ...",
+    "host_name": "stackoverflow.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=ot5BrFCjo8c",
+    "name": "Full Guide: Using Paddle with Next.js for Payments - YouTube",
+    "snippet": "Jan 14, 2025 · Hello guys! In this video, we will look at Paddle. It is a payment platform which makes collecting payments much easier.",
+    "host_name": "www.youtube.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1fctjo2/i_created_a_guide_for_integrating_paddle_checkout",
+    "name": "I created a guide for integrating Paddle checkout with Next.js App",
+    "snippet": "Sep 9, 2024 · Hello folks, I recently had to integrate Paddle checkout using Next.js app router. There were not many resources to speed up development. Paddle Integration with NextJS - Reddit Having trouble integrating paddle checkout in Nextjs 14 - Reddit More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.paddle.com/build/checkout/build-branded-inline-checkout",
+    "name": "Build inline checkout | Paddle Developer Docs",
+    "snippet": "Build a complete inline checkout that embeds Paddle's payment form directly into your page, using Paddle.js to display items, totals, and dynamically update ...",
+    "host_name": "developer.paddle.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/PaddleHQ/paddle-nextjs-starter-kit",
+    "name": "GitHub - PaddleHQ/paddle-nextjs-starter-kit: A complete starter kit",
+    "snippet": "An integrated checkout experience built with Paddle Checkout, with secure optimized payments by card, Apple Pay, Google Pay, PayPal, and others.",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.test-lab.ai/blog/paddle-integration-guide",
+    "name": "Integrating Paddle Billing with Next.js on Cloudflare Workers",
+    "snippet": "Rating 4.8 (127) · Free · Developer Feb 19, 2026 · We integrated Paddle Billing into our Next.js app on Cloudflare Workers. Here's every gotcha, error, and fix we hit along the way.",
+    "host_name": "www.test-lab.ai",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]
