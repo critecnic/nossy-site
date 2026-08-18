@@ -1,0 +1,83 @@
+[
+  {
+    "url": "https://stripe.com/global",
+    "name": "Stripe global availability",
+    "snippet": "Stripe is currently supported in the following countries /regions, AU Australia AT Austria BE Belgium BR Brazil BG Bulgaria CA Canada. USA and 100+ additional  ...",
+    "host_name": "stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/managed-payments",
+    "name": "Managed Payments",
+    "snippet": "Sell globally in 195 countries without additional setup. Stripe's merchant of record solution handles payments, tax, fraud, disputes, and support for you.",
+    "host_name": "stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/payments/managed-payments",
+    "name": "Managed Payments | Stripe Documentation",
+    "snippet": "The Stripe merchant of record solution handles sales tax, VAT, and GST compliance in more than 80 countries , along with fraud prevention, dispute management,",
+    "host_name": "docs.stripe.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.paddle.com/resources/stripe-managed-payments",
+    "name": "Stripe's Merchant of Record (Stripe Managed Payments)",
+    "snippet": "Where is Stripe Managed Payments supported? ; EU . US. Hong Kong ; Switzerland. Canada. Singapore ; UK. Japan ; Norway ... Read more",
+    "host_name": "www.paddle.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://freemius.com/blog/stripe-merchant-of-record",
+    "name": "Stripe merchant of record: Where Managed Payments fails",
+    "snippet": "Jul 8, 2026 — Supported seller locations currently include the US, Canada, most of Europe, Australia, Hong Kong, Japan, and Singapore",
+    "host_name": "freemius.com",
+    "rank": 4,
+    "date": "Jul 8, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/payments/managed-payments/how-it-works",
+    "name": "How Managed Payments works | Stripe Documentation",
+    "snippet": "Managed Payments is the Stripe merchant of record solution that you can use to manage your tax compliance in more than 80 countries ,",
+    "host_name": "docs.stripe.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://fungies.io/stripe-managed-payments-vs-merchant-of-record-2026",
+    "name": "Stripe Managed Payments vs Merchant of Record",
+    "snippet": "Jun 21, 2026 — As of mid- 2026 , Stripe Managed Payments is still rolling out gradually and is primarily available to US-based businesses with good standing on ... Read more",
+    "host_name": "fungies.io",
+    "rank": 6,
+    "date": "Jun 21, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/resources/more/merchant-of-record",
+    "name": "What Is a Merchant of Record?",
+    "snippet": "Jan 27, 2026 — A merchant of record is an entity that is legally authorized and responsible for processing customer payments —here's what businesses should ...",
+    "host_name": "stripe.com",
+    "rank": 7,
+    "date": "Jan 27, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.transactbridge.com/blog/best-global-merchant-of-record-platforms-2026",
+    "name": "7 Best Global Merchant of Record Platforms for",
+    "snippet": "May 19, 2026 — Compare top 7 Merchant of Record platforms for global expansion in 2026 : Paddle, FastSpring, Lemon Squeezy, Stripe & more.",
+    "host_name": "www.transactbridge.com",
+    "rank": 8,
+    "date": "May 19, 2026",
+    "favicon": ""
+  }
+]

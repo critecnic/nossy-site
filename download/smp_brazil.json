@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://www.lemonsqueezy.com/blog/2026-update",
+    "name": "2026 Update: Lemon Squeezy + Stripe Managed Payments",
+    "snippet": "Jan 28, 2026 — Today Managed Payments support merchants in 35+ countries and we're expanding to more later this year. Very soon we will announce public access ...",
+    "host_name": "www.lemonsqueezy.com",
+    "rank": 0,
+    "date": "Jan 28, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/global",
+    "name": "Stripe global availability",
+    "snippet": "Once Stripe is supported in your country /region, you'll be able to sell to customers anywhere in the world. AU Australia · AT Austria · BE Belgium · BR Brazil ... Read more",
+    "host_name": "stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.lemonsqueezy.com/help/getting-started/supported-countries",
+    "name": "Supported Countries",
+    "snippet": "Lemon Squeezy supports merchants and affiliates in hundreds of countries . Find out if your country is supported for payouts and purchases.",
+    "host_name": "docs.lemonsqueezy.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/managed-payments",
+    "name": "Managed Payments",
+    "snippet": "Sell globally in 195 countries without additional setup. Stripe's merchant of record solution handles payments , tax, fraud, disputes, and support for you.",
+    "host_name": "stripe.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.lemonsqueezy.com/blog/stripe-lemon-squeezy-update-2025",
+    "name": "Stripe + Lemon Squeezy Update: A Big Milestone Reached",
+    "snippet": "Stripe Managed Payments offers a new path for businesses that want the power of merchant of record , through Stripe . Built Smarter for the Long Haul. One of ... Read more",
+    "host_name": "www.lemonsqueezy.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/EntrepreneurRideAlong/comments/11cdi4v/which_one_for_subscription_payments_stripe_paddle",
+    "name": "Stripe, Paddle or Lemon Squeezy : r/EntrepreneurRideAlong",
+    "snippet": "So, yes Stripe Connect is a good fit for your use case. If Stripe is not supported in your country , look for Stripe Atlas to setup account. Read more",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.paddle.com/resources/stripe-managed-payments",
+    "name": "Stripe's Merchant of Record (Stripe Managed Payments)",
+    "snippet": "In its current iteration, Stripe Managed Payments does not support key established and emerging countries like South Korea, China, India, Turkey and Brazil. Read more",
+    "host_name": "www.paddle.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.lemonsqueezy.com/blog/new-bank-payouts",
+    "name": "Lemon Squeezy Expands Bank Payouts to 45 Countries",
+    "snippet": "In total, Lemon Squeezy now supports 279+ countries to get paid (79 Bank Accounts & 200+ PayPal). How Much are the Payout Fees? In short, Lemon Squeezy absorbs ... Read more",
+    "host_name": "www.lemonsqueezy.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]
