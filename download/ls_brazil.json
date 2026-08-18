@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://docs.lemonsqueezy.com/help/getting-started/getting-paid",
+    "name": "Getting Paid",
+    "snippet": "Payouts can take 1-5 days to appear in your bank account . There is a minimum payout threshold of $50.",
+    "host_name": "docs.lemonsqueezy.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.lemonsqueezy.com/blog/new-bank-payouts",
+    "name": "Lemon Squeezy Expands Bank Payouts to 45 Countries",
+    "snippet": "We're excited to announce additional bank payout support on the Lemon Squeezy platform. Bank payout support now spans across 79 countries .",
+    "host_name": "www.lemonsqueezy.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.lemonsqueezy.com/help/getting-started/supported-countries",
+    "name": "Supported Countries",
+    "snippet": "Lemon Squeezy can offer services to merchants and affiliates who can receive bank or PayPal payouts in one of the hundreds of countries we support. Read more",
+    "host_name": "docs.lemonsqueezy.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.lemonsqueezy.com/blog/payout-fees-sliced",
+    "name": "Juicy news! Payout fees sliced",
+    "snippet": "New payout fees are now 0% per payout for bank accounts in the US and 1% per payout for bank accounts outside the US.",
+    "host_name": "www.lemonsqueezy.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/SaaS/comments/1bywbqh/is_lemon_squeezy_a_bad_choice_for_eu_users_as_i",
+    "name": "Is Lemon Squeezy a bad choice for EU users, as I have",
+    "snippet": "Hello everyone\n\nI've read some posts (dating a year ago) mentioning that Lemon Squeezy is a bad choice, especially for EU developers. Besides the required ...",
+    "host_name": "www.reddit.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.lemonsqueezy.com/help/checkout/payment-methods",
+    "name": "Payment Methods",
+    "snippet": "Supported payment methods Cards (we. PayPal Apple Pay (Safari only) Google Pay (Chrome only) Alipay WeChat Pay Cash App Pay Bank debits (e.g. ACH)",
+    "host_name": "docs.lemonsqueezy.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.stripe.com/questions/brazil-specific-payout-schedule-and-payment-availability",
+    "name": "Brazil-specific payout schedule and payment availability",
+    "snippet": "Payouts are processed on a daily basis . Weekly and monthly payout schedules are not available for Brazil accounts. Payouts are not posted during the weekend—if",
+    "host_name": "support.stripe.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.airwallex.com/en-uk/blog/lemon-squeezy-vs-stripe-comparison",
+    "name": "Lemon Squeezy vs Stripe: Price, features, and global",
+    "snippet": "Dec 16, 2025 — Compare Stripe vs Lemon Squeezy for SaaS and digital product payments, including pricing, subscriptions, tax automation, and global ...",
+    "host_name": "www.airwallex.com",
+    "rank": 7,
+    "date": "Dec 16, 2025",
+    "favicon": ""
+  }
+]
