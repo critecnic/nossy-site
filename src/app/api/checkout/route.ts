@@ -3,11 +3,13 @@ import { NextResponse } from 'next/server';
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.pro';
 
+const CURRENCY = process.env.STRIPE_CURRENCY || 'brl';
+
 const PLANS: Record<string, { amount: number; name: string }> = {
-  single: { amount: 699, name: '1 Job Contact' },
-  pack5: { amount: 1199, name: '5 Job Contacts Pack' },
-  pack10: { amount: 1900, name: '10 Job Contacts Pack' },
-  lifetime: { amount: 11900, name: 'Lifetime Unlimited Access' },
+  single: { amount: 3490, name: '1 Job Contact' },
+  pack5: { amount: 5990, name: '5 Job Contacts Pack' },
+  pack10: { amount: 8990, name: '10 Job Contacts Pack' },
+  lifetime: { amount: 59900, name: 'Lifetime Unlimited Access' },
 };
 
 export async function POST(request: Request) {
@@ -38,7 +40,7 @@ export async function POST(request: Request) {
       body: new URLSearchParams({
         'mode': 'payment',
         'payment_method_types[0]': 'card',
-        'line_items[0][price_data][currency]': 'usd',
+        'line_items[0][price_data][currency]': CURRENCY,
         'line_items[0][price_data][unit_amount]': String(planCfg.amount),
         'line_items[0][price_data][product_data][name]': planCfg.name,
         'line_items[0][quantity]': '1',

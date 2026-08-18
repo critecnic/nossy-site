@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import type { Lang } from '@/lib/i18n';
 
+const CURRENCY_SYMBOL = 'R$';
+
 const PRICES: Record<string, { amount: number; label: string; popular?: boolean }> = {
-  single: { amount: 6.99, label: 'singleJob' },
-  pack5: { amount: 11.99, label: 'pack5' },
-  pack10: { amount: 19.00, label: 'pack10', popular: true },
-  lifetime: { amount: 119.00, label: 'lifetime' },
+  single: { amount: 34.90, label: 'singleJob' },
+  pack5: { amount: 59.90, label: 'pack5' },
+  pack10: { amount: 89.90, label: 'pack10', popular: true },
+  lifetime: { amount: 599.00, label: 'lifetime' },
 };
 
 const LABELS: Record<string, Record<string, string>> = {
@@ -219,7 +221,7 @@ export default function PaywallModal({ isOpen, onClose, jobId, jobTitle, lang, c
                     {p.popular && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold">{L.mostPopular}</span>}
                   </div>
                   <span className="font-bold text-gray-900">
-                    ${p.amount.toFixed(2)}{key !== 'lifetime' ? L.perJob : ''}
+                    {CURRENCY_SYMBOL}{p.amount.toFixed(2).replace('.', ',')}{key !== 'lifetime' ? L.perJob : ''}
                   </span>
                 </button>
               );
