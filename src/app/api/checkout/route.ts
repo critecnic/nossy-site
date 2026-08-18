@@ -1,60 +1,63 @@
-import { NextResponse } from 'next/server';
+// ============================================================
+// app/api/checkout/route.ts — Cria checkout Paddle ($7 USD)
+// So funciona se o email foi verificado (codigo 6 digitos)
+// ============================================================
 
-const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.pro';
+import { NextRequest, NextResponse } from 'next/server';
+import { createCheckout } from '@/lib/paddle';
+import { isEmailVerified, cleanupExpiredCodes } from '@/lib/email-verification';
 
-const PLANS: Record<string, { amount: number; name: string }> = {
-  single: { amount: 699, name: '1 Job Contact' },
-  pack5: { amount: 1199, name: '5 Job Contacts Pack' },
-  pack10: { amount: 1900, name: '10 Job Contacts Pack' },
-  lifetime: { amount: 11900, name: 'Lifetime Unlimited Access' },
-};
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const { plan, jobId, lang } = body;
-    const pk = plan || 'single';
-    const planCfg = PLANS[pk];
-    if (!planCfg) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
+    const { email, jobId } = await request.json();
 
-    if (!STRIPE_SECRET) {
-      return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
+    // --- Validacoes ---
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json(
+        { error: 'Email e obrigatorio.' },
+        { status: 400 }
+      );
     }
 
-    const langCode = lang || 'en';
-    const baseUrl = BASE_URL.replace(/\/$/, '');
+    if (!jobId || typeof jobId !== 'string') {
+      return NextResponse.json(
+        { error: 'ID da vaga e obrigatorio.' },
+        { status: 400 }
+      );
+    }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    // Limpa codigos expirados
+    cleanupExpiredCodes();
 
-    const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Authorization': 'Basic ' + Buffer.from(STRIPE_SECRET + ':').toString('base64'),
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        'mode': 'payment',
-        'payment_method_types[0]': 'card',
-        'line_items[0][price_data][currency]': 'usd',
-        'line_items[0][price_data][unit_amount]': String(planCfg.amount),
-        'line_items[0][price_data][product_data][name]': planCfg.name,
-        'line_items[0][quantity]': '1',
-        'success_url': `${baseUrl}/${langCode}/jobs?payment=success`,
-        'cancel_url': `${baseUrl}/${langCode}/jobs?payment=cancelled`,
-        'metadata[plan]': pk,
-        'metadata[jobId]': String(jobId || ''),
-      }),
+    // --- Verificar se o email foi autenticado ---
+    const verified = isEmailVerified(email);
+    if (!verified) {
+      return NextResponse.json(
+        { error: 'Email nao verificado. Faca a autenticacao primeiro.' },
+        { status: 403 }
+      );
+    }
+
+    // --- Criar checkout no Paddle ---
+    const { checkoutUrl, transactionId } = await createCheckout({
+      email,
+      jobId,
     });
-    clearTimeout(timeout);
 
-    const session = await res.json();
-    if (session.url) return NextResponse.json({ url: session.url, sessionId: session.id });
-    return NextResponse.json({ error: session.error?.message || 'Checkout error' }, { status: 400 });
-  } catch (err: any) {
-    if (err.name === 'AbortError') return NextResponse.json({ error: 'Stripe timeout' }, { status: 504 });
-    return NextResponse.json({ error: err.message || 'Error' }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      checkoutUrl,
+      transactionId,
+    });
+  } catch (error) {
+    console.error('Erro em checkout:', error);
+
+    const message =
+      error instanceof Error ? error.message : 'Erro ao criar checkout.';
+
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
   }
 }
