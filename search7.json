@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://support.stripe.com/questions/transaction-declined-stripe-brazil-accounts",
+    "name": "Transaction declined - Stripe Brazil accounts",
+    "snippet": "This means that payments involving cross border flows, international offsettings, or currency conversions, will be declined . The restriction does not apply to ... Read more",
+    "host_name": "support.stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/en-de/resources/more/how-to-accept-international-payments",
+    "name": "How to accept international payments",
+    "snippet": "Jul 23, 2025 — How to accept international payments : What businesses need to know · Research your target markets · Choose a payment gateway or processor · Set up ... Read more",
+    "host_name": "stripe.com",
+    "rank": 1,
+    "date": "Jul 23, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/en-sg/resources/more/payments-in-brazil",
+    "name": "How to accept payments in Brazil",
+    "snippet": "Aug 22, 2025 — Here's a guide to accepting payments in Brazil , from the most popular payment methods to how to improve the customer payment experience.",
+    "host_name": "stripe.com",
+    "rank": 2,
+    "date": "Aug 22, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/stripe/comments/1u91ktt/85_of_my_card_payments_are_getting_blocked_in",
+    "name": "85% of my card payments are getting blocked in Brazil",
+    "snippet": "Hi guys, I recently launched a new product (anime videos) in the Brazilian market, and about 85% of my credit card payments are getting blocked.\n\nI previously ...",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/ie/resources/more/global-acquiring-101",
+    "name": "Global acquiring 101: A guide to cross-border payments",
+    "snippet": "Apr 21, 2026 — Global acquiring helps businesses handle cross-border transactions with minimal friction and reduced complexity. Receive approval or decline ...",
+    "host_name": "stripe.com",
+    "rank": 4,
+    "date": "Apr 21, 2026",
+    "favicon": ""
+  }
+]

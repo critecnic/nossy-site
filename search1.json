@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://stripe.com/resources/more/payments-in-brazil",
+    "name": "How to accept payments in Brazil",
+    "snippet": "Aug 22, 2025 — Here's a guide to accepting payments in Brazil , from the most popular payment methods to how to improve the customer payment experience.",
+    "host_name": "stripe.com",
+    "rank": 0,
+    "date": "Aug 22, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/pricing",
+    "name": "Pricing & Fees",
+    "snippet": "Find Stripe fees and pricing information. Opt to receive transfers on a rolling basis, weekly, or monthly. 5.99% + 30¢ per successful transaction. Local bank  ...",
+    "host_name": "stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/currencies",
+    "name": "Supported currencies",
+    "snippet": "Use this guide to understand which currencies Stripe supports for payments and bank payouts , how conversions. Use these minimum amounts by currency: BRL 0.50 ...",
+    "host_name": "docs.stripe.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.bcb.gov.br/en/currencyconversion",
+    "name": "Currency Conversion",
+    "snippet": "1 Real/ BRL (790) = 0.1954881 Dólar dos Estados Unidos/ USD (220) 1 Dólar dos Estados Unidos/ USD (220) = 5.1154009 Real/ BRL (790). The conversion result is ... Read more",
+    "host_name": "www.bcb.gov.br",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/ae/resources/more/pix-replacing-cards-cash-brazil",
+    "name": "A guide to Pix payments in Brazil",
+    "snippet": "Jul 29, 2025 — Pix is Brazil's real-time payment system , created by the Central Bank of Brazil (BCB) to move money instantly between people, businesses, and ... Read more",
+    "host_name": "stripe.com",
+    "rank": 4,
+    "date": "Jul 29, 2025",
+    "favicon": ""
+  }
+]

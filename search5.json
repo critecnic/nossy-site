@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://stripe.com/use-cases/crypto",
+    "name": "Grow Your Business Globally with Crypto and Stablecoins",
+    "snippet": "Stripe's crypto infrastructure allows you to easily integrate stablecoin payments and payouts , manage digital assets, and move money globally.",
+    "host_name": "stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.stripe.com/questions/crypto-supportability-and-availability-by-region",
+    "name": "Crypto supportability and availability by region",
+    "snippet": "Stripe offers varying levels of supportability for businesses in the crypto ecosystem, according to use case and region. During the onboarding process, ... Read more",
+    "host_name": "support.stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/resources/more/which-cryptocurrency-focuses-on-fast-cross-border-payments",
+    "name": "Which Crypto Focuses on Fast Cross-Border Payments?",
+    "snippet": "Mar 23, 2026 — Below, we'll discuss which cryptocurrency focuses on fast cross-border payments, how cryptocurrencies move value across borders, and what this ... Read more",
+    "host_name": "stripe.com",
+    "rank": 2,
+    "date": "Mar 23, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/blog/expanding-global-payouts-with-crypto",
+    "name": "Expanding global payouts with crypto",
+    "snippet": "Apr 22, 2022 — Businesses can now use Stripe to send cryptocurrency payouts around the world, exchange it into another currency. By the end of the year, we ...",
+    "host_name": "stripe.com",
+    "rank": 3,
+    "date": "Apr 22, 2022",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/newsroom/news/crypto-payouts",
+    "name": "Stripe introduces global crypto payouts",
+    "snippet": "Apr 22, 2022 — Businesses can now use Stripe to send cryptocurrency payouts to sellers, freelancers, creators, and service providers around the world. Read more",
+    "host_name": "stripe.com",
+    "rank": 4,
+    "date": "Apr 22, 2022",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://support.stripe.com/questions/supported-bank-accounts-in-brazil",
+    "name": "Supported bank accounts in Brazil - Stripe Support",
+    "snippet": "To receive payouts from Stripe in Brazil, you must have a checking account under the CPF or CNPJ associated with your Stripe account and a Brazilian-based BRL- ...",
+    "host_name": "support.stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.stripe.com/questions/2025-updates-to-brazil-verification-requirements",
+    "name": "2025 updates to Brazil verification requirements - Stripe Support",
+    "snippet": "Central Bank of Brazil regulations require Stripe to collect our users' financial capacity information. Provide the range that best represents your monthly ...",
+    "host_name": "support.stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.stripe.com/questions/most-common-issues-receiving-payouts-in-brazil",
+    "name": "Most common issues receiving payouts in Brazil - Stripe Support",
+    "snippet": "You will need a Brazilian-based bank account that's BRL denominated to receive your Stripe payouts. Your bank also needs to be a domiciled institution as per ...",
+    "host_name": "support.stripe.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.stripe.com/questions/brazil-specific-information-to-open-a-stripe-account",
+    "name": "Brazil-specific information to open a Stripe account",
+    "snippet": "You must have a bank account associated to this entity to receive payouts successfully. Bank account A Brazilian-based bank account, BRL denominated and ...",
+    "host_name": "support.stripe.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://wpsimplepay.com/how-to-complete-stripes-brazil-verification-requirements",
+    "name": "How to Complete Stripe's Brazil Verification Requirements",
+    "snippet": "The requirement covers three steps: submitting a CPF (for individuals) or CNPJ (for registered businesses), completing a liveness check, and providing a ...",
+    "host_name": "wpsimplepay.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

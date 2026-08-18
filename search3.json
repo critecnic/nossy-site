@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://stripe.com/connect",
+    "name": "Stripe Connect | Platform and Marketplace Payment",
+    "snippet": "Stripe Connect is the fastest and easiest way to integrate payments and financial services into your software platform or marketplace.",
+    "host_name": "stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/treasury/connect/examples/sample-app",
+    "name": "Issuing and Treasury for platforms sample app",
+    "snippet": "Use the Stripe Next.js sample app to start your own Issuing and Treasury for platforms integration. The app provides many how-to examples, four steps: Create a ...",
+    "host_name": "docs.stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://vercel.com/kb/guide/getting-started-with-nextjs-typescript-stripe",
+    "name": "Getting started with Next.js, TypeScript, and Stripe Checkout",
+    "snippet": "Nov 3, 2025 — This guide walks you through setting up a Next . js project with TypeScript and adding payments functionality with Stripe Checkout. Read more",
+    "host_name": "vercel.com",
+    "rank": 2,
+    "date": "Nov 3, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1g3lwxd/integrating_stripe_with_nextjs_a_comprehensive",
+    "name": "Integrating Stripe with Next.js: A Comprehensive Guide",
+    "snippet": "Both articles include step- by -step instructions, code examples, and diagrams to help you understand the concepts better. Check them out here: A ...",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zignuts.com/blog/stripe-payment-integration-in-reactjs-guide",
+    "name": "Stripe Payment Integration in React.js: 2026 Complete Guide",
+    "snippet": "Oct 27, 2025 — Master Stripe in React.js 2026 : Build secure checkouts with Elements 3.0, biometric auth, and AI fraud tools. The ultimate guide for modern ...",
+    "host_name": "zignuts.com",
+    "rank": 4,
+    "date": "Oct 27, 2025",
+    "favicon": ""
+  }
+]

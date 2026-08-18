@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://support.stripe.com/questions/transaction-declined-stripe-brazil-accounts",
+    "name": "Transaction declined - Stripe Brazil accounts",
+    "snippet": "This means that payments involving cross border flows, international offsettings, or currency conversions, will be declined. The restriction does not apply to ... Read more",
+    "host_name": "support.stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/pricing",
+    "name": "Pricing & Fees",
+    "snippet": "2.9% + 30¢ per successful transaction for domestic cards + 0.5% for manually entered cards + 1.5% for international cards + ・ cross-border exchange fees ・ 1% ...",
+    "host_name": "stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/en-br/pricing",
+    "name": "Pricing & Fees",
+    "snippet": "3.99% + R$0.39 per successful transaction for domestic cards + 2% for transactions with international cards , Stripe will charge the User a fee corresponding",
+    "host_name": "stripe.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://checkoutpage.com/blog/stripe-international-fees?srsltid=AfmBOoq-mlX30NLYBD2Rev07iCNWfvDrwmt24LN5fw8B_ouwsVZgG3r_",
+    "name": "Stripe international fees: what you pay by country in 2026",
+    "snippet": "Apr 21, 2026 — In short: Stripe adds 1.5% for international cards and 1% for currency conversion ... This covers the higher interchange costs for cross-border ... Read more",
+    "host_name": "checkoutpage.com",
+    "rank": 3,
+    "date": "Apr 21, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://x.com/duborges/status/2011610006278291948",
+    "name": "if your Stripe US account charges a Brazilian client, in BRL",
+    "snippet": "if your Stripe US account charges a Brazilian client, in BRL, by Credit Card , they'll end up paying + IOF (3.5%) + Spread (~4%) on top of the ...",
+    "host_name": "x.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]
