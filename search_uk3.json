@@ -1,0 +1,29 @@
+[
+  {
+    "url": "https://stripe.com/pricing",
+    "name": "Pricing & Fees",
+    "snippet": "Find Stripe fees and pricing information. Fast, predictable payouts to your bank accounts ・ weekly, or monthly. $0.10 per successful API call ・ $15.00 per ...",
+    "host_name": "stripe.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://wise.com/us/blog/stripe-international",
+    "name": "Stripe international payments: Fees and available countries",
+    "snippet": "Stripe enforces a minimum and maximum limit for charge amounts, For instance, the lowest charge amount for USD is $0.50, while for GBP it's £0.30. Available ...",
+    "host_name": "wise.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/payouts",
+    "name": "Receive payouts",
+    "snippet": "Stripe pays out funds to your bank account based on a predetermined payout schedule, which varies based on your industry and country of operation.",
+    "host_name": "docs.stripe.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  }
+]
