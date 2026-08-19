@@ -42,3 +42,33 @@ Stage Summary:
 - 7 security headers added
 - SEO metadata generation added for job detail pages
 - Missing US data documentation provided
+
+---
+Task ID: 2
+Agent: Main
+Task: Análise crítica completa + correção de bugs e vulnerabilidades
+
+Work Log:
+- Analisou site NOSSY.PRO ao vivo (homepage, páginas de país, detalhe, SEO, headers, robots, sitemap)
+- Analisou todos os 29 arquivos-fonte do src/ localmente
+- Identificou 4 bugs P0, 8 P1, 11 P2, 6 P3
+- Testou portas abertas (3000, 81, 19001, 19005, 19006, 12600)
+- Confirmou vulnerabilidades por teste ativo (webhook, rate limiting, path traversal, CSP)
+- Corrigiu i18n: 22 idiomas x 24 chaves movidas de sectorNames para i18n
+- Corrigiu webhook: agora rejeita requisições sem PADDLE_WEBHOOK_SECRET (503)
+- Corrigiu next.config.ts: removeu standalone, ignoreBuildErrors, ignoreDuringBuilds, unsafe-eval
+- Corrigiu path traversal: safeFilePath() com path.resolve validation
+- Corrigiu página de detalhe: agora carrega split files (eua_united-states-1..4.json)
+- Adicionou rate limiting em 4 API routes (send-code: 3/min, verify-code: 10/min, checkout: 5/5min, country: 100/min)
+- Corrigiu validação de email: regex `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
+- Removeu código de verificação do assunto do email
+- Removeu PaywallModal.tsx (código morto do Stripe)
+- Adicionou poweredByHeaders: false
+- Adicionou reactStrictMode: true
+- Adicionou Paddle domains ao connect-src do CSP
+- Empacotado src corrigido + next.config.ts em ZIP
+
+Stage Summary:
+- ZIP: /home/z/my-project/download/nossy-src-fixed.zip (85.8 KB)
+- 4 P0 corrigidos, 8 P1 corrigidos, 3 P2 corrigidos
+- Todos os testes passaram: webhook rejeita sem secret, rate limiting funciona, path traversal bloqueado, CSP sem unsafe-eval, i18n traduz corretamente
