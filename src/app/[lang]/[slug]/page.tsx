@@ -6,7 +6,7 @@ import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
-import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, getCompanyCareerUrl } from "@/lib/shared";
 import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
@@ -108,7 +108,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <div className="text-center py-12 text-gray-400">
               <p className="text-3xl mb-2">&#9888;&#65039;</p>
               <p>{T.error}</p>
-              <button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">Recarregar</button>
+              <button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">{T.reload}</button>
             </div>
           ) : loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

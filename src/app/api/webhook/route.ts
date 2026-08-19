@@ -4,47 +4,53 @@ import { createHmac, timingSafeEqual } from 'crypto';
 export async function POST(request: Request) {
   try {
     const body = await request.text();
-    const sig = request.headers.get('stripe-signature');
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+    const sig = request.headers.get('paddle-signature') || '';
+    const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET || '';
 
     // When webhook secret is not set, just acknowledge receipt
     if (!webhookSecret || !sig) {
-      console.log('Webhook received (no verification):', body.slice(0, 200));
+      console.log('Paddle webhook received (no verification):', body.slice(0, 200));
       return NextResponse.json({ received: true });
     }
 
-    // Verify Stripe webhook signature
-    const elements = sig.split(',');
-    let sigTimestamp = '';
-    let sigSignature = '';
-    for (const element of elements) {
-      const [key, value] = element.split('=');
-      if (key === 't') sigTimestamp = value;
-      if (key === 'v1') sigSignature = value;
+    // Paddle sends signature as: ts=...;h1=...
+    const elements = sig.split(';');
+    let ts = '';
+    let h1 = '';
+    for (const el of elements) {
+      const [key, value] = el.split('=');
+      if (key === 'ts') ts = value;
+      if (key === 'h1') h1 = value;
     }
 
-    if (!sigTimestamp || !sigSignature) {
+    if (!ts || !h1) {
       return NextResponse.json({ error: 'Invalid signature format' }, { status: 400 });
     }
 
-    const signedPayload = `${sigTimestamp}.${body}`;
+    const signedPayload = ts + ':' + body;
     const expectedSig = createHmac('sha256', webhookSecret).update(signedPayload).digest('hex');
 
-    if (!timingSafeEqual(Buffer.from(sigSignature), Buffer.from(expectedSig))) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+    try {
+      if (!timingSafeEqual(Buffer.from(h1, 'hex'), Buffer.from(expectedSig, 'hex'))) {
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Signature mismatch' }, { status: 400 });
     }
 
     const event = JSON.parse(body);
-    console.log('Stripe event:', event.type);
+    const eventType = event.event_type || event.eventType || '';
+    console.log('Paddle event:', eventType);
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data?.object;
-      console.log('Payment success:', session?.id, session?.metadata);
-      // TODO: Store unlocked jobs in database, send confirmation email, etc.
-      // session.metadata.plan = 'single' | 'pack5' | 'pack10' | 'lifetime'
-      // session.metadata.jobId = '12345'
-      // session.amount_total = 8990 (cents)
-      // session.currency = 'brl'
+    if (eventType === 'transaction.completed' || eventType === 'transaction.paid') {
+      const tx = event.data;
+      const customData = tx?.custom_data || {};
+      console.log('Payment success:', tx?.id, customData);
+      // TODO: Store unlocked jobs in database
+      // customData.jobId = '12345'
+      // customData.jobTitle = 'Senior Engineer'
+      // customData.lang = 'en'
+      // tx.customer_email = 'user@example.com'
     }
 
     return NextResponse.json({ received: true });

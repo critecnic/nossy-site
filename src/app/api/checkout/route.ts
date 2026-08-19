@@ -1,27 +1,20 @@
 import { NextResponse } from 'next/server';
 
-const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
+const PADDLE_API_KEY = process.env.PADDLE_API_KEY || '';
+const PADDLE_PRICE_ID = process.env.PADDLE_PRICE_ID || 'pri_01m0bhvecckh078qxexjwest9x';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.pro';
-
-const CURRENCY = process.env.STRIPE_CURRENCY || 'brl';
-
-const PLANS: Record<string, { amount: number; name: string }> = {
-  single: { amount: 3490, name: '1 Job Contact' },
-  pack5: { amount: 5990, name: '5 Job Contacts Pack' },
-  pack10: { amount: 8990, name: '10 Job Contacts Pack' },
-  lifetime: { amount: 59900, name: 'Lifetime Unlimited Access' },
-};
 
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { plan, jobId, lang } = body;
-    const pk = plan || 'single';
-    const planCfg = PLANS[pk];
-    if (!planCfg) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
+    const { email, jobId, jobTitle, lang } = body;
 
-    if (!STRIPE_SECRET) {
+    if (!PADDLE_API_KEY) {
       return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
+    }
+
+    if (!email || !email.includes('@')) {
+      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
     const langCode = lang || 'en';
@@ -30,33 +23,34 @@ export async function POST(request: Request) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
-    const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    const res = await fetch('https://vendor-api.paddle.com/transactions/create', {
       method: 'POST',
       signal: controller.signal,
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(STRIPE_SECRET + ':').toString('base64'),
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Bearer ' + PADDLE_API_KEY,
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
-        'mode': 'payment',
-        'payment_method_types[0]': 'card',
-        'line_items[0][price_data][currency]': CURRENCY,
-        'line_items[0][price_data][unit_amount]': String(planCfg.amount),
-        'line_items[0][price_data][product_data][name]': planCfg.name,
-        'line_items[0][quantity]': '1',
-        'success_url': `${baseUrl}/${langCode}/jobs?payment=success`,
-        'cancel_url': `${baseUrl}/${langCode}/jobs?payment=cancelled`,
-        'metadata[plan]': pk,
-        'metadata[jobId]': String(jobId || ''),
+      body: JSON.stringify({
+        items: [{ price_id: PADDLE_PRICE_ID, quantity: 1 }],
+        customer_email: email,
+        custom_data: { jobId: String(jobId || ''), jobTitle: jobTitle || '', lang: langCode },
+        checkout: {
+          url: 'https://checkout.paddle.com/checkout/' + PADDLE_PRICE_ID,
+          allowed_payment_methods: ['card'],
+          mode: 'checkout',
+          redirect_url: `${baseUrl}/${langCode}/jobs?payment=success`,
+        },
       }),
     });
     clearTimeout(timeout);
 
-    const session = await res.json();
-    if (session.url) return NextResponse.json({ url: session.url, sessionId: session.id });
-    return NextResponse.json({ error: session.error?.message || 'Checkout error' }, { status: 400 });
+    const data = await res.json() as any;
+    const checkoutUrl = data?.data?.urls?.checkout?.url;
+
+    if (checkoutUrl) return NextResponse.json({ url: checkoutUrl, txId: data?.data?.id });
+    return NextResponse.json({ error: data?.error?.detail || 'Checkout error' }, { status: 400 });
   } catch (err: any) {
-    if (err.name === 'AbortError') return NextResponse.json({ error: 'Stripe timeout' }, { status: 504 });
+    if (err.name === 'AbortError') return NextResponse.json({ error: 'Payment timeout' }, { status: 504 });
     return NextResponse.json({ error: err.message || 'Error' }, { status: 500 });
   }
 }

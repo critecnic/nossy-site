@@ -5,16 +5,17 @@ import Link from "next/link";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getTypeStyle, getTypeLabel, formatSalary, getRegionName } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, formatSalary, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
+import PaddlePayment from "@/components/PaddlePayment";
 import countriesData from "@/data/countries.json";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
   location: string; country: string; countryName: string;
-  salary: string; salaryMin: number; salaryMax: number;
+  salary: string; salaryMin: number | null; salaryMax: number | null;
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
   paywall: boolean; contactEmail: string;
@@ -33,6 +34,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
   const [countries, setCountries] = useState<any[]>(countriesData);
+  const [unlockingId, setUnlockingId] = useState<number | null>(null);
   const PER = 18;
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
@@ -76,6 +78,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
+  const pwText = getPaywallText(lang);
 
   useEffect(() => { setPage(1); }, [search, typeFilter, sectorFilter]);
 
@@ -145,7 +148,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             <span className="text-xs text-gray-500">{filtered.length} {T.vacancies}</span>
             <button onClick={clearFilters} className="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              {T.allTypes}
+              {T.clearFilters}
             </button>
           </div>
         )}
@@ -159,37 +162,73 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
         ) : dataError ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">&#128269;</p><p className="text-lg">{T.error}</p>
-            <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">Recarregar</button>
+            <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.reload}</button>
           </div>
         ) : actualTotal === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-5xl mb-4">&#128269;</p>
             <p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p>
-            <p className="text-sm mt-1">Tente ajustar seus filtros</p>
-            {hasActiveFilters && (<button onClick={clearFilters} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.allTypes}</button>)}
+            <p className="text-sm mt-1">{T.tryAdjustFilters}</p>
+            {hasActiveFilters && (<button onClick={clearFilters} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.clearFilters}</button>)}
           </div>
         ) : (<>
           <p className="text-sm text-gray-500 mb-4">{T.showing.replace("{0}", String((page - 1) * PER + 1)).replace("{1}", String(Math.min(page * PER, actualTotal))).replace("{2}", actualTotal.toLocaleString())}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
             const m = getSectorMeta(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = getTypeStyle(job.type);
+            const pw = shouldHavePaywall(job);
+            const isLocked = pw.paywall;
+            const detailHref = countryHref + "/" + job.id;
+            const careerUrl = getCompanyCareerUrl(job);
             return (
               <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
                 <div className="p-4">
-                  <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
-                  <h2 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h2>
-                  <p className="text-xs font-medium text-gray-600 mb-1">{job.company}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span>
+                      {isLocked && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{pwText.premium}</span>}
+                    </div>
+                    <span className="text-xs text-gray-400">{job.posted}</span>
+                  </div>
+                  <Link href={detailHref} className="block">
+                    <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{job.title}</h2>
+                  </Link>
+                  <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : job.company}</p>
                   <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
                   {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
-                  {job.contactEmail && (
+                  {isLocked && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      {unlockingId === job.id ? (
+                        <PaddlePayment jobId={job.id} jobTitle={job.title} lang={lang} compact />
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                            <span className="text-xs text-amber-700 font-medium">{T.contactAvailable}</span>
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); setUnlockingId(job.id); }} className="text-xs px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm">
+                            {pwText.unlock}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {!isLocked && job.contactEmail && (
                     <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-1.5">
                       <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                       <a href={"mailto:" + job.contactEmail} className="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors truncate">{job.contactEmail}</a>
                     </div>
                   )}
-                  {!job.contactEmail && job.company && <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-gray-400">{job.company}</span>}
+                  {!isLocked && !job.contactEmail && careerUrl && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <Link href={detailHref} className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                        {T.viewJob}
+                      </Link>
+                    </div>
+                  )}
                 </div></article>);
           })}</div>
           {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
