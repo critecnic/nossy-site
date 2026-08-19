@@ -96,3 +96,23 @@ Stage Summary:
 - Zero erros TypeScript
 - PaddlePayment validação de email corrigida
 - formatSalary agora mostra período traduzido
+---
+Task ID: 1
+Agent: main
+Task: Corrigir páginas de detalhe que quebravam ao clicar
+
+Work Log:
+- Analisou a página de detalhe [id]/page.tsx e identificou uso de use() (React 19)
+- Verificou que React 18.3.1 estava instalado, sem suporte a use()
+- Identificou tsconfig.json com include **/*.ts pegando arquivos estranhos em download/ e nossy-deploy-final/
+- Fez upgrade de react e react-dom de 18.3.1 para 19.2.8
+- Corrigiu tsconfig.json: include restrito a src/**/*.ts e src/**/*.tsx
+- Removeu 5 chaves duplicadas em shared.ts (spotify, infosys, palantir, salesforce, mongodb)
+- Removeu poweredByHeaders descontinuado do next.config.ts
+- Build passou com sucesso: rota [id] gerada como Dynamic (4.55 kB)
+
+Stage Summary:
+- Causa raiz: React 18 sem use() + tsconfig incluindo arquivos de outras pastas
+- Fix aplicado: React 19 + tsconfig corrigido + duplicatas removidas
+- Build 100% limpo, sem erros TypeScript
+

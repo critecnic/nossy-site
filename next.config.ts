@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  poweredByHeaders: false,
-        reactStrictMode: true,
+  reactStrictMode: true,
   images: {
     unoptimized: true,
   },

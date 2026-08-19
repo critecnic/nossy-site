@@ -256,7 +256,6 @@ const KNOWN_COMPANY_URLS: Record<string, string> = {
   'monzo': 'https://monzo.com/careers',
   'wise': 'https://wise.com/jobs',
   'klarna': 'https://www.klarna.com/careers',
-  'spotify': 'https://www.lifeatspotify.com',
   'deezer': 'https://www.deezer.com/jobs',
   'bolt': 'https://bolt.eu/careers',
   'wolt': 'https://wolt.com/careers',
@@ -269,7 +268,6 @@ const KNOWN_COMPANY_URLS: Record<string, string> = {
   'criteo': 'https://www.criteo.com/careers',
   'cognizant': 'https://careers.cognizant.com',
   'capgemini': 'https://www.capgemini.com/careers',
-  'infosys': 'https://www.infosys.com/careers',
   'hcl': 'https://www.hcltech.com/careers',
   'tech mahindra': 'https://careers.techmahindra.com',
   'micron': 'https://www.micron.com/careers',
@@ -285,7 +283,6 @@ const KNOWN_COMPANY_URLS: Record<string, string> = {
   'siemens healthineers': 'https://www.siemens-healthineers.com/careers',
   'asml': 'https://www.asml.com/careers',
   'sas': 'https://www.sas.com/en_us/careers',
-  'palantir': 'https://www.palantir.com/careers',
   'unity': 'https://careers.unity.com',
   'unreal engine': 'https://www.epicgames.com/site/en-US/careers',
   'epic games': 'https://www.epicgames.com/site/en-US/careers',
@@ -346,11 +343,9 @@ const KNOWN_COMPANY_URLS: Record<string, string> = {
   'sendgrid': 'https://www.twilio.com/en-us/company/jobs',
   'mailchimp': 'https://mailchimp.com/jobs',
   'hubspot': 'https://www.hubspot.com/careers',
-  'salesforce': 'https://www.salesforce.com/company/careers',
   'zendesk': 'https://www.zendesk.com/jobs',
   'freshworks': 'https://www.freshworks.com/company/careers',
   'postman': 'https://www.postman.com/careers',
-  'mongodb': 'https://www.mongodb.com/careers',
 };
 
 /**
