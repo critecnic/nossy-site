@@ -101,24 +101,29 @@ export function getTypeLabel(lang: string, type: string): string {
   return TYPE_LABELS[lang]?.[type] || type;
 }
 
-export const PAYWALL_TEXT: Record<string, { unlock: string; premium: string }> = {
-  en: { unlock: 'Unlock Contact', premium: 'Premium' },
-  "pt-br": { unlock: 'Desbloquear Contato', premium: 'Premium' },
-  es: { unlock: 'Desbloquear', premium: 'Premium' },
-  fr: { unlock: 'Débloquer', premium: 'Premium' },
-  de: { unlock: 'Freischalten', premium: 'Premium' },
-  it: { unlock: 'Sblocca', premium: 'Premium' },
-  nl: { unlock: 'Ontgrendelen', premium: 'Premium' },
-  pl: { unlock: 'Odblokuj', premium: 'Premium' },
-  ru: { unlock: 'Разблокировать', premium: 'Premium' },
-  zh: { unlock: '解锁联系方式', premium: '高级' },
-  ja: { unlock: '連絡先を解锁', premium: 'プレミアム' },
-  ko: { unlock: '연락처 잠금 해제', premium: '프리미엄' },
-  hi: { unlock: 'संपर्क अनलॉक करें', premium: 'प्रीमियम' },
-  ar: { unlock: 'فتح جهات الاتصال', premium: 'مميز' },
-  tr: { unlock: 'İletişimi Aç', premium: 'Premium' },
-  vi: { unlock: 'Mở khóa liên hệ', premium: 'Premium' },
-  th: { unlock: 'ปลดล็อกข้อมูลติดต่อ', premium: 'พรีเมียม' },
+export const PAYWALL_TEXT: Record<string, { unlock: string; premium: string; contactAvailable: string }> = {
+  en: { unlock: 'Unlock Contact', premium: 'Premium', contactAvailable: 'Contact Available' },
+  "pt-br": { unlock: 'Desbloquear Contato', premium: 'Premium', contactAvailable: 'Contato Disponível' },
+  "pt-pt": { unlock: 'Desbloquear Contacto', premium: 'Premium', contactAvailable: 'Contacto Disponível' },
+  es: { unlock: 'Desbloquear', premium: 'Premium', contactAvailable: 'Contacto Disponible' },
+  fr: { unlock: 'Débloquer', premium: 'Premium', contactAvailable: 'Contact Disponible' },
+  de: { unlock: 'Freischalten', premium: 'Premium', contactAvailable: 'Kontakt Verfügbar' },
+  it: { unlock: 'Sblocca', premium: 'Premium', contactAvailable: 'Contatto Disponibile' },
+  nl: { unlock: 'Ontgrendelen', premium: 'Premium', contactAvailable: 'Contact Beschikbaar' },
+  pl: { unlock: 'Odblokuj', premium: 'Premium', contactAvailable: 'Kontakt Dostępny' },
+  ru: { unlock: 'Разблокировать', premium: 'Premium', contactAvailable: 'Контакт Доступен' },
+  zh: { unlock: '解锁联系方式', premium: '高级', contactAvailable: '联系可用' },
+  ja: { unlock: '連絡先をアンロック', premium: 'プレミアム', contactAvailable: '連絡先あり' },
+  ko: { unlock: '연락처 잠금 해제', premium: '프리미엄', contactAvailable: '연락처 있음' },
+  hi: { unlock: 'संपर्क अनलॉक करें', premium: 'प्रीमियम', contactAvailable: 'संपर्क उपलब्ध' },
+  bn: { unlock: 'যোগাযোগ আনলক করুন', premium: 'প্রিমিয়াম', contactAvailable: 'যোগাযোগ পাওয়া যায়' },
+  ar: { unlock: 'فتح جهات الاتصال', premium: 'مميز', contactAvailable: 'الاتصال متاح' },
+  tr: { unlock: 'İletişimi Aç', premium: 'Premium', contactAvailable: 'İletişim Mevcut' },
+  vi: { unlock: 'Mở khóa liên hệ', premium: 'Premium', contactAvailable: 'Có Liên Hệ' },
+  th: { unlock: 'ปลดล็อกข้อมูลติดต่อ', premium: 'พรีเมียม', contactAvailable: 'ติดต่อได้' },
+  ur: { unlock: 'رابطہ کھولیں', premium: 'پریمیم', contactAvailable: 'رابطہ موجود' },
+  tl: { unlock: 'I-unlock ang Contact', premium: 'Premium', contactAvailable: 'Contact Available' },
+  sw: { unlock: 'Fungua Mawasiliano', premium: 'Premium', contactAvailable: 'Mawasiliano Yapo' },
 };
 
 export function getPaywallText(lang: string) {
@@ -333,6 +338,54 @@ for (const k of sectorLangKeys) { if (!SECTOR_LABELS[k]) SECTOR_LABELS[k] = { ..
 
 export function getSectorLabel(sector: string, lang: string): string {
   return SECTOR_LABELS[lang]?.[sector] || SECTOR_LABELS["en"]?.[sector] || sector;
+}
+
+// ============================================================
+// PAYWALL LOGIC: apenas 10% remoto + todos com salario >= $450k/ano
+// ============================================================
+export interface PaywallInfo {
+  paywall: boolean;
+  reason?: 'remote_10pct' | 'high_salary';
+  hasDiscount: boolean;
+}
+
+export function shouldHavePaywall(job: {
+  id: number;
+  type?: string;
+  salaryMax?: number;
+  salaryPeriod?: string;
+  salaryCurrency?: string;
+  contactEmail?: string;
+}): PaywallInfo {
+  // Se ja tem contato, nao precisa de paywall
+  if (job.contactEmail) return { paywall: false, hasDiscount: false };
+
+  // Verifica se salario anual >= $450.000 (apenas USD)
+  const maxSalary = job.salaryMax || 0;
+  const period = job.salaryPeriod || 'year';
+  const annualMax = period === 'month' ? maxSalary * 12 : period === 'hour' ? maxSalary * 2080 : maxSalary;
+  const isUsd = !job.salaryCurrency || job.salaryCurrency === 'USD';
+  const isHighSalary = isUsd && annualMax >= 450000;
+
+  // Verifica se eh trabalho remoto
+  const t = (job.type || '').toLowerCase();
+  const isRemote = t === 'remoto' || t === 'remote';
+
+  // Exatamente 10% dos trabalhos remotos: job.id % 10 === 0
+  const isRemote10Pct = isRemote && (job.id % 10 === 0);
+
+  // Salario alto SEMPRE tem paywall (qualquer tipo de trabalho)
+  if (isHighSalary) {
+    return { paywall: true, reason: 'high_salary', hasDiscount: isRemote };
+  }
+
+  // 10% dos trabalhos remotos tem paywall
+  if (isRemote10Pct) {
+    return { paywall: true, reason: 'remote_10pct', hasDiscount: false };
+  }
+
+  // Demais trabalhos: SEM paywall
+  return { paywall: false, hasDiscount: false };
 }
 
 export function formatSalary(j: { salaryMin?: number; salaryMax?: number; salaryCurrency?: string; salaryPeriod?: string; salary?: string }): string {

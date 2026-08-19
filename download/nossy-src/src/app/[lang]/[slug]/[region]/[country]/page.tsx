@@ -4,10 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName, getLocalizedCountryName } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, getPaywallText, formatSalary, getRegionName, getLocalizedCountryName, shouldHavePaywall } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
-import PaywallModal from "@/components/PaywallModal";
 import countriesData from "@/data/countries.json";
 
 interface Job {
@@ -34,7 +33,11 @@ export default function CountryPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [paywallJob, setPaywallJob] = useState<Job | null>(null);
+  // Textos traduzidos que faltavam no i18n
+  const LT = {
+    reload: lang.startsWith('pt') ? 'Recarregar' : lang === 'es' ? 'Recargar' : lang === 'fr' ? 'Recharger' : lang === 'de' ? 'Neu laden' : 'Reload',
+    tryFilters: lang.startsWith('pt') ? 'Tente ajustar seus filtros' : lang === 'es' ? 'Intenta ajustar tus filtros' : lang === 'fr' ? 'Essayez d\'ajuster vos filtres' : 'Try adjusting your filters',
+  };
 
   const [countries, setCountries] = useState<any[]>(countriesData);
   const router = useRouter();
@@ -79,6 +82,9 @@ export default function CountryPage() {
   const rName = getRegionName(lang, rc);
   const pw = getPaywallText(lang);
 
+  const goJobDetail = useCallback((jobId: number) => {
+    router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + jobId);
+  }, [lang, router, rc, cc]);
   const goHome = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs")), [lang, router]);
   const goRegion = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc), [lang, router, rc]);
   useEffect(() => { setPage(1); }, [search, typeFilter, sectorFilter]);
@@ -112,8 +118,6 @@ export default function CountryPage() {
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
-      <PaywallModal isOpen={!!paywallJob} onClose={() => setPaywallJob(null)} jobId={paywallJob?.id || 0} jobTitle={paywallJob?.title || ''} lang={lang} company={paywallJob?.company || ''} />
-
       {allSchemas.map((schema, i) => (
         <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
@@ -193,23 +197,28 @@ export default function CountryPage() {
         ) : dataError ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">&#9888;&#65039;</p><p className="text-lg">{T.error}</p>
-            <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">Recarregar</button>
+            <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{LT.reload}</button>
           </div>
         ) : actualTotal === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-5xl mb-4">&#128269;</p>
             <p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p>
-            <p className="text-sm mt-1">Tente ajustar seus filtros</p>
+            <p className="text-sm mt-1">{LT.tryFilters}</p>
             {hasActiveFilters && (<button onClick={clearFilters} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.allTypes}</button>)}
           </div>
         ) : (<>
           <p className="text-sm text-gray-500 mb-4">{T.showing.replace("{0}", String((page - 1) * PER + 1)).replace("{1}", String(Math.min(page * PER, actualTotal))).replace("{2}", actualTotal.toLocaleString())}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
             const m = getSectorMeta(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = getTypeStyle(job.type);
+            const pwJob = shouldHavePaywall(job);
             return (
               <a key={job.id} href={"/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + job.id} target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100 block">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
-                {job.paywall && <div className="absolute top-3 right-3 z-10"><span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200 shadow-sm">{pw.premium}</span></div>}
+                {pwJob.paywall ? (
+                  <div className="absolute top-3 right-3 z-10"><span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200 shadow-sm">{pw.premium}</span></div>
+                ) : (
+                  <div className="absolute top-3 right-3 z-10"><span className="px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-bold border border-green-200 shadow-sm">{pw.contactAvailable}</span></div>
+                )}
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
                   <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors">{job.title}</h3>
@@ -217,13 +226,13 @@ export default function CountryPage() {
                   <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
-                  {job.paywall ? (
+                  {pwJob.paywall ? (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.description || ''}</p>
-                      <button onClick={(e) => { e.stopPropagation(); setPaywallJob(job); }} className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm flex items-center justify-center gap-1.5">
+                      <span className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         {pw.unlock}
-                      </button>
+                      </span>
                     </div>
                   ) : (<>
                     {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}

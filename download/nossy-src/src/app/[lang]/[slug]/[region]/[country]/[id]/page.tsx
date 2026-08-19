@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getRegionName, getLocalizedCountryName, getTypeLabel, getSectorLabel } from "@/lib/shared";
+import { getSectorMeta, getRegionName, getLocalizedCountryName, getTypeLabel, getSectorLabel, shouldHavePaywall, getPaywallText } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
 import PaddlePayment from "@/components/PaddlePayment";
@@ -173,22 +173,13 @@ export default function JobDetailPage() {
     return "--";
   };
 
-  // Verifica se qualifica para desconto de 10% (remoto + salario > $450k/ano)
-  const qualifiesForDiscount = (j: Job): boolean => {
-    const t = j.type?.toLowerCase() || "";
-    const isRemote = t === "remoto" || t === "remote";
-    if (!isRemote) return false;
-    const maxSalary = j.salaryMax || 0;
-    const period = j.salaryPeriod || "year";
-    const annualMax = period === "month" ? maxSalary * 12 : period === "hour" ? maxSalary * 2080 : maxSalary;
-    return annualMax > 450000;
-  };
-
   const sectorIcons: Record<string, string> = { "Software Engineering": "\u{1F4BB}", "Cloud & DevOps": "\u2601\uFE0F", "Data Science & Analytics": "\u{1F4CA}", "AI & Machine Learning": "\u{1F916}", "Cybersecurity": "\u{1F512}", "Product Management": "\u{1F4CB}", "Consulting": "\u{1F4BC}", "Data Engineering": "\u{1F5C2}", "UX/UI & Design": "\u{1F3A8}", "QA & Testing": "\u{1F9EA}", "Mobile Development": "\u{1F4F1}", "Game Development": "\u{1F3AE}", "Engineering Leadership": "\u{1F454}", "Finance Technology": "\u{1F4B0}", "Sales & Marketing": "\u{1F4E3}", "Writing & Content": "\u270D\uFE0F", "IT Support & Operations": "\u{1F5A5}", "R&D": "\u{1F52C}", "Other": "\u{1F4CC}" };
 
   const careerUrl = job ? getCompanyCareerUrl(job.company) : null;
   const isAgencyJob = job ? isAgency(job.company) : false;
-  const hasDiscount = job ? qualifiesForDiscount(job) : false;
+  const pwInfo = job ? shouldHavePaywall(job) : { paywall: false, hasDiscount: false };
+  const hasDiscount = pwInfo.hasDiscount;
+  const pw = getPaywallText(lang);
   const jobSchema = job ? { "@context": "https://schema.org", "@type": "JobPosting", "title": job.title, "description": job.description || ("Tech job: " + job.title + " at " + job.company + " in " + job.location), "datePosted": job.posted || undefined, "hiringOrganization": { "@type": "Organization", "name": job.company }, "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": job.location, "addressCountry": countryName } } } : null;
 
   return (
@@ -256,26 +247,39 @@ export default function JobDetailPage() {
             </div>
           )}
 
-          {/* CONTATO — com botao desbloquear */}
+          {/* CONTATO */}
           <div className="bg-white rounded-xl border border-gray-100 p-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{L.contact}</p>
             {job.contactEmail ? (
-              <p className="text-sm font-semibold text-sky-600">{job.contactEmail}</p>
-            ) : !showPayment ? (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-400 italic">{L.noContact}</p>
-                <button
-                  onClick={() => setShowPayment(true)}
-                  className="w-full py-3 bg-sky-600 text-white font-semibold rounded-xl hover:bg-sky-700 transition-colors text-sm"
-                >
-                  {L.unlockContact}
-                </button>
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                <p className="text-sm font-semibold text-sky-600">{job.contactEmail}</p>
               </div>
-            ) : null}
+            ) : pwInfo.paywall ? (
+              !showPayment ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-400 italic">{L.noContact}</p>
+                  <button
+                    onClick={() => setShowPayment(true)}
+                    className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all text-sm"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                      {L.unlockContact}
+                    </span>
+                  </button>
+                </div>
+              ) : null
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                <p className="text-sm text-gray-400 italic">{L.noContact}</p>
+              </div>
+            )}
           </div>
 
           {/* COMPONENTE DE PAGAMENTO */}
-          {showPayment && !job.contactEmail && (
+          {showPayment && pwInfo.paywall && !job.contactEmail && (
             <PaddlePayment
               jobId={String(job.id)}
               onClose={() => setShowPayment(false)}
@@ -290,16 +294,18 @@ export default function JobDetailPage() {
             </a>
           )}
 
-          {/* VAGA DE AGENCIA — sem link externo */}
+          {/* VAGA DE AGENCIA — sem link externo, unlock se paywall */}
           {isAgencyJob && !careerUrl && (
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-center">
               <p className="text-sm text-gray-500">{L.agencyJob}</p>
-              <button
-                onClick={() => setShowPayment(true)}
-                className="mt-3 px-6 py-2 bg-sky-600 text-white font-semibold rounded-xl hover:bg-sky-700 transition-colors text-sm"
-              >
-                {L.unlockContact}
-              </button>
+              {pwInfo.paywall && (
+                <button
+                  onClick={() => setShowPayment(true)}
+                  className="mt-3 px-6 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all text-sm"
+                >
+                  {L.unlockContact}
+                </button>
+              )}
             </div>
           )}
 
