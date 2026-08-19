@@ -72,3 +72,27 @@ Stage Summary:
 - ZIP: /home/z/my-project/download/nossy-src-fixed.zip (85.8 KB)
 - 4 P0 corrigidos, 8 P1 corrigidos, 3 P2 corrigidos
 - Todos os testes passaram: webhook rejeita sem secret, rate limiting funciona, path traversal bloqueado, CSP sem unsafe-eval, i18n traduz corretamente
+
+---
+Task ID: 3
+Agent: Main
+Task: Análise de bugs e portas vulneráveis + correção completa do src/
+
+Work Log:
+- Leitura completa de todos os 27 arquivos do src/ (páginas, APIs, libs, componentes)
+- Análise do i18n.ts (2347 linhas): identificadas 4 chaves faltantes no objeto i18n (reload, tryAdjustFilters, clearFilters, viewJob)
+- Identificadas 572 linhas de strings UI duplicadas no objeto sectorNames (deveria ter só nomes de setores)
+- Removido código morto verifyPaddleWebhookSignature() de paddle.ts (implementação incorreta, não usada)
+- Corrigida validação de email no PaddlePayment.tsx: de includes('@') para regex /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+- Melhorada formatSalary(): agora mostra label de período (/year, /month, /hour) traduzido em 22 idiomas
+- Limpas 572 linhas duplicadas do sectorNames (mantidas só traduções de 21 setores)
+- Adicionadas 4 chaves x 22 idiomas = 88 traduções ao objeto i18n
+- Verificação: 0 erros TypeScript no src/
+- Empacotado src/ em ZIP (77 KB)
+
+Stage Summary:
+- ZIP: /home/z/my-project/download/nossy-src-final.zip (77 KB)
+- i18n limpo: sectorNames só com setores, i18n com todas as chaves UI
+- Zero erros TypeScript
+- PaddlePayment validação de email corrigida
+- formatSalary agora mostra período traduzido

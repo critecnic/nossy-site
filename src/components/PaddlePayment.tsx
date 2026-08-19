@@ -23,7 +23,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compac
   const T = i18n[lang] || i18n['en'];
 
   async function handleSendCode() {
-    if (!email || !email.includes('@')) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Invalid email');
       return;
     }

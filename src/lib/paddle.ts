@@ -34,25 +34,6 @@ export async function createPaddleCheckout(email: string, jobId: number, jobTitl
   return data?.data?.urls?.checkout?.url || '';
 }
 
-export async function verifyPaddleWebhookSignature(body: string, signature: string): Promise<boolean> {
-  if (!process.env.PADDLE_WEBHOOK_SECRET) {
-    console.warn('PADDLE_WEBHOOK_SECRET not set');
-    return false;
-  }
-
-  // Paddle uses HMAC-SHA256 for webhook signatures
-  const crypto = await import('crypto');
-  const hmac = crypto.createHmac('sha256', process.env.PADDLE_WEBHOOK_SECRET);
-  hmac.update(body);
-  const expected = hmac.digest('hex');
-
-  // Paddle sends signature as hex
-  return crypto.timingSafeEqual(
-    Buffer.from(signature, 'hex'),
-    Buffer.from(expected, 'hex')
-  );
-}
-
 export const PADDLE_CONFIG = {
   PRICE_ID: PADDLE_PRICE_ID,
   CURRENCY: 'USD',
