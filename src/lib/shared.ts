@@ -438,14 +438,39 @@ function inferCompanyUrl(company: string): string {
   return 'https://www.' + domainBase + '.com';
 }
 
-export function formatSalary(j: { salaryMin?: number | null; salaryMax?: number | null; salaryCurrency?: string; salaryPeriod?: string; salary?: string }): string {
+const PERIOD_LABELS: Record<string, Record<string, string>> = {
+  en: { year: '/year', month: '/month', hourly: '/hour' },
+  'pt-br': { year: '/ano', month: '/mês', hourly: '/hora' },
+  'pt-pt': { year: '/ano', month: '/mês', hourly: '/hora' },
+  es: { year: '/año', month: '/mes', hourly: '/hora' },
+  fr: { year: '/an', month: '/mois', hourly: '/heure' },
+  de: { year: '/Jahr', month: '/Monat', hourly: '/Stunde' },
+  it: { year: '/anno', month: '/mese', hourly: '/ora' },
+  nl: { year: '/jaar', month: '/maand', hourly: '/uur' },
+  pl: { year: '/rok', month: '/miesiac', hourly: '/godzine' },
+  ru: { year: '/god', month: '/mesyac', hourly: '/chas' },
+  zh: { year: '/年', month: '/月', hourly: '/小时' },
+  ja: { year: '/年', month: '/月', hourly: '/時間' },
+  ko: { year: '/년', month: '/월', hourly: '/시간' },
+  hi: { year: '/वर्ष', month: '/महीना', hourly: '/घंटा' },
+  bn: { year: '/বছর', month: '/মাস', hourly: '/ঘন্টা' },
+  ar: { year: '/سنة', month: '/شهر', hourly: '/ساعة' },
+  tr: { year: '/yil', month: '/ay', hourly: '/saat' },
+  vi: { year: '/nam', month: '/thang', hourly: '/gio' },
+  th: { year: '/ปี', month: '/เดือน', hourly: '/ชั่วโมง' },
+  ur: { year: '/سال', month: '/ماہ', hourly: '/گنتہ' },
+  tl: { year: '/taon', month: '/buwan', hourly: '/oras' },
+  sw: { year: '/mwaka', month: '/mwezi', hourly: '/saa' },
+};
+
+export function formatSalary(j: { salaryMin?: number | null; salaryMax?: number | null; salaryCurrency?: string; salaryPeriod?: string; salary?: string }, lang?: string): string {
   const S: Record<string, string> = { EUR: 'EUR', USD: 'USD', GBP: 'GBP', BRL: 'BRL', INR: 'INR', JPY: 'JPY', CNY: 'CNY', SGD: 'SGD', KRW: 'KRW' };
   const mn = j.salaryMin || 0, mx = j.salaryMax || 0;
   if (!mn && !mx) return j.salary || '';
   const cur = j.salaryCurrency || '';
   const sym = S[cur] || cur || '';
   const a = Math.round(mn).toLocaleString(), b = Math.round(mx).toLocaleString();
-  if (j.salaryPeriod === 'year') return sym + ' ' + a + ' - ' + b;
-  if (j.salaryPeriod === 'month') return sym + ' ' + a + ' - ' + b;
-  return sym + ' ' + a + ' - ' + b;
+  const period = j.salaryPeriod || 'year';
+  const label = PERIOD_LABELS[lang || 'en']?.[period] || PERIOD_LABELS['en']?.[period] || '';
+  return sym + ' ' + a + (mx ? ' - ' + b : '') + ' ' + label;
 }

@@ -34,13 +34,37 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   useEffect(() => {
     if (!rc || !cc || !jobId) return;
     setLoading(true); setDataError(false);
-    fetch("/api/data/country?file=" + encodeURIComponent(rc + "_" + cc + ".json"))
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((data: Job[]) => {
-        const found = (data || []).find(j => String(j.id) === String(jobId));
+    const baseFile = rc + "_" + cc;
+    const loadFile = async (f: string): Promise<Job[]> => {
+      try {
+        const r = await fetch("/api/data/country?file=" + encodeURIComponent(f + ".json"));
+        if (!r.ok) return [];
+        return r.json();
+      } catch { return []; }
+    };
+    (async () => {
+      try {
+        let jobs = await loadFile(baseFile);
+        if (!jobs.length) {
+          for (let i = 1; i <= 4; i++) {
+            const part = await loadFile(baseFile + "-" + i);
+            if (part.length) { jobs = part; break; }
+          }
+        }
+        if (!jobs.length) {
+          for (let i = 1; i <= 4; i++) {
+            const part = await loadFile(baseFile + "-" + i);
+            const found = (part || []).find((j: Job) => String(j.id) === String(jobId));
+            if (found) { setJob(found); setLoading(false); return; }
+          }
+        }
+        const found = (jobs || []).find((j: Job) => String(j.id) === String(jobId));
         if (found) setJob(found);
         setLoading(false);
-      }).catch(() => { setDataError(true); setLoading(false); });
+      } catch {
+        setDataError(true); setLoading(false);
+      }
+    })();
   }, [rc, cc, jobId]);
 
   const T = i18n[lang] || i18n["en"];

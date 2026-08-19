@@ -7,10 +7,13 @@ export async function POST(request: Request) {
     const sig = request.headers.get('paddle-signature') || '';
     const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET || '';
 
-    // When webhook secret is not set, just acknowledge receipt
-    if (!webhookSecret || !sig) {
-      console.log('Paddle webhook received (no verification):', body.slice(0, 200));
-      return NextResponse.json({ received: true });
+    // SECURITY: Reject if webhook secret is not configured
+    if (!webhookSecret) {
+      console.error('PADDLE_WEBHOOK_SECRET not configured');
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
+    }
+    if (!sig) {
+      return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
     }
 
     // Paddle sends signature as: ts=...;h1=...
@@ -56,6 +59,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   } catch (err: any) {
     console.error('Webhook error:', err.message);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: 'Webhook processing error' }, { status: 400 });
   }
 }

@@ -1,11 +1,29 @@
+
+// Simple in-memory rate limiting
+const sendCodeAttempts: Record<string, number[]> = {};
+const MAX_ATTEMPTS_PER_MINUTE = 3;
+
+function isRateLimited(email: string): boolean {
+  const now = Date.now();
+  if (!sendCodeAttempts[email]) sendCodeAttempts[email] = [];
+  sendCodeAttempts[email] = sendCodeAttempts[email].filter(t => now - t < 60000);
+  if (sendCodeAttempts[email].length >= MAX_ATTEMPTS_PER_MINUTE) return true;
+  sendCodeAttempts[email].push(now);
+  return false;
+}
+
 import { NextResponse } from 'next/server';
 import { createVerificationCode } from '@/lib/email-verification';
 
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
-    if (!email || !email.includes('@')) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ success: false, error: 'Invalid email' }, { status: 400 });
+    }
+
+    if (isRateLimited(email)) {
+      return NextResponse.json({ success: false, error: 'Too many requests. Try again later.' }, { status: 429 });
     }
 
     const code = createVerificationCode(email);
@@ -25,7 +43,7 @@ export async function POST(req: Request) {
           body: JSON.stringify({
             from: fromEmail,
             to: [email],
-            subject: 'NOSSY - Verification Code: ' + code,
+            subject: 'NOSSY - Verification Code',
             html: `
               <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
                 <h2 style="color: #0ea5e9;">NOSSY</h2>
