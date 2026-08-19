@@ -27,6 +27,10 @@ const COUNTRY_EN: Record<string, string> = {
   'north-macedonia': 'North Macedonia', 'georgia': 'Georgia',
 };
 
+const REGION_EN: Record<string, string> = {
+  'europa': 'Europe', 'asia': 'Asia', 'eua': 'United States',
+};
+
 export function generateStaticParams() {
   const countries = countriesData as CountryInfo[];
   const params: { lang: string; slug: string; region: string; country: string }[] = [];
@@ -48,20 +52,19 @@ export async function generateMetadata({
 }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }): Promise<Metadata> {
   const { lang: langCode, region: rc, country: cc } = await params;
   const lang = langCode as Lang;
+  const langCfg = LANGUAGES.find(l => l.code === lang);
   const countryEn = COUNTRY_EN[cc] || cc;
+  const regionEn = REGION_EN[rc] || rc;
   const countries = countriesData as CountryInfo[];
   const cInfo = countries.find(c => c.slug === cc);
   const jobCount = cInfo?.count || 0;
   const slug = LANG_SLUGS[lang];
   const pageUrl = `/${lang}/${slug}/${rc}/${cc}`;
-  const isPT = lang === 'pt-br' || lang === 'pt-pt';
-  const jobsWord = isPT ? 'Vagas' : 'Jobs';
 
-  const title = `${jobCount.toLocaleString()}+ ${jobsWord} in ${countryEn} | NOSSY`;
-
-  const description = isPT
-    ? `Encontre ${jobCount.toLocaleString()}+ vagas de tecnologia em ${countryEn}. Trabalhe remoto, hibrido ou presencial nas melhores empresas. Atualizado diariamente.`
-    : `Find ${jobCount.toLocaleString()}+ tech jobs in ${countryEn}. Remote, hybrid and on-site positions at top companies. Updated daily.`;
+  const title = `${jobCount.toLocaleString()}+ ${lang === 'pt-br' || lang === 'pt-pt' ? 'Vagas' : 'Jobs'} in ${countryEn} | NOSSY`;
+  const description = lang === 'pt-br' || lang === 'pt-pt'
+    ? `Encontre ${jobCount.toLocaleString()}+ vagas de tecnologia em ${countryEn}, ${regionEn}. Trabalhe remoto, hibrido ou presencial nas melhores empresas. Atualizado diariamente.`
+    : `Find ${jobCount.toLocaleString()}+ tech jobs in ${countryEn}, ${regionEn}. Remote, hybrid and on-site positions at top companies. Updated daily.`;
 
   return {
     title,
