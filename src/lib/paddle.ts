@@ -1,124 +1,60 @@
-// ============================================================
-// lib/paddle.ts — Paddle API helpers (Sandbox + Production)
-// ============================================================
+// Paddle API helpers for server-side
 
-const PADDLE_API_KEY = process.env.PADDLE_API_KEY!;
-const PADDLE_WEBHOOK_SECRET = process.env.PADDLE_WEBHOOK_SECRET!;
-const PADDLE_PRICE_ID = process.env.PADDLE_PRICE_ID!;
+const PADDLE_API_KEY = process.env.PADDLE_API_KEY || '';
+const PADDLE_PRICE_ID = process.env.PADDLE_PRICE_ID || 'pri_01m0bhvecckh078qxexjwest9x';
 
-/** Detecta ambiente sandbox vs producao */
-const PADDLE_API_BASE =
-  process.env.NODE_ENV === 'production'
-    ? 'https://api.paddle.com'
-    : 'https://sandbox-api.paddle.com';
+const PADDLE_BASE = 'https://vendor-api.paddle.com';
 
-/**
- * Cria uma transacao (checkout hospedado) no Paddle.
- * Retorna a URL de checkout para redirecionar o cliente.
- */
-export async function createCheckout({
-  email,
-  jobId,
-}: {
-  email: string;
-  jobId: string;
-}): Promise<{ checkoutUrl: string; transactionId: string }> {
-  const response = await fetch(`${PADDLE_API_BASE}/transactions`, {
+export async function createPaddleCheckout(email: string, jobId: number, jobTitle: string, lang: string): Promise<string> {
+  const res = await fetch(PADDLE_BASE + '/transactions/create', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${PADDLE_API_KEY}`,
+      'Authorization': 'Bearer ' + PADDLE_API_KEY,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       items: [{ price_id: PADDLE_PRICE_ID, quantity: 1 }],
-      custom_data: { jobId },
       customer_email: email,
+      custom_data: { jobId: String(jobId), jobTitle, lang },
+      checkout: {
+        url: 'https://checkout.paddle.com/checkout/' + PADDLE_PRICE_ID,
+        allowed_payment_methods: ['card'],
+        mode: 'checkout',
+        redirect_url: '',
+      },
     }),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Paddle API error ${response.status}: ${errorText}`);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('Paddle API error: ' + res.status + ' ' + err);
   }
 
-  const json: any = await response.json();
-  const data = json.data;
-
-  // A URL de checkout pode estar em data.checkout.url ou data.checkout_url
-  const checkoutUrl =
-    data?.checkout?.url ||
-    data?.checkout_url ||
-    '';
-
-  if (!checkoutUrl) {
-    throw new Error(
-      `Nao foi possivel obter a URL de checkout. Resposta: ${JSON.stringify(data)}`
-    );
-  }
-
-  return {
-    checkoutUrl,
-    transactionId: data.id,
-  };
+  const data = await res.json() as any;
+  return data?.data?.urls?.checkout?.url || '';
 }
 
-/**
- * Verifica a assinatura do webhook do Paddle (HMAC-SHA256).
- * Header: paddle-signature  ->  ts={timestamp};h1={hash}
- */
-export async function verifyWebhookSignature({
-  signature,
-  body,
-}: {
-  signature: string;
-  body: string;
-}): Promise<boolean> {
-  try {
-    const crypto = await import('crypto');
-
-    // Parse: ts=1234567890;h1=abc123...
-    const parts = signature.split(';');
-    const timestamp = parts
-      .find((p: string) => p.startsWith('ts='))
-      ?.split('=')[1];
-    const hash = parts
-      .find((p: string) => p.startsWith('h1='))
-      ?.split('=')[1];
-
-    if (!timestamp || !hash) return false;
-
-    const message = `${timestamp}:${body}`;
-    const expectedHash = crypto
-      .createHmac('sha256', PADDLE_WEBHOOK_SECRET)
-      .update(message)
-      .digest('hex');
-
-    return hash === expectedHash;
-  } catch {
+export async function verifyPaddleWebhookSignature(body: string, signature: string): Promise<boolean> {
+  if (!process.env.PADDLE_WEBHOOK_SECRET) {
+    console.warn('PADDLE_WEBHOOK_SECRET not set');
     return false;
   }
+
+  // Paddle uses HMAC-SHA256 for webhook signatures
+  const crypto = await import('crypto');
+  const hmac = crypto.createHmac('sha256', process.env.PADDLE_WEBHOOK_SECRET);
+  hmac.update(body);
+  const expected = hmac.digest('hex');
+
+  // Paddle sends signature as hex
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, 'hex'),
+    Buffer.from(expected, 'hex')
+  );
 }
 
-/**
- * Tipo do payload do evento payment.paid
- */
-export interface PaymentPaidEvent {
-  event_id: string;
-  event_type: 'payment.paid';
-  occurred_at: string;
-  data: {
-    id: string;
-    amount: string;
-    currency: string;
-    status: string;
-    transaction_id: string;
-    custom_data?: {
-      jobId?: string;
-      [key: string]: unknown;
-    };
-    customer?: {
-      id: string;
-      email: string;
-    };
-  };
-}
+export const PADDLE_CONFIG = {
+  PRICE_ID: PADDLE_PRICE_ID,
+  CURRENCY: 'USD',
+  AMOUNT: 7,
+} as const;

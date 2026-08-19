@@ -1,75 +1,37 @@
-// ============================================================
-// lib/email-verification.ts — Armazenamento e logica do codigo de 6 digitos
-// ============================================================
+// In-memory 6-digit email verification code storage
+// Production: replace with Redis or DB
 
-/** Dados de uma verificacao */
-interface VerificationEntry {
+interface CodeEntry {
   code: string;
-  expiresAt: number; // timestamp em ms
-  verified: boolean;
+  expiresAt: number; // Unix timestamp ms
 }
 
-/**
- * Armazenamento em memoria dos codigos.
- * TODO para producao: substituir por Vercel KV (Redis) ou Upstash Redis.
- * Exemplo com Vercel KV:
- *   import { kv } from '@vercel/kv';
- *   await kv.set(`verify:${email}`, JSON.stringify(entry), { ex: 600 });
- */
-const store = new Map<string, VerificationEntry>();
+const store = new Map<string, CodeEntry>();
+const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-/** Tempo de expiracao do codigo: 10 minutos */
-const CODE_TTL_MS = 10 * 60 * 1000;
-
-/** Gera um codigo numerico de 6 digitos */
-export function generateCode(): string {
-  const digits = Math.floor(100000 + Math.random() * 900000);
-  return String(digits);
+function generateCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-/** Salva o codigo para o email informado */
-export function storeCode(email: string, code: string): void {
+export function createVerificationCode(email: string): string {
+  const code = generateCode();
   store.set(email.toLowerCase().trim(), {
     code,
     expiresAt: Date.now() + CODE_TTL_MS,
-    verified: false,
   });
+  return code;
 }
 
-/**
- * Verifica se o codigo bate e nao expirou.
- * Se valido, marca como verificado e retorna true.
- */
-export function verifyCode(email: string, code: string): boolean {
+export function verifyCode(email: string, code: string): 'valid' | 'invalid' | 'expired' {
   const entry = store.get(email.toLowerCase().trim());
-
-  if (!entry) return false;
-  if (entry.verified) return true; // ja verificado
+  if (!entry) return 'invalid';
   if (Date.now() > entry.expiresAt) {
     store.delete(email.toLowerCase().trim());
-    return false; // expirado
+    return 'expired';
   }
-  if (entry.code !== code) return false;
-
-  entry.verified = true;
-  return true;
+  return entry.code === code ? 'valid' : 'invalid';
 }
 
-/** Verifica se o email ja foi autenticado (codigo validado) */
-export function isEmailVerified(email: string): boolean {
-  const entry = store.get(email.toLowerCase().trim());
-  if (!entry) return false;
-  if (Date.now() > entry.expiresAt) {
-    store.delete(email.toLowerCase().trim());
-    return false;
-  }
-  return entry.verified;
-}
-
-/** Remove codigos expirados (chamado periodicamente) */
-export function cleanupExpiredCodes(): void {
-  const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now > entry.expiresAt) store.delete(key);
-  }
+export function removeCode(email: string): void {
+  store.delete(email.toLowerCase().trim());
 }

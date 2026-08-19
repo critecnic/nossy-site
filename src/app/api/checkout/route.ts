@@ -1,63 +1,56 @@
-// ============================================================
-// app/api/checkout/route.ts — Cria checkout Paddle ($7 USD)
-// So funciona se o email foi verificado (codigo 6 digitos)
-// ============================================================
+import { NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createCheckout } from '@/lib/paddle';
-import { isEmailVerified, cleanupExpiredCodes } from '@/lib/email-verification';
+const PADDLE_API_KEY = process.env.PADDLE_API_KEY || '';
+const PADDLE_PRICE_ID = process.env.PADDLE_PRICE_ID || 'pri_01m0bhvecckh078qxexjwest9x';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.pro';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const { email, jobId } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const { email, jobId, jobTitle, lang } = body;
 
-    // --- Validacoes ---
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'Email e obrigatorio.' },
-        { status: 400 }
-      );
+    if (!PADDLE_API_KEY) {
+      return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
     }
 
-    if (!jobId || typeof jobId !== 'string') {
-      return NextResponse.json(
-        { error: 'ID da vaga e obrigatorio.' },
-        { status: 400 }
-      );
+    if (!email || !email.includes('@')) {
+      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Limpa codigos expirados
-    cleanupExpiredCodes();
+    const langCode = lang || 'en';
+    const baseUrl = BASE_URL.replace(/\/$/, '');
 
-    // --- Verificar se o email foi autenticado ---
-    const verified = isEmailVerified(email);
-    if (!verified) {
-      return NextResponse.json(
-        { error: 'Email nao verificado. Faca a autenticacao primeiro.' },
-        { status: 403 }
-      );
-    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
-    // --- Criar checkout no Paddle ---
-    const { checkoutUrl, transactionId } = await createCheckout({
-      email,
-      jobId,
+    const res = await fetch('https://vendor-api.paddle.com/transactions/create', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Authorization': 'Bearer ' + PADDLE_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        items: [{ price_id: PADDLE_PRICE_ID, quantity: 1 }],
+        customer_email: email,
+        custom_data: { jobId: String(jobId || ''), jobTitle: jobTitle || '', lang: langCode },
+        checkout: {
+          url: 'https://checkout.paddle.com/checkout/' + PADDLE_PRICE_ID,
+          allowed_payment_methods: ['card'],
+          mode: 'checkout',
+          redirect_url: `${baseUrl}/${langCode}/jobs?payment=success`,
+        },
+      }),
     });
+    clearTimeout(timeout);
 
-    return NextResponse.json({
-      success: true,
-      checkoutUrl,
-      transactionId,
-    });
-  } catch (error) {
-    console.error('Erro em checkout:', error);
+    const data = await res.json() as any;
+    const checkoutUrl = data?.data?.urls?.checkout?.url;
 
-    const message =
-      error instanceof Error ? error.message : 'Erro ao criar checkout.';
-
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    if (checkoutUrl) return NextResponse.json({ url: checkoutUrl, txId: data?.data?.id });
+    return NextResponse.json({ error: data?.error?.detail || 'Checkout error' }, { status: 400 });
+  } catch (err: any) {
+    if (err.name === 'AbortError') return NextResponse.json({ error: 'Payment timeout' }, { status: 504 });
+    return NextResponse.json({ error: err.message || 'Error' }, { status: 500 });
   }
 }
