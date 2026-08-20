@@ -1,0 +1,461 @@
+[
+  {
+    "country": "United Kingdom",
+    "company_name": "Hays Recruitment",
+    "website": "https://www.hays.co.uk",
+    "email": "customer.service@hays.com",
+    "phone": "+44 (0) 20 7259 8794",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.haysplc.com/contacts"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Hays Executive",
+    "website": "https://www.hays-executive.com",
+    "email": "hays.executive@hays.com",
+    "phone": "+44 (0)20 7259 8743",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.hays-executive.com/global-offices"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Robert Half UK",
+    "website": "https://www.roberthalf.com/gb/en",
+    "email": "",
+    "phone": "020 7389 6900",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.roberthalf.com/gb/en/locations/london/32-london-bridge-street"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Robert Walters UK",
+    "website": "https://www.robertwalters.co.uk",
+    "email": "contact@robertwalters.com",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.robertwalters.co.uk"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Michael Page UK",
+    "website": "https://www.michaelpage.co.uk",
+    "email": "",
+    "phone": "033 0390 3050",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.michaelpage.co.uk/contact-us/london-office"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Reed Specialist Recruitment",
+    "website": "https://www.reed.com",
+    "email": "press.office@reed.com",
+    "phone": "+44 (0) 20 7616 2411",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.cqc.org.uk/provider/1-144131196/contact"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Morgan McKinley UK",
+    "website": "https://www.morganmckinley.com/uk",
+    "email": "london@morganmckinley.com",
+    "phone": "+44 20 7092 0127",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.morganmckinley.com/uk/about/contact-us/london"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Arm",
+    "website": "https://careers.arm.com",
+    "email": "TA-admin@arm.com",
+    "phone": "+44 (1223) 400 400",
+    "type": "Company Hiring",
+    "source_url": "https://www.arm.com/company/contact-us"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Apple UK",
+    "website": "https://jobs.apple.com/en-gb/search?location=united-kingdom-GBR",
+    "email": "",
+    "phone": "0800 048 0408",
+    "type": "Company Hiring",
+    "source_url": "https://jobs.apple.com/en-gb/search?location=united-kingdom-GBR"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Cisco UK",
+    "website": "https://careers.cisco.com",
+    "email": "",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://careers.cisco.com"
+  },
+  {
+    "country": "United Kingdom",
+    "company_name": "Reply UK",
+    "website": "https://www.reply.com/en/about/careers/uk",
+    "email": "",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://www.reply.com/en/about/careers/uk"
+  },
+  {
+    "country": "Germany",
+    "company_name": "JAC Recruitment Germany",
+    "website": "https://www.jac-recruitment.de",
+    "email": "germany@jac-recruitment.de",
+    "phone": "+49 (0) 211 9425 480",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.jac-recruitment.de"
+  },
+  {
+    "country": "Germany",
+    "company_name": "Robert Walters Germany",
+    "website": "https://www.robertwalters.de/en",
+    "email": "contact@robertwalters.com",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.robertwalters.de/en"
+  },
+  {
+    "country": "Germany",
+    "company_name": "Glocomms Berlin",
+    "website": "https://www.glocomms.com/en-us/contact-us/berlin",
+    "email": "berlin@glocomms.com",
+    "phone": "+49 30 72 62 11 444",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.glocomms.com/en-us/contact-us/berlin"
+  },
+  {
+    "country": "Germany",
+    "company_name": "Hays Germany",
+    "website": "https://www.hays.de",
+    "email": "",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.hays.de"
+  },
+  {
+    "country": "Germany",
+    "company_name": "SAP SE",
+    "website": "https://jobs.sap.com",
+    "email": "info@sap.com",
+    "phone": "+49 (0) 6227 / 7-47474",
+    "type": "Company Hiring",
+    "source_url": "https://www.sap.com/about/legal/impressum-se.html"
+  },
+  {
+    "country": "Germany",
+    "company_name": "T-Systems International",
+    "website": "https://www.t-systems.com/de/en/company/careers",
+    "email": "info@t-systems.com",
+    "phone": "+49 (0) 228 181-0",
+    "type": "Company Hiring",
+    "source_url": "https://www.t-systems.com/in/en/imprint"
+  },
+  {
+    "country": "Germany",
+    "company_name": "DHL IT Services Germany",
+    "website": "https://careers.dhl.com/global/en/itsgermany",
+    "email": "",
+    "phone": "+49 228 189-66701",
+    "type": "Company Hiring",
+    "source_url": "https://www.dhl.com/de-en/home/nic/contact-nic.html"
+  },
+  {
+    "country": "Germany",
+    "company_name": "Siemens AG",
+    "website": "https://www.siemens.com/en-us/company/jobs",
+    "email": "",
+    "phone": "+49 89 636-00",
+    "type": "Company Hiring",
+    "source_url": "https://www.siemens.com"
+  },
+  {
+    "country": "Germany",
+    "company_name": "Hays Germany",
+    "website": "https://www.hays.de",
+    "email": "",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.hays.de"
+  },
+  {
+    "country": "Germany",
+    "company_name": "Source Group International",
+    "website": "https://www.sourcegroupinternational.com/locations/germany",
+    "email": "",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.sourcegroupinternational.com/locations/germany"
+  },
+  {
+    "country": "France",
+    "company_name": "Michael Page France",
+    "website": "https://www.michaelpage.fr",
+    "email": "",
+    "phone": "+33 1 78 99 48 48",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.pageexecutive.com/contact-us/france"
+  },
+  {
+    "country": "France",
+    "company_name": "Approach People",
+    "website": "https://www.approachpeople.com",
+    "email": "info@approachpeople.com",
+    "phone": "+33 1 73 44 31 30",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.approachpeople.com/contact"
+  },
+  {
+    "country": "France",
+    "company_name": "DevsData LLC (Paris)",
+    "website": "https://devsdata.com",
+    "email": "france@devsdata.com",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://devsdata.com/top-it-recruitment-agencies-paris"
+  },
+  {
+    "country": "France",
+    "company_name": "Harry Hope",
+    "website": "https://www.harry-hope.com",
+    "email": "contact@harry-hope.com",
+    "phone": "+33 3 54 17 01 17",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.harry-hope.com/fr/en/contact"
+  },
+  {
+    "country": "France",
+    "company_name": "Adecco France",
+    "website": "https://www.adecco.fr",
+    "email": "",
+    "phone": "+33 1 40 45 70 00",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.herohunt.ai/recruitment-agency-countries/france"
+  },
+  {
+    "country": "France",
+    "company_name": "Capgemini",
+    "website": "https://www.capgemini.com",
+    "email": "",
+    "phone": "+33 1 47 54 50 00",
+    "type": "Company Hiring",
+    "source_url": "https://www.capgemini.com/contact-us"
+  },
+  {
+    "country": "France",
+    "company_name": "Amadeus",
+    "website": "https://amadeus.com",
+    "email": "infos@amadeus.com",
+    "phone": "+33 4 92 94 60 00",
+    "type": "Company Hiring",
+    "source_url": "https://amadeus.com/en/about/locations/france"
+  },
+  {
+    "country": "France",
+    "company_name": "Thales",
+    "website": "https://careers.thalesgroup.com/global/en/home",
+    "email": "",
+    "phone": "+33 1 57 77 80 00",
+    "type": "Company Hiring",
+    "source_url": "https://careers.thalesgroup.com/global/en/home"
+  },
+  {
+    "country": "France",
+    "company_name": "Palo Alto Networks France",
+    "website": "https://jobs.paloaltonetworks.com/en/location/france-jobs/47263/3017382/2",
+    "email": "",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://jobs.paloaltonetworks.com/en/location/france-jobs/47263/3017382/2"
+  },
+  {
+    "country": "France",
+    "company_name": "Johnson & Johnson France",
+    "website": "https://www.careers.jnj.com/en/locations/emea/france",
+    "email": "",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://www.careers.jnj.com/en/locations/emea/france"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Nigel Wright Group",
+    "website": "https://www.nigelwright.com/se",
+    "email": "",
+    "phone": "+46 8 505 172 10",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.nigelwright.com/se/recruitment-agency-sweden"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Michael Page Sweden",
+    "website": "https://www.michaelpage.se",
+    "email": "",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.michaelpage.se/en"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Incluso",
+    "website": "https://www.incluso.se",
+    "email": "",
+    "phone": "+46 70 772 61 09",
+    "type": "Recruitment Agency",
+    "source_url": "https://m.yelp.com/biz/incluso-ab-stockholm"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Airswift Sweden",
+    "website": "https://www.airswift.com/about/locations/sweden",
+    "email": "se.airswift@airswift.com",
+    "phone": "+47 515 367 10",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.airswift.com/about/locations/sweden"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "EnglishJobs.se",
+    "website": "https://www.englishjobs.se",
+    "email": "jobs@englishjobs.se",
+    "phone": "+46 762 500 403",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.englishjobs.se"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Connecting Jobs Sweden",
+    "website": "https://connectingjobs.se/en",
+    "email": "info@connectingjobs.se",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://connectingjobs.se/en"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Ericsson",
+    "website": "https://www.ericsson.com/en/careers",
+    "email": "media.relations@ericsson.com",
+    "phone": "+46 10 719 00 00",
+    "type": "Company Hiring",
+    "source_url": "https://www.ericsson.com/en/about-us/company-facts/ericsson-worldwide/sweden"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Volvo Group",
+    "website": "https://www.volvogroup.com/en/careers.html",
+    "email": "",
+    "phone": "+46 31 66 00 00",
+    "type": "Company Hiring",
+    "source_url": "https://www.volvogroup.com/en/contact-us.html"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Spotify",
+    "website": "https://www.lifeatspotify.com",
+    "email": "office@spotify.com",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://www.spotify.com/de-en/about-us/contact"
+  },
+  {
+    "country": "Sweden",
+    "company_name": "Palo Alto Networks Sweden",
+    "website": "https://jobs.paloaltonetworks.com/en/location/sweden-jobs/47263/2661886/2",
+    "email": "",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://jobs.paloaltonetworks.com/en/location/sweden-jobs/47263/2661886/2"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Robert Walters Spain",
+    "website": "https://www.robertwalters.us/contact-us/spain.html",
+    "email": "contacto@robertwalters.com",
+    "phone": "+34 91 309 79 88",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.robertwalters.us/contact-us/spain.html"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Michael Page Spain",
+    "website": "https://www.michaelpage.es",
+    "email": "info@michaelpage.es",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.trustpilot.com/review/michaelpage.es"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Morgan Philips Spain",
+    "website": "https://es.morganphilips.com",
+    "email": "",
+    "phone": "+34 910 62 34 30",
+    "type": "Recruitment Agency",
+    "source_url": "https://es.morganphilips.com/en/contact-us"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Blu Selection",
+    "website": "https://www.bluselection.com",
+    "email": "contact@bluselection.com",
+    "phone": "+34 932 71 74 70",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.bluselection.com/contact-us"
+  },
+  {
+    "country": "Spain",
+    "company_name": "DevsData LLC (Spain)",
+    "website": "https://devsdata.com",
+    "email": "spain@devsdata.com",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://devsdata.com/top-it-recruitment-agencies-spain"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Approach People Madrid",
+    "website": "https://www.approachpeople.com/recruitment-spain/madrid-agency",
+    "email": "info@approachpeople.com",
+    "phone": "",
+    "type": "Recruitment Agency",
+    "source_url": "https://www.approachpeople.com/recruitment-spain/madrid-agency"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Telefónica",
+    "website": "https://www.telefonica.com",
+    "email": "prensalelefonica@telefonica.com",
+    "phone": "+34 91 482 38 00",
+    "type": "Company Hiring",
+    "source_url": "https://www.telefonica.com/en/contact-us"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Ericsson Spain",
+    "website": "https://www.ericsson.com/en/careers/global-locations/spain",
+    "email": "media.relations@ericsson.com",
+    "phone": "+46 10 719 00 00",
+    "type": "Company Hiring",
+    "source_url": "https://www.ericsson.com/en/careers/global-locations/spain"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Johnson & Johnson Spain",
+    "website": "https://www.careers.jnj.com/en/locations/emea/spain",
+    "email": "",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://www.careers.jnj.com/en/locations/emea/spain"
+  },
+  {
+    "country": "Spain",
+    "company_name": "Cisco Spain",
+    "website": "https://careers.cisco.com",
+    "email": "",
+    "phone": "",
+    "type": "Company Hiring",
+    "source_url": "https://careers.cisco.com"
+  }
+]
