@@ -1,34 +1,26 @@
-import { MetadataRoute } from 'next';
-import { LANGUAGES, LANG_SLUGS } from '@/lib/i18n';
-import countriesData from '@/data/countries.json';
+import type { MetadataRoute } from "next";
+import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
+import countriesData from "@/data/countries.json";
 
-const BASE = 'https://nossy.pro';
-
-interface CountryInfo { name: string; slug: string; region: string; count: number; }
+interface CountryInfo { slug: string; region: string; count: number; name: string; }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const items: MetadataRoute.Sitemap = [];
   const countries = countriesData as CountryInfo[];
+  const entries: MetadataRoute.Sitemap = [];
+  const baseUrl = "https://nossy.pro";
 
   for (const lang of LANGUAGES) {
     const slug = LANG_SLUGS[lang.code];
-    const path = `/${lang.code}/${slug}`;
-
-    // Main jobs page
-    items.push({ url: `${BASE}${path}`, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 });
-
+    // Homepage
+    entries.push({ url: baseUrl + "/" + lang.code + "/" + slug, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 });
     // Region pages
-    const regions = [...new Set(countries.map(c => c.region))];
-    for (const region of regions) {
-      items.push({ url: `${BASE}${path}/${region}`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 });
-
-      // Country pages within each region
-      const regionCountries = countries.filter(c => c.region === region);
-      for (const country of regionCountries) {
-        items.push({ url: `${BASE}${path}/${region}/${country.slug}`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 });
-      }
+    for (const region of ["europa", "asia", "eua"]) {
+      entries.push({ url: baseUrl + "/" + lang.code + "/" + slug + "/" + region, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 });
+    }
+    // Country pages
+    for (const c of countries) {
+      entries.push({ url: baseUrl + "/" + lang.code + "/" + slug + "/" + c.region + "/" + c.slug, lastModified: new Date(), changeFrequency: "daily", priority: 0.8 });
     }
   }
-
-  return items;
+  return entries;
 }

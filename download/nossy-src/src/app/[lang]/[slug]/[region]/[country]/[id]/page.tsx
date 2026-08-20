@@ -4,10 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getRegionName, getLocalizedCountryName, getTypeLabel, getSectorLabel, shouldHavePaywall, getPaywallText } from "@/lib/shared";
+import { getSectorMeta, getRegionName, getLocalizedCountryName, shouldHavePaywall, getPaywallText } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import LangSelector from "@/components/LangSelector";
-import PaddlePayment from "@/components/PaddlePayment";
 
 interface Job {
   id: number; title: string; company: string;
@@ -16,111 +15,22 @@ interface Job {
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
   paywall: boolean; contactEmail: string;
-  paywallReason?: string;
 }
 
 const DL: Record<string, Record<string, string>> = {
-  en: { title: "Job Details", company: "Company", location: "Location", salary: "Salary", category: "Category", workType: "Work Type", posted: "Posted", description: "Description", contact: "Contact", noContact: "Contact not available", backToJobs: "Back to Jobs", viewOnCompany: "View on {0} Career Page", perYear: "/year", perMonth: "/month", perHour: "/hour", unlockContact: "Unlock Contact", agencyJob: "This job is from a partner platform. Apply directly:", fullDescNote: "Full description available after unlocking contact." },
-  "pt-br": { title: "Detalhes da Vaga", company: "Empresa", location: "Localizacao", salary: "Salario", category: "Categoria", workType: "Tipo de Trabalho", posted: "Publicada em", description: "Descricao", contact: "Contato", noContact: "Contato nao disponivel", backToJobs: "Voltar as Vagas", viewOnCompany: "Ver no site de carreira da {0}", perYear: "/ano", perMonth: "/mes", perHour: "/hora", unlockContact: "Desbloquear Contato", agencyJob: "Vaga de plataforma parceira. Aplique diretamente:", fullDescNote: "Descricao completa disponivel apos desbloquear o contato." },
-  "pt-pt": { title: "Detalhes da Vaga", company: "Empresa", location: "Localizacao", salary: "Salario", category: "Categoria", workType: "Tipo de Trabalho", posted: "Publicada em", description: "Descricao", contact: "Contacto", noContact: "Contacto nao disponivel", backToJobs: "Voltar as Vagas", viewOnCompany: "Ver no site de carreira da {0}", perYear: "/ano", perMonth: "/mes", perHour: "/hora", unlockContact: "Desbloquear Contacto", agencyJob: "Vaga de plataforma parceira. Aplique diretamente:", fullDescNote: "Descricao completa disponivel apos desbloquear o contacto." },
-  es: { title: "Detalles del Empleo", company: "Empresa", location: "Ubicacion", salary: "Salario", category: "Categoria", workType: "Tipo de Trabajo", posted: "Publicado", description: "Descripcion", contact: "Contacto", noContact: "Contacto no disponible", backToJobs: "Volver a Empleos", viewOnCompany: "Ver en la pagina de empleos de {0}", perYear: "/ano", perMonth: "/mes", perHour: "/hora", unlockContact: "Desbloquear Contacto", agencyJob: "Oferta de plataforma asociada. Aplique directamente:", fullDescNote: "Descripcion completa disponible tras desbloquear el contacto." },
-  fr: { title: "Details de l'Offre", company: "Entreprise", location: "Localisation", salary: "Salaire", category: "Categorie", workType: "Type de Travail", posted: "Publie", description: "Description", contact: "Contact", noContact: "Contact non disponible", backToJobs: "Retour aux Offres", viewOnCompany: "Voir sur la page carriere de {0}", perYear: "/an", perMonth: "/mois", perHour: "/heure", unlockContact: "Debloquer le Contact", agencyJob: "Offre d'une plateforme partenaire. Postulez directement:", fullDescNote: "Description complete disponible apres deblocage du contact." },
-  de: { title: "Stellendetails", company: "Unternehmen", location: "Standort", salary: "Gehalt", category: "Kategorie", workType: "Arbeitsart", posted: "Veroffentlicht", description: "Beschreibung", contact: "Kontakt", noContact: "Kein Kontakt verfugbar", backToJobs: "Zuruck zu Stellen", viewOnCompany: "Auf der Karriereseite von {0} ansehen", perYear: "/Jahr", perMonth: "/Monat", perHour: "/Stunde", unlockContact: "Kontakt freischalten", agencyJob: "Stellenangebot von einer Partnerplattform. Bewerben Sie sich direkt:", fullDescNote: "Vollstandige Beschreibung nach Freischaltung verfugbar." },
-  it: { title: "Dettagli dell'Offerta", company: "Azienda", location: "Sede", salary: "Stipendio", category: "Categoria", workType: "Tipo di Lavoro", posted: "Pubblicato", description: "Descrizione", contact: "Contatto", noContact: "Contatto non disponibile", backToJobs: "Torna alle Offerte", viewOnCompany: "Vedi sulla pagina carriere di {0}", perYear: "/anno", perMonth: "/mese", perHour: "/ora", unlockContact: "Sblocca Contatto", agencyJob: "Offerta da piattaforma partner. Candidati direttamente:", fullDescNote: "Descrizione completa disponibile dopo lo sblocco." },
-  nl: { title: "Vacaturedetails", company: "Bedrijf", location: "Locatie", salary: "Salaris", category: "Categorie", workType: "Werktype", posted: "Geplaatst", description: "Beschrijving", contact: "Contact", noContact: "Geen contact beschikbaar", backToJobs: "Terug naar Vacatures", viewOnCompany: "Bekijk op de carrierepagina van {0}", perYear: "/jaar", perMonth: "/maand", perHour: "/uur", unlockContact: "Contact ontgrendelen", agencyJob: "Vacature van een partnerplatform. Solliciteer direct:", fullDescNote: "Volledige beschrijving beschikbaar na ontgrendeling." },
-  pl: { title: "Szczegoly Oferty", company: "Firma", location: "Lokalizacja", salary: "Wynagrodzenie", category: "Kategoria", workType: "Typ Pracy", posted: "Opublikowano", description: "Opis", contact: "Kontakt", noContact: "Brak danych kontaktowych", backToJobs: "Powrot do Ofert", viewOnCompany: "Zobacz na stronie karier {0}", perYear: "/rok", perMonth: "/miesiac", perHour: "/godzina", unlockContact: "Odblokuj Kontakt", agencyJob: "Oferta z platformy partnerskiej. Aplikuj bezposrednio:", fullDescNote: "Pelny opis dostepny po odblokowaniu kontaktu." },
-  ru: { title: "Detali vakansii", company: "Kompaniya", location: "Mestopolozhenie", salary: "Zarplata", category: "Kategoriya", workType: "Tip zanyatosti", posted: "Opublikovano", description: "Opisanie", contact: "Kontakt", noContact: "Kontakt nedostupen", backToJobs: "Nazad k vakansiyam", viewOnCompany: "Smotret' na stranitse kar'ery {0}", perYear: "/god", perMonth: "/mesyac", perHour: "/chas", unlockContact: "Razblokirovat' kontakt", agencyJob: "Vakansiya s partnerskoj platformy. Otkliknites' napryamuyu:", fullDescNote: "Polnoe opisanie dostupno posle razblokirovki kontakta." },
+  en: { title: "Job Details", company: "Company", location: "Location", salary: "Salary", category: "Category", workType: "Work Type", posted: "Posted", description: "Description", contact: "Contact", noContact: "Contact not available", backToJobs: "Back to Jobs", searchCompany: "Search {0} on Google", perYear: "/year", perMonth: "/month", perHour: "/hour" },
+  "pt-br": { title: "Detalhes da Vaga", company: "Empresa", location: "Localizacao", salary: "Salario", category: "Categoria", workType: "Tipo de Trabalho", posted: "Publicada em", description: "Descricao", contact: "Contato", noContact: "Contato nao disponivel", backToJobs: "Voltar as Vagas", searchCompany: "Buscar {0} no Google", perYear: "/ano", perMonth: "/mes", perHour: "/hora" },
+  "pt-pt": { title: "Detalhes da Vaga", company: "Empresa", location: "Localizacao", salary: "Salario", category: "Categoria", workType: "Tipo de Trabalho", posted: "Publicada em", description: "Descricao", contact: "Contacto", noContact: "Contacto nao disponivel", backToJobs: "Voltar as Vagas", searchCompany: "Pesquisar {0} no Google", perYear: "/ano", perMonth: "/mes", perHour: "/hora" },
+  es: { title: "Detalles del Empleo", company: "Empresa", location: "Ubicacion", salary: "Salario", category: "Categoria", workType: "Tipo de Trabajo", posted: "Publicado", description: "Descripcion", contact: "Contacto", noContact: "Contacto no disponible", backToJobs: "Volver a Empleos", searchCompany: "Buscar {0} en Google", perYear: "/ano", perMonth: "/mes", perHour: "/hora" },
+  fr: { title: "Details de l'Offre", company: "Entreprise", location: "Localisation", salary: "Salaire", category: "Categorie", workType: "Type de Travail", posted: "Publie", description: "Description", contact: "Contact", noContact: "Contact non disponible", backToJobs: "Retour aux Offres", searchCompany: "Rechercher {0} sur Google", perYear: "/an", perMonth: "/mois", perHour: "/heure" },
+  de: { title: "Stellendetails", company: "Unternehmen", location: "Standort", salary: "Gehalt", category: "Kategorie", workType: "Arbeitsart", posted: "Veroffentlicht", description: "Beschreibung", contact: "Kontakt", noContact: "Kein Kontakt verfugbar", backToJobs: "Zuruck zu Stellen", searchCompany: "{0} bei Google suchen", perYear: "/Jahr", perMonth: "/Monat", perHour: "/Stunde" },
+  it: { title: "Dettagli dell'Offerta", company: "Azienda", location: "Sede", salary: "Stipendio", category: "Categoria", workType: "Tipo di Lavoro", posted: "Pubblicato", description: "Descrizione", contact: "Contatto", noContact: "Contatto non disponibile", backToJobs: "Torna alle Offerte", searchCompany: "Cerca {0} su Google", perYear: "/anno", perMonth: "/mese", perHour: "/ora" },
+  nl: { title: "Vacaturedetails", company: "Bedrijf", location: "Locatie", salary: "Salaris", category: "Categorie", workType: "Werktype", posted: "Geplaatst", description: "Beschrijving", contact: "Contact", noContact: "Geen contact beschikbaar", backToJobs: "Terug naar Vacatures", searchCompany: "{0} zoeken op Google", perYear: "/jaar", perMonth: "/maand", perHour: "/uur" },
+  pl: { title: "Szczegoly Oferty", company: "Firma", location: "Lokalizacja", salary: "Wynagrodzenie", category: "Kategoria", workType: "Typ Pracy", posted: "Opublikowano", description: "Opis", contact: "Kontakt", noContact: "Brak danych kontaktowych", backToJobs: "Powrot do Ofert", searchCompany: "Szukaj {0} w Google", perYear: "/rok", perMonth: "/miesiac", perHour: "/godzina" },
+  ru: { title: "Detali vakansii", company: "Kompaniya", location: "Mestopolozhenie", salary: "Zarplata", category: "Kategoriya", workType: "Tip zanyatosti", posted: "Opublikovano", description: "Opisanie", contact: "Kontakt", noContact: "Kontakt nedostupen", backToJobs: "Nazad k vakansiyam", searchCompany: "Iskat {0} v Google", perYear: "/god", perMonth: "/mesyac", perHour: "/chas" },
 };
-
 const fbEN = DL["en"];
-const langKeys = ["zh","ja","ko","hi","bn","ar","tr","vi","th","ur","tl","sw"];
-for (const k of langKeys) { if (!DL[k]) DL[k] = { ...fbEN }; }
-
-// ============================================================
-// Company career page URLs — direct links to apply
-// ============================================================
-const COMPANY_CAREERS: Record<string, string> = {
-  "Amazon": "https://www.amazon.jobs",
-  "Google": "https://careers.google.com",
-  "Microsoft": "https://careers.microsoft.com",
-  "Apple": "https://jobs.apple.com",
-  "Meta": "https://www.metacareers.com",
-  "Stripe": "https://stripe.com/jobs",
-  "JPMorgan Chase": "https://careers.jpmorgan.com",
-  "Vercel": "https://vercel.com/careers",
-  "Palantir": "https://www.palantir.com/careers",
-  "Cisco": "https://jobs.cisco.com",
-  "Postman": "https://www.postman.com/company/careers",
-  "Workday": "https://www.workday.com/careers",
-  "Rivian": "https://rivian.com/careers",
-  "Oracle": "https://www.oracle.com/careers",
-  "IBM": "https://www.ibm.com/careers",
-  "Dell Technologies": "https://jobs.dell.com",
-  "Dropbox": "https://www.dropbox.com/jobs",
-  "Boeing": "https://boeing.com/careers",
-  "VMware": "https://careers.vmware.com",
-  "HP Inc": "https://jobs.hp.com",
-  "DoorDash": "https://careers.doordash.com",
-  "HashiCorp": "https://www.hashicorp.com/careers",
-  "Zoom": "https://zoom.us/careers",
-  "Grafana Labs": "https://grafana.com/about/careers",
-  "Morgan Stanley": "https://www.morganstanley.com/people",
-  "Intel": "https://www.intel.com/content/www/us/en/jobs.html",
-  "Figma": "https://www.figma.com/careers",
-  "MongoDB": "https://www.mongodb.com/careers",
-  "Zscaler": "https://www.zscaler.com/company/careers",
-  "Linear": "https://linear.app/careers",
-  "Shopify": "https://www.shopify.com/careers",
-  "Salesforce": "https://www.salesforce.com/company/careers",
-  "Adobe": "https://www.adobe.com/careers.html",
-  "Netflix": "https://jobs.netflix.com",
-  "NVIDIA": "https://www.nvidia.com/en-us/about-nvidia/careers",
-  "Tesla": "https://www.tesla.com/careers",
-  "Uber": "https://www.uber.com/careers",
-  "Spotify": "https://www.lifeatspotify.com",
-  "Airbnb": "https://careers.airbnb.com",
-  "Slack": "https://slack.com/careers",
-  "Twilio": "https://www.twilio.com/en-us/company/jobs",
-  "Cloudflare": "https://www.cloudflare.com/careers",
-  "Datadog": "https://www.datadoghq.com/careers",
-  "Snowflake": "https://careers.snowflake.com",
-  "Databricks": "https://www.databricks.com/company/careers",
-  "Coinbase": "https://www.coinbase.com/careers",
-  "Kraken": "https://jobs.kraken.com",
-  "PayPal": "https://www.paypal.com/us/webapps/mpp/jobs",
-  "SAP": "https://www.sap.com/about/careers",
-  "ServiceNow": "https://www.servicenow.com/careers",
-  "Atlassian": "https://www.atlassian.com/company/careers",
-  "GitHub": "https://github.com/about/careers",
-  "GitLab": "https://about.gitlab.com/jobs",
-  "HubSpot": "https://www.hubspot.com/careers",
-  "Notion": "https://www.notion.so/careers",
-  "Canva": "https://www.canva.com/careers",
-  "Robinhood": "https://robinhood.com/us/en/careers",
-  "Block": "https://block.xyz/careers",
-  "Square": "https://block.xyz/careers",
-  "Plaid": "https://plaid.com/careers",
-  "Wise": "https://wise.com/jobs",
-  "Revolut": "https://www.revolut.com/careers",
-  "Nubank": "https://nubank.com.br/carreiras",
-  "Deel": "https://www.deel.com/careers",
-  "Remote": "https://remote.com/careers",
-  "Automattic": "https://automattic.com/work-with-us",
-  "Shopify": "https://www.shopify.com/careers",
-};
-
-// Agencias/plataformas concorrentes — nao linkar externamente
-const AGENCY_DOMAINS = ["linkedin", "indeed", "glassdoor", "ziprecruiter", "monster", "dice", "jsjobbs", "wearedevelopers", "wellfound", "angel", "builtinnyc", "justjoin", "otodom", "jooble"];
-
-function isAgency(company: string): boolean {
-  const c = company.toLowerCase();
-  return AGENCY_DOMAINS.some(a => c.includes(a));
-}
-
-function getCompanyCareerUrl(company: string): string | null {
-  if (isAgency(company)) return null;
-  return COMPANY_CAREERS[company] || null;
-}
+for (const k of ["zh","ja","ko","hi","bn","ar","tr","vi","th","ur","tl","sw"]) { if (!DL[k]) DL[k] = { ...fbEN }; }
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -133,11 +43,11 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [countryName, setCountryName] = useState("");
-  const [showPayment, setShowPayment] = useState(false);
   const router = useRouter();
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const L = DL[lang] || DL["en"];
   const T = i18n[lang] || i18n["en"];
+  const pw = getPaywallText(lang);
   const goBack = useCallback(() => router.push("/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc), [lang, router, rc, cc]);
 
   useEffect(() => {
@@ -146,20 +56,17 @@ export default function JobDetailPage() {
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then((data: Job[]) => {
         const found = data.find((j: Job) => String(j.id) === String(jobId));
-        if (found) { setJob(found); setCountryName(getLocalizedCountryName(found.countryName || cc, lang)); }
+        if (found) {
+          const enriched = { ...found, paywall: shouldHavePaywall(found) };
+          setJob(enriched);
+          setCountryName(getLocalizedCountryName(found.countryName || cc, lang));
+        }
         else { setNotFound(true); }
         setLoading(false);
       }).catch(() => { setNotFound(true); setLoading(false); });
   }, [rc, cc, jobId, lang]);
 
-  const getWorkTypeLabel = (type: string) => {
-    const t = type?.toLowerCase() || "";
-    if (t === "remoto" || t === "remote") return getTypeLabel(lang, "Remote");
-    if (t === "hibrido" || t === "hybrid") return getTypeLabel(lang, "Hybrid");
-    return getTypeLabel(lang, "On-site");
-  };
-
-  const getWorkTypeKey = (type: string) => {
+  const getWorkType = (type: string) => {
     const t = type?.toLowerCase() || "";
     if (t === "remoto" || t === "remote") return "Remote";
     if (t === "hibrido" || t === "hybrid") return "Hybrid";
@@ -173,14 +80,12 @@ export default function JobDetailPage() {
     return "--";
   };
 
-  const sectorIcons: Record<string, string> = { "Software Engineering": "\u{1F4BB}", "Cloud & DevOps": "\u2601\uFE0F", "Data Science & Analytics": "\u{1F4CA}", "AI & Machine Learning": "\u{1F916}", "Cybersecurity": "\u{1F512}", "Product Management": "\u{1F4CB}", "Consulting": "\u{1F4BC}", "Data Engineering": "\u{1F5C2}", "UX/UI & Design": "\u{1F3A8}", "QA & Testing": "\u{1F9EA}", "Mobile Development": "\u{1F4F1}", "Game Development": "\u{1F3AE}", "Engineering Leadership": "\u{1F454}", "Finance Technology": "\u{1F4B0}", "Sales & Marketing": "\u{1F4E3}", "Writing & Content": "\u270D\uFE0F", "IT Support & Operations": "\u{1F5A5}", "R&D": "\u{1F52C}", "Other": "\u{1F4CC}" };
+  const sectorIcons: Record<string, string> = { "Software Engineering": "\u{1F4BB}", "Cloud & DevOps": "\u2601\uFE0F", "Data Science & Analytics": "\u{1F4CA}", "AI & Machine Learning": "\u{1F916}", "Cybersecurity": "\u{1F512}", "Product Management": "\u{1F4E6}", "Consulting": "\u{1F4BC}", "Data Engineering": "\u{1F5C2}", "UX/UI & Design": "\u{1F3A8}", "QA & Testing": "\u{1F9EA}", "Mobile Development": "\u{1F4F1}", "Game Development": "\u{1F3AE}", "Engineering Leadership": "\u{1F454}", "Finance Technology": "\u{1F4B0}", "Sales & Marketing": "\u{1F4E3}", "Writing & Content": "\u270D\uFE0F", "IT Support & Operations": "\u{1F5A5}", "R&D": "\u{1F52C}", "Other": "\u{1F4CC}" };
 
-  const careerUrl = job ? getCompanyCareerUrl(job.company) : null;
-  const isAgencyJob = job ? isAgency(job.company) : false;
-  const pwInfo = job ? shouldHavePaywall(job) : { paywall: false, hasDiscount: false };
-  const hasDiscount = pwInfo.hasDiscount;
-  const pw = getPaywallText(lang);
-  const jobSchema = job ? { "@context": "https://schema.org", "@type": "JobPosting", "title": job.title, "description": job.description || ("Tech job: " + job.title + " at " + job.company + " in " + job.location), "datePosted": job.posted || undefined, "hiringOrganization": { "@type": "Organization", "name": job.company }, "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": job.location, "addressCountry": countryName } } } : null;
+  const googleLink = job ? "https://www.google.com/search?q=" + encodeURIComponent(job.company + " careers") : "#";
+  const jobSchema = job ? { "@context": "https://schema.org", "@type": "JobPosting", "title": job.title, "description": job.description || ("Tech job: " + job.title + " at " + job.company + " in " + job.location), "datePosted": job.posted || undefined, "hiringOrganization": { "@type": "Organization", "name": job.company }, "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": job.location, "addressCountry": countryName } }, ...(job.salaryMin || job.salaryMax ? { "baseSalary": { "@type": "MonetaryAmount", "currency": job.salaryCurrency || "USD", "value": { "@type": "QuantitativeValue", "minValue": job.salaryMin || undefined, "maxValue": job.salaryMax || undefined, "unitText": job.salaryPeriod === 'year' ? 'YEAR' : job.salaryPeriod === 'month' ? 'MONTH' : 'HOUR' } } } : {}), "employmentType": "FULL_TIME" } : null;
+
+  const isLocked = job?.paywall;
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
@@ -213,102 +118,50 @@ export default function JobDetailPage() {
             <div className={"h-2 w-full bg-gradient-to-r " + getSectorMeta(job.sector).color} />
             <div className="p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className={"rounded-full px-3 py-1 text-xs font-medium border " + (getSectorMeta(job.sector).color.includes("green") ? "bg-green-50 text-green-700 border-green-200" : "bg-amber-50 text-amber-700 border-amber-200")}>{getWorkTypeLabel(job.type)}</span>
+                <span className="rounded-full px-3 py-1 text-xs font-medium border bg-sky-50 text-sky-700 border-sky-200">{getWorkType(job.type)}</span>
+                {job.paywall && <span className="rounded-full px-3 py-1 text-xs font-bold border bg-amber-100 text-amber-700 border-amber-200">{pw.premium}</span>}
                 {job.posted && <span className="text-xs text-gray-400">{L.posted}: {job.posted}</span>}
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">{job.title}</h1>
-              {careerUrl ? (
-                <a href={careerUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-lg font-semibold text-sky-600 hover:text-sky-700 transition-colors">
+              {isLocked ? (
+                <div className="inline-flex items-center gap-2 text-lg font-semibold text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  {pw.unlock}
+                </div>
+              ) : (
+                <a href={googleLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-lg font-semibold text-sky-600 hover:text-sky-700 transition-colors">
                   {job.company}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                 </a>
-              ) : (
-                <span className="text-lg font-semibold text-gray-800">{job.company}</span>
               )}
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.location}</p><p className="text-sm font-semibold text-gray-800 mt-1">{job.location}</p></div>
             <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.salary}</p><p className="text-sm font-bold text-sky-600 mt-1">{getSalaryText(job)}</p></div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.workType}</p><p className="text-sm font-semibold text-gray-800 mt-1">{getWorkTypeLabel(job.type)}</p></div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.category}</p><p className="text-sm text-gray-700 mt-1">{sectorIcons[job.sector] || "\u{1F4CC}"} {getSectorLabel(job.sector, lang)}</p></div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.company}</p><p className="text-sm text-gray-700 mt-1">{job.company}</p></div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.workType}</p><p className="text-sm font-semibold text-gray-800 mt-1">{getWorkType(job.type)}</p></div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.category}</p><p className="text-sm text-gray-700 mt-1">{sectorIcons[job.sector] || "\u{1F4CC}"} {job.sector}</p></div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.company}</p><p className="text-sm text-gray-700 mt-1">{isLocked ? '***' : job.company}</p></div>
             {job.posted && <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{L.posted}</p><p className="text-sm text-gray-700 mt-1">{job.posted}</p></div>}
           </div>
-
-          {/* DESCRICAO */}
-          {job.description && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{L.description}</p>
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
-              {!job.contactEmail && (
-                <p className="text-xs text-gray-400 mt-3 italic">{L.fullDescNote}</p>
-              )}
-            </div>
-          )}
-
-          {/* CONTATO */}
+          {job.description && <div className="bg-white rounded-xl border border-gray-100 p-6"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{L.description}</p><p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p></div>}
           <div className="bg-white rounded-xl border border-gray-100 p-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{L.contact}</p>
-            {job.contactEmail ? (
-              <div className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                <p className="text-sm font-semibold text-sky-600">{job.contactEmail}</p>
+            {isLocked ? (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center text-3xl">&#128274;</div>
+                <p className="text-sm font-bold text-amber-700 mb-1">{pw.premium}</p>
+                <p className="text-xs text-gray-500">{pw.unlock}</p>
               </div>
-            ) : pwInfo.paywall ? (
-              !showPayment ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-400 italic">{L.noContact}</p>
-                  <button
-                    onClick={() => setShowPayment(true)}
-                    className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all text-sm"
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                      {L.unlockContact}
-                    </span>
-                  </button>
-                </div>
-              ) : null
             ) : (
-              <div className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                <p className="text-sm text-gray-400 italic">{L.noContact}</p>
-              </div>
+              job.contactEmail
+                ? <p className="text-sm font-semibold text-sky-600">{job.contactEmail}</p>
+                : <p className="text-sm text-gray-400 italic">{L.noContact}</p>
             )}
           </div>
-
-          {/* COMPONENTE DE PAGAMENTO */}
-          {showPayment && pwInfo.paywall && !job.contactEmail && (
-            <PaddlePayment
-              jobId={String(job.id)}
-              onClose={() => setShowPayment(false)}
-              hasDiscount={hasDiscount}
-            />
+          {!isLocked && (
+            <a href={googleLink} target="_blank" rel="noopener noreferrer" className="block bg-sky-50 border border-sky-200 rounded-xl p-5 hover:bg-sky-100 transition-colors text-center"><p className="text-sm font-semibold text-sky-700">{L.searchCompany.replace("{0}", job.company)}</p></a>
           )}
-
-          {/* LINK DIRETO DA EMPRESA (nao agencias) */}
-          {careerUrl && (
-            <a href={careerUrl} target="_blank" rel="noopener noreferrer" className="block bg-sky-50 border border-sky-200 rounded-xl p-5 hover:bg-sky-100 transition-colors text-center">
-              <p className="text-sm font-semibold text-sky-700">{L.viewOnCompany.replace("{0}", job.company)}</p>
-            </a>
-          )}
-
-          {/* VAGA DE AGENCIA — sem link externo, unlock se paywall */}
-          {isAgencyJob && !careerUrl && (
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-center">
-              <p className="text-sm text-gray-500">{L.agencyJob}</p>
-              {pwInfo.paywall && (
-                <button
-                  onClick={() => setShowPayment(true)}
-                  className="mt-3 px-6 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all text-sm"
-                >
-                  {L.unlockContact}
-                </button>
-              )}
-            </div>
-          )}
-
           <button onClick={goBack} className="w-full py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm">{L.backToJobs}</button>
         </div>)}
       </main>
