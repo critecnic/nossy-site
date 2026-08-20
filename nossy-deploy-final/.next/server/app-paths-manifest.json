@@ -1,13 +1,8 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/api/data/country/route": "app/api/data/country/route.js",
-  "/api/data/[file]/route": "app/api/data/[file]/route.js",
-  "/api/verify-code/route": "app/api/verify-code/route.js",
   "/robots.txt/route": "app/robots.txt/route.js",
   "/sitemap.xml/route": "app/sitemap.xml/route.js",
-  "/api/send-code/route": "app/api/send-code/route.js",
-  "/api/checkout/route": "app/api/checkout/route.js",
-  "/api/webhook/route": "app/api/webhook/route.js",
   "/page": "app/page.js",
   "/[lang]/[slug]/page": "app/[lang]/[slug]/page.js",
   "/[lang]/[slug]/[region]/page": "app/[lang]/[slug]/[region]/page.js",

@@ -96,7 +96,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/home/z/my-project/download/nossy-src",
+    "outputFileTracingRoot": "/home/z/my-project/nossy-deploy-final",
     "experimental": {
       "nodeMiddleware": false,
       "cacheLife": {
@@ -279,10 +279,10 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "/home/z/my-project/download/nossy-src"
+      "root": "/home/z/my-project/nossy-deploy-final"
     }
   },
-  "appDir": "/home/z/my-project/download/nossy-src",
+  "appDir": "/home/z/my-project/nossy-deploy-final",
   "relativeAppDir": "",
   "files": [
     ".next/routes-manifest.json",

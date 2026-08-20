@@ -1,13 +1,8 @@
 {
   "/_not-found/page": "/_not-found",
   "/api/data/country/route": "/api/data/country",
-  "/api/data/[file]/route": "/api/data/[file]",
-  "/api/verify-code/route": "/api/verify-code",
   "/robots.txt/route": "/robots.txt",
   "/sitemap.xml/route": "/sitemap.xml",
-  "/api/send-code/route": "/api/send-code",
-  "/api/checkout/route": "/api/checkout",
-  "/api/webhook/route": "/api/webhook",
   "/page": "/",
   "/[lang]/[slug]/page": "/[lang]/[slug]",
   "/[lang]/[slug]/[region]/page": "/[lang]/[slug]/[region]",

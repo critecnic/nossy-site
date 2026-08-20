@@ -15,14 +15,6 @@
   "headers": [],
   "dynamicRoutes": [
     {
-      "page": "/api/data/[file]",
-      "regex": "^/api/data/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPfile": "nxtPfile"
-      },
-      "namedRegex": "^/api/data/(?<nxtPfile>[^/]+?)(?:/)?$"
-    },
-    {
       "page": "/[lang]/[slug]",
       "regex": "^/([^/]+?)/([^/]+?)(?:/)?$",
       "routeKeys": {

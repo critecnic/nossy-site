@@ -1,4 +1,4 @@
-// File: /home/z/my-project/download/nossy-src/src/app/[lang]/[slug]/[region]/[country]/layout.tsx
+// File: /home/z/my-project/nossy-deploy-final/src/app/[lang]/[slug]/[region]/[country]/layout.tsx
 import * as entry from '../../../../../../../src/app/[lang]/[slug]/[region]/[country]/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
