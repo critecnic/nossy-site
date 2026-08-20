@@ -1,54 +1,57 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { LANGUAGES, LANG_SLUGS, i18n, sectorNames } from "@/lib/i18n";
-import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getRegionName, formatSalary } from "@/lib/shared";
-import SiteLogo from "@/components/SiteLogo";
-import LangSelector from "@/components/LangSelector";
-import countriesData from "@/data/countries.json";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { LANGUAGES, LANG_SLUGS, i18n, sectorNames } from '@/lib/i18n';
+import type { Lang } from '@/lib/i18n';
+import { getSectorMeta, getRegionName, formatSalary } from '@/lib/shared';
+import SiteLogo from '@/components/SiteLogo';
+import LangSelector from '@/components/LangSelector';
+import countriesData from '@/data/countries.json';
 
 export default function HomePage() {
   const params = useParams();
-  const langCode = String(params.lang || "en");
-  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+  const langCode = String(params.lang || 'en');
+  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || 'en') as Lang;
   const [jobs, setJobs] = useState<any[]>([]);
-  const [countries, setCountries] = useState<any[]>(countriesData);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const T = i18n[lang] || i18n["en"];
-  const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
-  const slug = LANG_SLUGS[lang] || "jobs";
+  const T = i18n[lang] || i18n['en'];
+  const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === 'rtl';
+  const slug = LANG_SLUGS[lang] || 'jobs';
 
   useEffect(() => {
-    fetch("/data/latest_20.json").then(r => r.json()).then(d => { setJobs(d || []); setLoading(false); }).catch(() => setLoading(false));
+    fetch('/data/latest_20.json')
+      .then(r => r.json())
+      .then(d => { setJobs(d || []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  const regions = ["europa", "asia", "eua"];
-  const goCountry = (r: string, c: string) => router.push("/" + lang + "/" + slug + "/" + r + "/" + c);
+  const regions = ['europa', 'asia', 'eua'];
+  const goCountry = (r: string, c: string) => router.push('/' + lang + '/' + slug + '/' + r + '/' + c);
 
   return (
-    <div dir={isRtl ? "rtl" : "ltr"}>
+    <div dir={isRtl ? 'rtl' : 'ltr'}>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3"><SiteLogo size={36} /><span className="text-lg font-bold text-gray-900 tracking-tight">NOSSY</span></div>
-          <LangSelector lang={lang} switchLang={(l) => router.push("/" + l + "/" + LANG_SLUGS[l])} />
+          <LangSelector lang={lang} switchLang={(l) => router.push('/' + l + '/' + LANG_SLUGS[l])} />
         </nav>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-3">{T.heroTitle || "Find your dream tech job"}</h1>
-          <p className="text-gray-500 text-lg">{T.heroSubtitle || ""}</p>
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-3">{T.heroTitle || 'Find your dream tech job'}</h1>
+          <p className="text-gray-500 text-lg">{T.heroSubtitle || ''}</p>
           <div className="flex justify-center gap-8 mt-6">
             <div><p className="text-3xl font-bold text-sky-600">{T.totalJobs}</p><p className="text-xs text-gray-400 uppercase tracking-wider">{T.vacancies}</p></div>
-            <div><p className="text-3xl font-bold text-sky-600">{countries.length}</p><p className="text-xs text-gray-400 uppercase tracking-wider">{T.countries || "Countries"}</p></div>
-            <div><p className="text-3xl font-bold text-sky-600">{regions.length}</p><p className="text-xs text-gray-400 uppercase tracking-wider">{T.regions || "Regions"}</p></div>
+            <div><p className="text-3xl font-bold text-sky-600">{countriesData.length}</p><p className="text-xs text-gray-400 uppercase tracking-wider">{T.countries || 'Countries'}</p></div>
+            <div><p className="text-3xl font-bold text-sky-600">{regions.length}</p><p className="text-xs text-gray-400 uppercase tracking-wider">{T.regions || 'Regions'}</p></div>
           </div>
         </div>
         {regions.map(region => {
           const rName = getRegionName(lang, region);
-          const rCountries = countries.filter((c: any) => c.region === region);
-          const ogImage = region === "europa" ? "/og/og-europa.png" : region === "asia" ? "/og/og-asia.png" : "/og/og-eua.png";
+          const rCountries = countriesData.filter((c: any) => c.region === region);
+          const ogImage = region === 'europa' ? '/og/og-europa.png' : region === 'asia' ? '/og/og-asia.png' : '/og/og-eua.png';
           return (
             <section key={region} className="mb-10">
               <div className="flex items-center gap-3 mb-5">
@@ -69,7 +72,7 @@ export default function HomePage() {
         })}
         {!loading && jobs.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-5">{T.latestJobs || "Latest Jobs"}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">{T.latestJobs || 'Latest Jobs'}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {jobs.slice(0, 6).map((job: any) => {
                 const m = getSectorMeta(job.sector);

@@ -1,7 +1,8 @@
-// Shared constants used across all pages - eliminates duplication
+// Shared constants used across all pages
 
 import type { Lang } from './i18n';
 
+// ── Region names in all 22 languages ──
 export const REGION_NAMES: Record<string, Record<string, string>> = {
   en: { europa: "Europe", asia: "Asia", eua: "United States" },
   "pt-br": { europa: "Europa", asia: "Ásia", eua: "Estados Unidos" },
@@ -31,6 +32,7 @@ export function getRegionName(lang: string, regionCode: string): string {
   return REGION_NAMES[lang]?.[regionCode] || regionCode;
 }
 
+// ── Sector metadata (icon + gradient) ──
 export const SECTOR_META: Record<string, { icon: string; color: string }> = {
   "Software Engineering": { icon: "💻", color: "from-blue-500 to-cyan-400" },
   "Cloud & DevOps": { icon: "☁️", color: "from-sky-500 to-blue-400" },
@@ -59,6 +61,7 @@ export function getSectorMeta(name: string) {
   return SECTOR_META[name] || { icon: "📂", color: "from-sky-400 to-blue-500" };
 }
 
+// ── Work-type badge styles ──
 export const TYPE_STYLES: Record<string, string> = {
   Remoto: "bg-green-50 text-green-700 border-green-200",
   Hibrido: "bg-amber-50 text-amber-700 border-amber-200",
@@ -72,6 +75,7 @@ export function getTypeStyle(type: string): string {
   return TYPE_STYLES[type] || "bg-gray-50 text-gray-700 border-gray-200";
 }
 
+// ── Work-type labels per language ──
 export const TYPE_LABELS: Record<string, Record<string, string>> = {
   en: { all: "All Types", Remoto: "Remote", Hibrido: "Hybrid", Presencial: "On-site", Remote: "Remote", Hybrid: "Hybrid", "On-site": "On-site" },
   "pt-br": { all: "Todos", Remoto: "Remoto", Hibrido: "Híbrido", Presencial: "Presencial" },
@@ -85,7 +89,7 @@ export const TYPE_LABELS: Record<string, Record<string, string>> = {
   ru: { all: "Все", Remoto: "Удалённо", Hibrido: "Гибрид", Presencial: "В Офисе" },
   zh: { all: "全部", Remoto: "远程", Hibrido: "混合", Presencial: "现场" },
   ja: { all: "すべて", Remoto: "リモート", Hibrido: "ハイブリッド", Presencial: "オフィス" },
-  ko: { all: "모두", Remoto: "원격", Hibrido: "하이브リ드", Presencial: "현장" },
+  ko: { all: "모두", Remoto: "원격", Hibrido: "하이브리드", Presencial: "현장" },
   hi: { all: "सभी", Remoto: "रिमोट", Hibrido: "हाइब्रिड", Presencial: "ऑनसाइट" },
   bn: { all: "সব", Remoto: "দূরবর্তী", Hibrido: "হাইব্রিড", Presencial: "অনসাইট" },
   ar: { all: "الكل", Remoto: "عن بُعد", Hibrido: "هجين", Presencial: "في الموقع" },
@@ -101,9 +105,11 @@ export function getTypeLabel(lang: string, type: string): string {
   return TYPE_LABELS[lang]?.[type] || type;
 }
 
+// ── Paywall text – all 22 languages ──
 export const PAYWALL_TEXT: Record<string, { unlock: string; premium: string }> = {
   en: { unlock: 'Unlock Contact', premium: 'Premium' },
   "pt-br": { unlock: 'Desbloquear Contato', premium: 'Premium' },
+  "pt-pt": { unlock: 'Desbloquear Contacto', premium: 'Premium' },
   es: { unlock: 'Desbloquear', premium: 'Premium' },
   fr: { unlock: 'Débloquer', premium: 'Premium' },
   de: { unlock: 'Freischalten', premium: 'Premium' },
@@ -112,15 +118,14 @@ export const PAYWALL_TEXT: Record<string, { unlock: string; premium: string }> =
   pl: { unlock: 'Odblokuj', premium: 'Premium' },
   ru: { unlock: 'Разблокировать', premium: 'Premium' },
   zh: { unlock: '解锁联系方式', premium: '高级' },
-  ja: { unlock: '連絡先を解锁', premium: 'プレミアム' },
+  ja: { unlock: '連絡先をアンロック', premium: 'プレミアム' },
   ko: { unlock: '연락처 잠금 해제', premium: '프리미엄' },
   hi: { unlock: 'संपर्क अनलॉक करें', premium: 'प्रीमियम' },
+  bn: { unlock: 'যোগাযোগ আনলক করুন', premium: 'প্রিমিয়াম' },
   ar: { unlock: 'فتح جهات الاتصال', premium: 'مميز' },
   tr: { unlock: 'İletişimi Aç', premium: 'Premium' },
   vi: { unlock: 'Mở khóa liên hệ', premium: 'Premium' },
   th: { unlock: 'ปลดล็อกข้อมูลติดต่อ', premium: 'พรีเมียม' },
-  "pt-pt": { unlock: 'Desbloquear Contacto', premium: 'Premium' },
-  bn: { unlock: 'যোগাযোগ আনলক করুন', premium: 'প্রিমিয়াম' },
   ur: { unlock: 'رابطہ کھولیں', premium: 'پریمیم' },
   tl: { unlock: 'I-unlock ang Contact', premium: 'Premium' },
   sw: { unlock: 'Fungua Mawasiliano', premium: 'Premium' },
@@ -130,23 +135,29 @@ export function getPaywallText(lang: string) {
   return PAYWALL_TEXT[lang] || PAYWALL_TEXT['en'];
 }
 
-/**
- * Dynamic paywall: job.id % 10 === 0 for remote jobs + annualized salary >= $450,000
- */
-export function shouldHavePaywall(job: { id: number; type?: string; salaryMin?: number; salaryMax?: number; salaryPeriod?: string; salaryCurrency?: string }): boolean {
-  const isRemote = /remote|remoto/i.test(job.type || '');
-  if (!isRemote) return false;
+// ── Dynamic paywall logic ──
+// job.id % 10 === 0 for remote jobs + annualized salary >= $450,000
+export function shouldHavePaywall(job: {
+  id: number; type?: string;
+  salaryMin?: number; salaryMax?: number;
+  salaryPeriod?: string; salaryCurrency?: string;
+}): boolean {
+  const t = (job.type || '').toLowerCase();
+  if (t !== 'remote' && t !== 'remoto') return false;
   if (job.id % 10 !== 0) return false;
   let annualMax = job.salaryMax || 0;
   const cur = (job.salaryCurrency || 'USD').toUpperCase();
-  const toUSD: Record<string, number> = { USD: 1, EUR: 1.08, GBP: 1.27, BRL: 0.18, INR: 0.012, JPY: 0.0067, CNY: 0.14, SGD: 0.74, KRW: 0.00074 };
-  const rate = toUSD[cur] || 1;
+  const FX: Record<string, number> = {
+    USD: 1, EUR: 1.08, GBP: 1.27, BRL: 0.18,
+    INR: 0.012, JPY: 0.0067, CNY: 0.14, SGD: 0.74, KRW: 0.00074,
+  };
+  const rate = FX[cur] || 1;
   if (job.salaryPeriod === 'month') annualMax = annualMax * 12;
   if (job.salaryPeriod === 'hour') annualMax = annualMax * 2080;
   return annualMax * rate >= 450000;
 }
 
-// Maps Portuguese country names from data files to English
+// ── Country name mapping ──
 export const COUNTRY_NAME_EN: Record<string, string> = {
   "Japao": "Japan", "Coreia do Sul": "South Korea", "Singapura": "Singapore",
   "Tailandia": "Thailand", "Malasia": "Malaysia", "Vietna": "Vietnam",
@@ -186,12 +197,21 @@ export function getLocalizedCountryName(name: string, lang: string): string {
   return COUNTRY_NAME_EN[name] || name;
 }
 
-export function formatSalary(j: { salaryMin?: number; salaryMax?: number; salaryCurrency?: string; salaryPeriod?: string; salary?: string }): string {
-  const S: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', BRL: 'R$', INR: '₹', JPY: '¥', CNY: '¥', SGD: 'S$', KRW: '₩' };
-  const mn = j.salaryMin || 0, mx = j.salaryMax || 0;
+// ── Salary formatting ──
+export function formatSalary(j: {
+  salaryMin?: number; salaryMax?: number;
+  salaryCurrency?: string; salaryPeriod?: string; salary?: string;
+}): string {
+  const SYM: Record<string, string> = {
+    EUR: '€', USD: '$', GBP: '£', BRL: 'R$', INR: '₹',
+    JPY: '¥', CNY: '¥', SGD: 'S$', KRW: '₩',
+  };
+  const mn = j.salaryMin || 0;
+  const mx = j.salaryMax || 0;
   if (!mn && !mx) return j.salary || '';
-  const sym = S[j.salaryCurrency || ''] || j.salaryCurrency || '';
-  const a = Math.round(mn).toLocaleString(), b = Math.round(mx).toLocaleString();
+  const sym = SYM[j.salaryCurrency || ''] || j.salaryCurrency || '';
+  const a = Math.round(mn).toLocaleString();
+  const b = Math.round(mx).toLocaleString();
   if (j.salaryPeriod === 'year') return sym + ' ' + a + ' - ' + b + '/yr';
   if (j.salaryPeriod === 'month') return sym + ' ' + a + ' - ' + b + '/mo';
   return sym + ' ' + a + ' - ' + b;
