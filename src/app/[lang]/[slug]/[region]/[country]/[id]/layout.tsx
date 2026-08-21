@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
 import { REGIONS } from "@/lib/countries";
-import { getRegionName } from "@/lib/shared";
+import { getRegionName, shouldHavePaywall } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
 import type { Lang } from "@/lib/i18n";
 import countriesData from "@/data/countries.json";
@@ -106,8 +106,8 @@ function JobPostingSchema({ job, url }: { job: Job; url: string }) {
     url,
     hiringOrganization: {
       "@type": "Organization",
-      name: job.paywall ? "Confidential" : job.company,
-      sameAs: job.companyUrl || undefined,
+      name: shouldHavePaywall(job).paywall ? "Confidential" : job.company,
+      sameAs: !shouldHavePaywall(job).paywall ? (job.companyUrl || undefined) : undefined,
     },
     jobLocation: {
       "@type": "Place",
