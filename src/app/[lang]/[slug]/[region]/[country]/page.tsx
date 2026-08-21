@@ -6,6 +6,7 @@ import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, formatSalary, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
+import { getCountryNameTranslated } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -29,7 +30,8 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const cc = resolvedParams?.country || '';
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [allJobs, setAllJobs] = useState<Job[]>([]);
-  const [countryName, setCountryName] = useState("");
+  const [countryNameRaw, setCountryNameRaw] = useState("");
+  const countryName = countryNameRaw ? getCountryNameTranslated(cc, lang, countryNameRaw) : '';
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
@@ -55,15 +57,15 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       .then((data: Job[]) => {
         setLoadProgress(90);
         setAllJobs(data || []);
-        if (data && data.length > 0) setCountryName(data[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc);
+        if (data && data.length > 0) setCountryNameRaw(data[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc);
         setLoadProgress(100); setLoading(false);
       }).catch(() => { setDataError(true); setLoading(false); });
   }, [rc, cc]);
 
   useEffect(() => {
-    if (countryName || !cc || countries.length === 0) return;
+    if (countryNameRaw || !cc || countries.length === 0) return;
     const m = countries.find((c: any) => c.slug === cc);
-    if (m) setCountryName(m.name);
+    if (m) setCountryNameRaw(m.name);
   }, [countries, cc, countryName]);
 
   const filtered = allJobs.filter(j => {

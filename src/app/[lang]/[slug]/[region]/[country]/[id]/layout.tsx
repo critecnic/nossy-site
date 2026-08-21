@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
 import { REGIONS } from "@/lib/countries";
+import { getRegionName } from "@/lib/shared";
+import { getCountryNameTranslated } from "@/lib/country-names";
 import type { Lang } from "@/lib/i18n";
 import countriesData from "@/data/countries.json";
 import { readFileSync } from "fs";
@@ -26,6 +28,23 @@ function findJob(region: string, country: string, jobId: string): Job | null {
   }
 }
 
+const JOB_META_DESC: Record<string, (title: string, company: string, location: string, type: string, salary: string) => string> = {
+  en: (t, c, l, tp, s) => `Apply for ${t} at ${c} in ${l}.${tp ? ' ' + tp + ' position.' : ''}${s ? ' Salary: ' + s + '.' : ''} Find more tech jobs on NOSSY.`,
+  "pt-br": (t, c, l, tp, s) => `Candidate-se a ${t} na ${c} em ${l}.${tp ? ' Vaga ' + tp + '.' : ''}${s ? ' Salario: ' + s + '.' : ''} Veja mais vagas no NOSSY.`,
+  "pt-pt": (t, c, l, tp, s) => `Candidate-se a ${t} na ${c} em ${l}.${tp ? ' Vaga ' + tp + '.' : ''}${s ? ' Salario: ' + s + '.' : ''} Veja mais vagas no NOSSY.`,
+  es: (t, c, l, tp, s) => `Postula a ${t} en ${c} en ${l}.${tp ? ' Posicion ' + tp + '.' : ''}${s ? ' Salario: ' + s + '.' : ''} Encuentra mas empleos en NOSSY.`,
+  fr: (t, c, l, tp, s) => `Postulez pour ${t} chez ${c} a ${l}.${tp ? ' Poste ' + tp + '.' : ''}${s ? ' Salaire : ' + s + '.' : ''} Trouvez plus d'offres sur NOSSY.`,
+  de: (t, c, l, tp, s) => `Bewerben Sie sich auf ${t} bei ${c} in ${l}.${tp ? ' ' + tp + '-Position.' : ''}${s ? ' Gehalt: ' + s + '.' : ''} Mehr Jobs auf NOSSY.`,
+  it: (t, c, l, tp, s) => `Candidati per ${t} presso ${c} a ${l}.${tp ? ' Posizione ' + tp + '.' : ''}${s ? ' Stipendio: ' + s + '.' : ''} Trova piu offerte su NOSSY.`,
+  nl: (t, c, l, tp, s) => `Solliciteer voor ${t} bij ${c} in ${l}.${tp ? ' ' + tp + ' positie.' : ''}${s ? ' Salaris: ' + s + '.' : ''} Meer vacatures op NOSSY.`,
+  pl: (t, c, l, tp, s) => `Aplikuj na ${t} w ${c} w ${l}.${tp ? ' Stanowisko ' + tp + '.' : ''}${s ? ' Wynagrodzenie: ' + s + '.' : ''} Wiecej ofert na NOSSY.`,
+  ru: (t, c, l, tp, s) => `Откликнитесь на ${t} в ${c} в ${l}.${tp ? ' ' + tp + '.' : ''}${s ? ' Зарплата: ' + s + '.' : ''} Больше вакансий на NOSSY.`,
+};
+
+const FALLBACK_JOB_DESC: Record<string, (countryName: string, regionName: string) => string> = {
+  en: (c, r) => `Browse tech jobs in ${c}, ${r}. Find software engineering, data science, cloud and remote positions on NOSSY.`,
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -38,11 +57,15 @@ export async function generateMetadata({
   const regionInfo = REGIONS.find(r => r.code === rc);
 
   const countryName = job?.countryName || countryInfo?.name || cc;
-  const regionName = regionInfo?.name || rc;
-  const title = job ? `${job.title} - ${job.company} | NOSSY` : `${countryName} Jobs | NOSSY`;
+  const countryNameTranslated = getCountryNameTranslated(cc, lang, countryName);
+  const regionName = getRegionName(lang, rc);
+  const title = job ? `${job.title} - ${job.company} | NOSSY` : `${countryNameTranslated} Jobs | NOSSY`;
+
+  const descFn = JOB_META_DESC[lang] || JOB_META_DESC["en"];
+  const fallbackFn = FALLBACK_JOB_DESC[lang] || FALLBACK_JOB_DESC["en"];
   const description = job
-    ? `Apply for ${job.title} at ${job.company} in ${job.location}. ${job.type ? job.type + ' position.' : ''} ${job.salary ? 'Salary: ' + job.salary + '.' : ''} Find more tech jobs on NOSSY.`
-    : `Browse tech jobs in ${countryName}, ${regionName}. Find software engineering, data science, cloud and remote positions on NOSSY.`;
+    ? descFn(job.title, job.company, job.location, job.type || '', job.salary || '')
+    : fallbackFn(countryNameTranslated, regionName);
 
   const url = `https://nossy.pro/${langCode}/${slug}/${rc}/${cc}/${jobId}`;
 

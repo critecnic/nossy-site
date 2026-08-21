@@ -90,7 +90,7 @@ export default function TopTechSkillsDemand({ params }: { params: Promise<{ lang
               Cloud certifications remain one of the most effective ways to demonstrate competency and advance your career. Start with foundational certifications (AWS Cloud Practitioner, Azure Fundamentals) and progress to professional-level certifications (AWS Solutions Architect Professional, Google Cloud Professional Cloud Architect). Build real-world experience by deploying and managing production workloads on cloud platforms. Contribute to open-source cloud tools, write infrastructure modules, and participate in cloud community events. The most successful cloud professionals are those who combine deep technical knowledge with strong communication skills and the ability to translate business requirements into technical architecture decisions.
             </p>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">3. Cybersecurity</h3>
+            <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">3. Cybersecurity</h2>
             <p>
               The cybersecurity talent shortage has reached critical levels globally, with an estimated 3.5 million unfilled cybersecurity positions worldwide. As digital transformation accelerates, cyberattacks grow more sophisticated, and regulatory requirements become more stringent, organizations in every industry are investing heavily in security talent. In 2025, cybersecurity is not just an IT concern—it is a board-level priority.
             </p>

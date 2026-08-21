@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
+import { getCountryNameTranslated } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -70,6 +71,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
+  const cName = job ? getCountryNameTranslated(cc, lang, job.countryName || cc) : cc;
   const pw = shouldHavePaywall(job || {});
   const isLocked = pw.paywall && !showPayment;
   const pwText = getPaywallText(lang);
@@ -134,7 +136,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
             <span className="text-gray-300 mx-1 hidden md:inline">/</span>
             <Link href={regionHref} className="text-sky-600 font-semibold hover:underline hidden md:inline truncate text-sm">{rName}</Link>
             <span className="text-gray-300 mx-1 hidden md:inline">/</span>
-            <Link href={countryHref} className="text-sky-600 hover:underline hidden md:inline truncate text-sm">{job.countryName || cc}</Link>
+            <Link href={countryHref} className="text-sky-600 hover:underline hidden md:inline truncate text-sm">{cName}</Link>
           </div>
           <LangSelector lang={lang} switchLang={(l) => window.location.href = "/" + l + "/" + LANG_SLUGS[l] + "/" + rc + "/" + cc + "/" + jobId} />
         </div>
@@ -146,7 +148,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           <Link href={regionHref} className="hover:text-sky-600 transition-colors">{rName}</Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          <Link href={countryHref} className="hover:text-sky-600 transition-colors">{job.countryName || cc}</Link>
+          <Link href={countryHref} className="hover:text-sky-600 transition-colors">{cName}</Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           <span className="text-gray-900 font-medium truncate max-w-xs">{job.title}</span>
         </nav>
