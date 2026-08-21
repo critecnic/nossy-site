@@ -1,61 +1,26 @@
 import { Metadata } from "next";
 import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
+import { REGIONS } from "@/lib/countries";
 import type { Lang } from "@/lib/i18n";
-import { getLocalizedCountryName } from "@/lib/shared";
 import countriesData from "@/data/countries.json";
+import { readFileSync } from "fs";
+import { join } from "path";
 
-interface CountryInfo { name: string; slug: string; region: string; count: number; }
-
-const COUNTRY_EN: Record<string, string> = {
-  'japao': 'Japan', 'coreia-do-sul': 'South Korea', 'singapura': 'Singapore',
-  'tailandia': 'Thailand', 'malasia': 'Malaysia', 'vietna': 'Vietnam',
-  'filipinas': 'Philippines', 'paquistao': 'Pakistan', 'remoto-global': 'Remote',
-  'india': 'India', 'china': 'China', 'indonesia': 'Indonesia',
-  'hong-kong': 'Hong Kong', 'taiwan': 'Taiwan', 'sri-lanka': 'Sri Lanka',
-  'bangladesh': 'Bangladesh', 'nepal': 'Nepal',
-  'united-states': 'United States', 'united-kingdom': 'United Kingdom',
-  'germany': 'Germany', 'france': 'France', 'spain': 'Spain', 'italy': 'Italy',
-  'netherlands': 'Netherlands', 'poland': 'Poland', 'ireland': 'Ireland',
-  'finland': 'Finland', 'portugal': 'Portugal', 'switzerland': 'Switzerland',
-  'denmark': 'Denmark', 'norway': 'Norway', 'sweden': 'Sweden', 'belgium': 'Belgium',
-  'austria': 'Austria', 'czech-republic': 'Czech Republic', 'romania': 'Romania',
-  'hungary': 'Hungary', 'greece': 'Greece', 'bulgaria': 'Bulgaria', 'croatia': 'Croatia',
-  'slovakia': 'Slovakia', 'slovenia': 'Slovenia', 'estonia': 'Estonia',
-  'latvia': 'Latvia', 'lithuania': 'Lithuania', 'luxembourg': 'Luxembourg',
-  'malta': 'Malta', 'cyprus': 'Cyprus', 'iceland': 'Iceland', 'serbia': 'Serbia',
-  'ukraine': 'Ukraine', 'bosnia-and-herzegovina': 'Bosnia and Herzegovina',
-  'montenegro': 'Montenegro', 'moldova': 'Moldova', 'albania': 'Albania',
-  'north-macedonia': 'North Macedonia', 'georgia': 'Georgia',
-};
-
-const countriesArr = countriesData as unknown as CountryInfo[];
-
-function getCountryEnglish(slug: string): string {
-  return COUNTRY_EN[slug] || countriesArr.find(c => c.slug === slug)?.name || slug;
+interface Job {
+  id: number; title: string; company: string; companyUrl: string;
+  location: string; country: string; countryName: string;
+  salary: string; salaryMin: number | null; salaryMax: number | null;
+  salaryCurrency: string; salaryPeriod: string;
+  description: string; sector: string; posted: string; type: string;
+  paywall: boolean; contactEmail: string;
 }
 
-async function fetchJob(rc: string, cc: string, jobId: string) {
+function findJob(region: string, country: string, jobId: string): Job | null {
   try {
-    const domain = "https://nossy.pro";
-    let data: any[] = [];
-
-    if (rc === "eua" && cc === "united-states") {
-      const parts = await Promise.all([
-        fetch(`${domain}/data/eua_united-states-1.json`).then(r => r.ok ? r.json() : []),
-        fetch(`${domain}/data/eua_united-states-2.json`).then(r => r.ok ? r.json() : []),
-        fetch(`${domain}/data/eua_united-states-3.json`).then(r => r.ok ? r.json() : []),
-        fetch(`${domain}/data/eua_united-states-4.json`).then(r => r.ok ? r.json() : []),
-      ]);
-      data = parts.flat();
-    } else {
-      const res = await fetch(`${domain}/data/${rc}_${cc}.json`, {
-        next: { revalidate: 3600 },
-      });
-      if (!res.ok) return null;
-      data = await res.json();
-    }
-
-    return data.find((j: { id: number }) => String(j.id) === String(jobId)) || null;
+    const filePath = join(process.cwd(), "public", "data", `${region}_${country}.json`);
+    const raw = readFileSync(filePath, "utf-8");
+    const jobs: Job[] = JSON.parse(raw);
+    return jobs.find(j => String(j.id) === String(jobId)) || null;
   } catch {
     return null;
   }
@@ -67,56 +32,107 @@ export async function generateMetadata({
   params: Promise<{ lang: string; slug: string; region: string; country: string; id: string }>;
 }): Promise<Metadata> {
   const { lang: langCode, slug, region: rc, country: cc, id: jobId } = await params;
-  const lang = langCode as Lang;
-  const isPT = lang === "pt-br" || lang === "pt-pt";
-  const pageUrl = `/${lang}/${slug}/${rc}/${cc}/${jobId}`;
+  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+  const job = findJob(rc, cc, jobId);
+  const countryInfo = (countriesData as any[]).find(c => c.slug === cc);
+  const regionInfo = REGIONS.find(r => r.code === rc);
 
-  const job = await fetchJob(rc, cc, jobId);
+  const countryName = job?.countryName || countryInfo?.name || cc;
+  const regionName = regionInfo?.name || rc;
+  const title = job ? `${job.title} - ${job.company} | NOSSY` : `${countryName} Jobs | NOSSY`;
+  const description = job
+    ? `Apply for ${job.title} at ${job.company} in ${job.location}. ${job.type ? job.type + ' position.' : ''} ${job.salary ? 'Salary: ' + job.salary + '.' : ''} Find more tech jobs on NOSSY.`
+    : `Browse tech jobs in ${countryName}, ${regionName}. Find software engineering, data science, cloud and remote positions on NOSSY.`;
 
-  if (!job) {
-    return {
-      title: isPT ? "Vaga nao encontrada | NOSSY" : "Job Not Found | NOSSY",
-      description: isPT
-        ? "A vaga solicitada nao foi encontrada."
-        : "The requested job listing was not found.",
-      alternates: { canonical: pageUrl },
-      robots: { index: false, follow: false },
+  const url = `https://nossy.pro/${langCode}/${slug}/${rc}/${cc}/${jobId}`;
+
+  const alternates: Record<string, string> = { "x-default": `/en/jobs/${rc}/${cc}/${jobId}` };
+  for (const l of LANGUAGES) {
+    alternates[l.code] = `/${l.code}/${LANG_SLUGS[l.code]}/${rc}/${cc}/${jobId}`;
+  }
+
+  const metadata: Metadata = {
+    title,
+    description,
+    alternates: { canonical: url, languages: alternates },
+    robots: { index: true, follow: true },
+  };
+
+  if (job) {
+    metadata.openGraph = {
+      type: "article",
+      title: `${job.title} - ${job.company}`,
+      description,
+      url,
+      siteName: "NOSSY",
+      images: [{ url: "/og/og-default.png", width: 1200, height: 630, alt: job.title }],
     };
   }
 
-  const countryEn = getCountryEnglish(cc);
-  const countryLocal = getLocalizedCountryName(job.countryName || countryEn, lang);
-
-  const fullDesc = job.description || `${job.title} at ${job.company} in ${job.location}`;
-  const shortDesc = fullDesc.length > 160 ? fullDesc.slice(0, 157) + "..." : fullDesc;
-  const ogDesc = fullDesc.length > 300 ? fullDesc.slice(0, 297) + "..." : fullDesc;
-
-  const title = `${job.title} - ${job.company} | ${countryLocal} | NOSSY`;
-
-  return {
-    title,
-    description: shortDesc,
-    alternates: {
-      canonical: pageUrl,
-      languages: Object.fromEntries(
-        LANGUAGES.map((l) => [
-          l.code,
-          `/${l.code}/${LANG_SLUGS[l.code]}/${rc}/${cc}/${jobId}`,
-        ])
-      ),
-    },
-    openGraph: {
-      url: pageUrl,
-      title,
-      description: ogDesc,
-      type: "article",
-      siteName: "NOSSY",
-      locale: lang === "pt-br" ? "pt_BR" : lang === "pt-pt" ? "pt_PT" : lang,
-    },
-    robots: { index: true, follow: true },
-  };
+  return metadata;
 }
 
-export default function JobDetailLayout({ children }: { children: React.ReactNode }) {
-  return children;
+function JobPostingSchema({ job, url }: { job: Job; url: string }) {
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.title,
+    description: job.description || `Tech job: ${job.title} at ${job.company}`,
+    identifier: { "@type": "PropertyValue", name: "NOSSY", value: String(job.id) },
+    datePosted: job.posted,
+    url,
+    hiringOrganization: {
+      "@type": "Organization",
+      name: job.paywall ? "Confidential" : job.company,
+      sameAs: job.companyUrl || undefined,
+    },
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: job.location,
+        addressCountry: job.country,
+      },
+    },
+    employmentType: job.type === "Remote" ? "FULL_TIME" : "FULL_TIME",
+    applicantLocationRequirements: { "@type": "Country", name: job.countryName || job.country },
+  };
+
+  if (job.salaryMin || job.salaryMax) {
+    (schema as Record<string, unknown>).baseSalary = {
+      "@type": "MonetaryAmount",
+      currency: job.salaryCurrency || "USD",
+      value: {
+        "@type": "QuantitativeValue",
+        minValue: job.salaryMin,
+        maxValue: job.salaryMax,
+        unitText: job.salaryPeriod || "YEAR",
+      },
+    };
+  }
+
+  if (job.sector) {
+    (schema as Record<string, unknown>).industry = job.sector;
+  }
+
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />;
+}
+
+export default async function JobDetailLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ lang: string; slug: string; region: string; country: string; id: string }>;
+}) {
+  const { lang: langCode, slug, region: rc, country: cc, id: jobId } = await params;
+  const job = findJob(rc, cc, jobId);
+  const url = `https://nossy.pro/${langCode}/${slug}/${rc}/${cc}/${jobId}`;
+
+  return (
+    <>
+      {job && <JobPostingSchema job={job} url={url} />}
+      {children}
+    </>
+  );
 }

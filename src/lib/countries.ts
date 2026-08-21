@@ -31,7 +31,7 @@ export const REGIONS: RegionConfig[] = [
     currency: { code: 'EUR', symbol: '€', locale: 'de-DE' },
     hreflang: ['en-eu', 'de-eu', 'fr-eu'],
     direction: 'ltr',
-    jobCount: 14853,
+    jobCount: 14987,
     seoKeywords: ['jobs in Europe', 'European jobs 2025', 'tech jobs Europe', 'IT jobs EU', 'software engineer Europe', 'remote jobs Europe', 'developer jobs EU', 'careers Europe'],
     seoTitle: 'Jobs in Europe | Latest Tech Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest tech job vacancies in Europe. 14,987+ open positions across 40 countries. Top companies hiring in Software Engineering, Data Science, Cloud & more. Free to browse!',
@@ -54,7 +54,7 @@ export const REGIONS: RegionConfig[] = [
     currency: { code: 'USD', symbol: '$', locale: 'en-SG' },
     hreflang: ['en-asia', 'zh-asia', 'ja-asia'],
     direction: 'ltr',
-    jobCount: 10328,
+    jobCount: 10462,
     seoKeywords: ['jobs in Asia', 'Asian jobs 2025', 'tech jobs Asia', 'IT jobs Asia', 'software engineer Asia', 'remote jobs Asia', 'developer jobs India', 'careers Asia'],
     seoTitle: 'Jobs in Asia | Latest Tech Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest tech job vacancies in Asia. 10,462+ open positions across 17 countries. Top companies hiring in Software Engineering, Data Science, Cloud & more. Free to browse!',
@@ -77,7 +77,7 @@ export const REGIONS: RegionConfig[] = [
     currency: { code: 'USD', symbol: '$', locale: 'en-US' },
     hreflang: ['en-us', 'es-us'],
     direction: 'ltr',
-    jobCount: 19046,
+    jobCount: 19590,
     seoKeywords: ['jobs in USA', 'US jobs 2025', 'tech jobs United States', 'IT jobs USA', 'software engineer USA', 'remote jobs US', 'developer jobs America', 'careers USA'],
     seoTitle: 'Jobs in USA | Latest Tech Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest tech job vacancies in the United States. 19,590+ open positions. Top companies hiring in Software Engineering, Data Science, Cloud & more. Free to browse!',
@@ -112,6 +112,6 @@ export function getCountryName(code: string, lang?: string): string {
   return r.name;
 }
 
-export const TOTAL_JOBS = 44227;
+export const TOTAL_JOBS = 45039;
 export const TOTAL_REGIONS = 3;
 export const TOTAL_CATEGORIES = 21;
