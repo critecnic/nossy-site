@@ -7,6 +7,7 @@ import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
 import { getRegionName } from "@/lib/shared";
+import { getCountryNameTranslated } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -76,7 +77,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
                 <Link key={c.slug} href={regionHref + "/" + c.slug} className="group flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all text-left">
                   <span className="text-3xl">{getFlag(c.slug)}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate group-hover:text-sky-600 transition-colors">{c.name}</p>
+                    <p className="text-sm font-medium text-gray-800 truncate group-hover:text-sky-600 transition-colors">{getCountryNameTranslated(c.slug, lang, c.name)}</p>
                     <p className="text-xs font-bold text-sky-600">{c.count.toLocaleString()} {T.jobCount}</p>
                   </div>
                 </Link>))}

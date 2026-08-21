@@ -24,7 +24,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compac
 
   async function handleSendCode() {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Invalid email');
+      setError(T.invalidEmail);
       return;
     }
     setLoading(true);
@@ -40,10 +40,10 @@ export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compac
         setStep('code');
         setCodeSent(true);
       } else {
-        setError(data.error || 'Error sending code');
+        setError(data.error || T.errorSendingCode);
       }
     } catch {
-      setError('Connection error');
+      setError(T.connectionError);
     }
     setLoading(false);
   }
@@ -71,7 +71,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compac
         setError(T.invalidCode);
       }
     } catch {
-      setError('Connection error');
+      setError(T.connectionError);
     }
     setLoading(false);
   }
@@ -94,11 +94,11 @@ export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compac
       if (data.url) {
         window.location.href = data.url;
       } else {
-        setError(data.error || 'Payment error');
+        setError(data.error || T.paymentError);
         setLoading(false);
       }
     } catch {
-      setError('Connection error');
+      setError(T.connectionError);
       setLoading(false);
     }
   }
@@ -166,7 +166,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compac
             <p className="text-sm text-gray-500 mt-1">{T.payToUnlock}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{T.emailLabel}</label>
             <input
               type="email"
               value={email}
