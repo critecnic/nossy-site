@@ -703,7 +703,7 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "language": "Wika",
     "tagline": "Hanapin at makikita mo."
     "language": "زبان",
-    "tagline": "تلاش کریں اور پائیں گا۔"
+    "tagline": "تلاش کریں اور پائیں گاؔ"
     "language": "ภาษา",
     "tagline": "ค้นหาแล้วคุณจะพบ."
     "language": "Ngon ngu",
@@ -716,7 +716,7 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "tagline": "খুঁজুন এবং পাবেন।"
     "language": "भाषा",
     "tagline": "खोजें और पाएंगे।"
-    "language": "언어",
+    "language": "어어",
     "tagline": "찾으면 찾을 수 있습니다."
     "language": "言語",
     "tagline": "探せば見つかります。"

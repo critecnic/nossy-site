@@ -29,12 +29,8 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
 
   useEffect(() => { params.then(p => setLangCode(p.lang)); }, [params]);
 
-  // Translate homepage job cards when language changes
   useEffect(() => {
-    if (!langCode || !needsTranslation(lang as Lang)) {
-      setTranslatedLatest({});
-      return;
-    }
+    if (!langCode || !needsTranslation(lang as Lang)) { setTranslatedLatest({}); return; }
     setIsTranslating(true);
     const jobs = latestData as Job[];
     const newT: Record<number, {title:string;description:string;company:string;location:string}> = {};
@@ -45,20 +41,11 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         const ct = getCachedTranslation(job.title, lang as Lang);
         const cd = job.description ? getCachedTranslation(job.description.slice(0, 200), lang as Lang) : null;
         const cc2 = getCachedTranslation(job.company, lang as Lang);
-        if (ct) {
-          newT[job.id] = { title: ct, description: cd || job.description?.slice(0, 200) || "", company: cc2 || job.company, location: job.location };
-          continue;
-        }
+        if (ct) { newT[job.id] = { title: ct, description: cd || job.description?.slice(0, 200) || "", company: cc2 || job.company, location: job.location }; continue; }
         try {
-          const [t, d, c] = await Promise.all([
-            translateText(job.title, lang as Lang),
-            job.description ? translateText(job.description.slice(0, 200), lang as Lang) : Promise.resolve(""),
-            translateText(job.company, lang as Lang),
-          ]);
+          const [t, d, c] = await Promise.all([ translateText(job.title, lang as Lang), job.description ? translateText(job.description.slice(0, 200), lang as Lang) : Promise.resolve(""), translateText(job.company, lang as Lang), ]);
           newT[job.id] = { title: t, description: d, company: c, location: job.location };
-        } catch {
-          newT[job.id] = { title: job.title, description: job.description?.slice(0, 200) || "", company: job.company, location: job.location };
-        }
+        } catch { newT[job.id] = { title: job.title, description: job.description?.slice(0, 200) || "", company: job.company, location: job.location }; }
       }
       if (!cancelled) { setTranslatedLatest(newT); setIsTranslating(false); }
     })();

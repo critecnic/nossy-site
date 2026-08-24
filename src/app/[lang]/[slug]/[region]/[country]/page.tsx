@@ -82,25 +82,16 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const translateVisibleCards = useCallback(async (jobsToTranslate: Job[], l: Lang) => {
     if (!needsTranslation(l) || jobsToTranslate.length === 0) return;
     setIsTranslating(true);
-
     const newTranslations: Record<number, TranslatedCard> = {};
-
     for (const job of jobsToTranslate) {
       const cachedTitle = getCachedTranslation(job.title, l);
       const cachedDesc = job.description ? getCachedTranslation(job.description.slice(0, 200), l) : null;
       const cachedCompany = getCachedTranslation(job.company, l);
       const cachedLocation = getCachedTranslation(job.location, l);
-
       if (cachedTitle) {
-        newTranslations[job.id] = {
-          title: cachedTitle,
-          description: cachedDesc || job.description?.slice(0, 200) || "",
-          company: cachedCompany || job.company,
-          location: cachedLocation || job.location,
-        };
+        newTranslations[job.id] = { title: cachedTitle, description: cachedDesc || job.description?.slice(0, 200) || "", company: cachedCompany || job.company, location: cachedLocation || job.location };
         continue;
       }
-
       try {
         const [translatedTitle, translatedDesc, translatedCompany, translatedLocation] = await Promise.all([
           translateText(job.title, l),
@@ -113,7 +104,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
         newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || "", company: job.company, location: job.location };
       }
     }
-
     setTranslatedCards(prev => ({ ...prev, ...newTranslations }));
     setIsTranslating(false);
   }, []);
