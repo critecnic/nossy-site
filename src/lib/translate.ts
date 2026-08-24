@@ -1,10 +1,13 @@
-// Translation system for job descriptions, titles, and company names.
-// Source language is Portuguese (pt). Translates to selected UI language.
-// Uses server-side API route with Google Translate, cached in localStorage.
+// ============================================================
+// NOSSY Translation Client Library v2.0
+// Translates Portuguese job content to selected UI language.
+// Uses /api/translate (dual-provider: Google + MyMemory fallback).
+// Caches results in localStorage for 7 days.
+// ============================================================
 
 import type { Lang } from './i18n';
 
-// Map NOSSY lang codes to Google Translate language codes
+// Map NOSSY lang codes → Google Translate language codes
 export const LANG_TO_GT: Record<string, string> = {
   'en': 'en',
   'pt-br': 'pt',
@@ -30,154 +33,130 @@ export const LANG_TO_GT: Record<string, string> = {
   'sw': 'sw',
 };
 
-// Languages that don't need translation (source is Portuguese)
-export const SOURCE_LANGS = new Set(['pt-br', 'pt-pt']);
+// Portuguese source languages — no translation needed
+const SOURCE_LANGS = new Set(['pt-br', 'pt-pt']);
 
-/** Check if a language needs translation from Portuguese */
 export function needsTranslation(lang: Lang): boolean {
   return !SOURCE_LANGS.has(lang);
 }
 
-/** Simple hash for cache keys */
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash).toString(36);
+// ---- Cache helpers ----
+
+function hashStr(s: string): string {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
+  return Math.abs(h).toString(36);
 }
 
-/** Get localStorage cache key */
-function cacheKey(text: string, targetLang: string): string {
-  return 'nossy_tr_' + targetLang + '_' + simpleHash(text);
+function cacheKey(text: string, lang: string): string {
+  return 'nossy_v2_' + lang + '_' + hashStr(text);
 }
 
-/** Try to get cached translation from localStorage */
 export function getCachedTranslation(text: string, targetLang: string): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    const key = cacheKey(text, targetLang);
-    const cached = localStorage.getItem(key);
-    if (cached) {
-      const entry = JSON.parse(cached);
-      // Cache valid for 7 days
-      if (entry.ts && Date.now() - entry.ts < 7 * 24 * 60 * 60 * 1000) {
-        return entry.text;
-      }
-      localStorage.removeItem(key);
+    const raw = localStorage.getItem(cacheKey(text, targetLang));
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (entry.ts && Date.now() - entry.ts < 7 * 24 * 60 * 60 * 1000) return entry.text;
+    localStorage.removeItem(cacheKey(text, targetLang));
+  } catch { /* ignore */ }
+  return null;
+}
+
+export function setCachedTranslation(text: string, targetLang: string, translated: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(cacheKey(text, targetLang), JSON.stringify({ text: translated, ts: Date.now() }));
+  } catch { /* ignore */ }
+}
+
+// ---- Text chunking ----
+
+function splitText(text: string, maxLen = 4000): string[] {
+  if (text.length <= maxLen) return [text];
+  const chunks: string[] = [];
+  let remaining = text;
+  while (remaining.length > 0) {
+    if (remaining.length <= maxLen) { chunks.push(remaining); break; }
+    let idx = remaining.lastIndexOf('\n\n', maxLen);
+    if (idx < maxLen * 0.3) idx = remaining.lastIndexOf('\n', maxLen);
+    if (idx < maxLen * 0.3) idx = remaining.lastIndexOf('. ', maxLen);
+    if (idx < maxLen * 0.3) idx = remaining.lastIndexOf(' ', maxLen);
+    if (idx < maxLen * 0.3) idx = maxLen; else idx += 1;
+    chunks.push(remaining.slice(0, idx));
+    remaining = remaining.slice(idx);
+  }
+  return chunks;
+}
+
+// ---- Core translate function with retry ----
+
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 500;
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchTranslation(text: string, gtLang: string): Promise<string | null> {
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      console.log('[NOSSY] Translation retry', attempt, 'for lang=', gtLang);
+      await delay(RETRY_DELAY_MS * attempt);
     }
-  } catch {
-    // localStorage not available
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, to: gtLang }),
+      });
+      if (!res.ok) {
+        console.warn('[NOSSY] /api/translate returned', res.status);
+        continue;
+      }
+      const data = await res.json();
+      if (data.translated && !data.error) {
+        return data.translated;
+      }
+      if (data.fallback) {
+        console.warn('[NOSSY] Translation fallback returned for', gtLang, ':', data.error);
+        return null; // signal to retry
+      }
+      if (data.error && !data.fallback) {
+        console.warn('[NOSSY] Translation error:', data.error);
+        return null;
+      }
+    } catch (err: any) {
+      console.warn('[NOSSY] Fetch error attempt', attempt, ':', err.message);
+    }
   }
   return null;
 }
 
-/** Save translation to localStorage cache */
-export function setCachedTranslation(text: string, targetLang: string, translated: string): void {
-  if (typeof window === 'undefined') return;
-  try {
-    const key = cacheKey(text, targetLang);
-    localStorage.setItem(key, JSON.stringify({ text: translated, ts: Date.now() }));
-  } catch {
-    // localStorage full or not available
-  }
-}
-
-/** Split text into chunks at sentence/paragraph boundaries for translation */
-function splitTextForTranslation(text: string, maxLen = 4000): string[] {
-  if (text.length <= maxLen) return [text];
-  
-  const chunks: string[] = [];
-  let remaining = text;
-  
-  while (remaining.length > 0) {
-    if (remaining.length <= maxLen) {
-      chunks.push(remaining);
-      break;
-    }
-    
-    // Try to split at paragraph boundary
-    let splitIdx = remaining.lastIndexOf('\n\n', maxLen);
-    if (splitIdx < maxLen * 0.3) splitIdx = -1;
-    
-    // Try to split at line boundary
-    if (splitIdx === -1) {
-      splitIdx = remaining.lastIndexOf('\n', maxLen);
-      if (splitIdx < maxLen * 0.3) splitIdx = -1;
-    }
-    
-    // Try to split at sentence boundary
-    if (splitIdx === -1) {
-      splitIdx = remaining.lastIndexOf('. ', maxLen);
-      if (splitIdx < maxLen * 0.3) splitIdx = -1;
-    }
-    
-    // Try to split at space
-    if (splitIdx === -1) {
-      splitIdx = remaining.lastIndexOf(' ', maxLen);
-      if (splitIdx < maxLen * 0.3) splitIdx = -1;
-    }
-    
-    // Hard cut
-    if (splitIdx === -1) splitIdx = maxLen;
-    else splitIdx += 1; // Include the separator
-    
-    chunks.push(remaining.slice(0, splitIdx));
-    remaining = remaining.slice(splitIdx);
-  }
-  
-  return chunks;
-}
-
-/** Translate text via server API route */
+/** Translate a single text string to the target language */
 export async function translateText(text: string, targetLang: Lang): Promise<string> {
   if (!text || !needsTranslation(targetLang)) return text;
-  
-  // Check localStorage cache first
+
+  // Check localStorage cache
   const cached = getCachedTranslation(text, targetLang);
   if (cached) return cached;
-  
+
   const gtLang = LANG_TO_GT[targetLang] || 'en';
-  
-  try {
-    const chunks = splitTextForTranslation(text);
-    const translatedChunks: string[] = [];
-    
-    for (const chunk of chunks) {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: chunk, to: gtLang }),
-      });
-      
-      if (!res.ok) throw new Error('Translation API error');
-      
-      const data = await res.json();
-      if (data.error && data.fallback) {
-        console.warn('Translation fallback for lang=' + targetLang + ':', data.error);
-        translatedChunks.push(chunk);
-      } else if (data.translated) {
-        translatedChunks.push(data.translated);
-      } else {
-        translatedChunks.push(chunk);
-      }
-    }
-    
-    const result = translatedChunks.join('');
-    
-    // Cache the result
-    setCachedTranslation(text, targetLang, result);
-    
-    return result;
-  } catch {
-    // On error, return original text
-    return text;
+  const chunks = splitText(text);
+  const results: string[] = [];
+
+  for (const chunk of chunks) {
+    const translated = await fetchTranslation(chunk, gtLang);
+    results.push(translated || chunk); // fallback to original
   }
+
+  const finalText = results.join('');
+  setCachedTranslation(text, targetLang, finalText);
+  return finalText;
 }
 
-/** Batch translate multiple fields of a job */
+/** Batch translate a job's 4 key fields in parallel */
 export interface TranslatedJob {
   title: string;
   description: string;
@@ -188,36 +167,17 @@ export interface TranslatedJob {
 export async function translateJob(
   job: { title: string; description: string; company: string; location: string },
   targetLang: Lang,
-  onProgress?: (field: string) => void
 ): Promise<TranslatedJob> {
   if (!needsTranslation(targetLang)) {
     return { title: job.title, description: job.description, company: job.company, location: job.location };
   }
-  
-  const result: TranslatedJob = { ...job };
-  
-  // Translate in parallel for speed
-  const translations = await Promise.all([
-    translateText(job.title, targetLang).then(t => { onProgress?.('title'); return t; }),
-    translateText(job.description, targetLang).then(t => { onProgress?.('description'); return t; }),
-    translateText(job.company, targetLang).then(t => { onProgress?.('company'); return t; }),
-    translateText(job.location, targetLang).then(t => { onProgress?.('location'); return t; }),
+
+  const [title, description, company, location] = await Promise.all([
+    translateText(job.title, targetLang),
+    translateText(job.description, targetLang),
+    translateText(job.company, targetLang),
+    translateText(job.location, targetLang),
   ]);
-  
-  result.title = translations[0];
-  result.description = translations[1];
-  result.company = translations[2];
-  result.location = translations[3];
-  
-  return result;
-}
 
-/** Translate only title (for listing cards) */
-export async function translateJobTitle(title: string, targetLang: Lang): Promise<string> {
-  return translateText(title, targetLang);
-}
-
-/** Translate short text (for card snippets) */
-export async function translateShort(text: string, targetLang: Lang): Promise<string> {
-  return translateText(text, targetLang);
+  return { title, description, company, location };
 }

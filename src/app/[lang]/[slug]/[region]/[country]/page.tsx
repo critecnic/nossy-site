@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -23,12 +23,7 @@ interface Job {
   paywall: boolean; contactEmail: string;
 }
 
-interface TranslatedCard {
-  title: string;
-  description: string;
-  company: string;
-  location: string;
-}
+interface TCard { title: string; description: string; company: string; location: string; }
 
 export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
   const [resolvedParams, setResolvedParams] = useState<{ lang: string; slug: string; region: string; country: string } | null>(null);
@@ -47,18 +42,18 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [typeFilter, setTypeFilter] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [countries, setCountries] = useState<any[]>(countriesData);
+  const [countries] = useState<any[]>(countriesData);
   const [unlockingId, setUnlockingId] = useState<number | null>(null);
-  const [translatedCards, setTranslatedCards] = useState<Record<number, TranslatedCard>>({});
+  const [tCards, setTCards] = useState<Record<number, TCard>>({});
   const [isTranslating, setIsTranslating] = useState(false);
+  const abortRef = useRef(false);
   const PER = 18;
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
   const countryHref = regionHref + "/" + cc;
 
-  useEffect(() => { setCountries(countriesData); }, []);
-
+  // Load jobs from API
   useEffect(() => {
     if (!rc || !cc) return;
     setLoading(true); setDataError(false); setLoadProgress(10);
@@ -72,59 +67,17 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       }).catch(() => { setDataError(true); setLoading(false); });
   }, [rc, cc]);
 
+  // Set country name from countries data if not set by jobs
   useEffect(() => {
     if (countryNameRaw || !cc || countries.length === 0) return;
     const m = countries.find((c: any) => c.slug === cc);
     if (m) setCountryNameRaw(m.name);
-  }, [countries, cc, countryName]);
+  }, [countries, cc, countryNameRaw]);
 
-  // Clear translated cards when language changes
-  useEffect(() => {
-    setTranslatedCards({});
-    setIsTranslating(false);
-  }, [lang]);
+  // Clear translations when language changes
+  useEffect(() => { setTCards({}); setIsTranslating(false); }, [lang]);
 
-  // Translate visible job cards when language changes
-  const translateVisibleCards = useCallback(async (jobsToTranslate: Job[], l: Lang) => {
-    if (!needsTranslation(l) || jobsToTranslate.length === 0) return;
-    setIsTranslating(true);
-
-    const newTranslations: Record<number, TranslatedCard> = {};
-
-    for (const job of jobsToTranslate) {
-      // Skip if already translated for this language
-      const cachedTitle = getCachedTranslation(job.title, l);
-      const cachedCompany = getCachedTranslation(job.company, l);
-      const cachedLocation = getCachedTranslation(job.location, l);
-      const cachedDesc = job.description ? getCachedTranslation(job.description.slice(0, 200), l) : null;
-
-      if (cachedTitle) {
-        newTranslations[job.id] = {
-          title: cachedTitle,
-          description: cachedDesc || job.description?.slice(0, 200) || '',
-          company: cachedCompany || job.company,
-          location: cachedLocation || job.location,
-        };
-        continue;
-      }
-
-      try {
-        const [translatedTitle, translatedCompany, translatedLocation, translatedDesc] = await Promise.all([
-          translateText(job.title, l),
-          translateText(job.company, l),
-          translateText(job.location, l),
-          job.description ? translateText(job.description.slice(0, 200), l) : Promise.resolve(''),
-        ]);
-        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc, company: translatedCompany, location: translatedLocation };
-      } catch {
-        newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '', company: job.company, location: job.location };
-      }
-    }
-
-    setTranslatedCards(prev => ({ ...prev, ...newTranslations }));
-    setIsTranslating(false);
-  }, []);
-
+  // Computed: filtered jobs
   const filtered = allJobs.filter(j => {
     if (typeFilter && typeFilter !== 'all' && j.type?.toLowerCase() !== typeFilter.toLowerCase()) return false;
     if (sectorFilter && sectorFilter !== 'all' && j.sector !== sectorFilter) return false;
@@ -132,12 +85,50 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     return true;
   });
 
-  // When language or filtered jobs change, translate the visible cards
+  // Translate visible page cards when language, data, or page changes
   useEffect(() => {
-    if (loading || allJobs.length === 0) return;
-    const itemsToTranslate = filtered.slice((page - 1) * PER, page * PER);
-    translateVisibleCards(itemsToTranslate, lang);
-  }, [lang, loading, allJobs.length, page, filtered.length, translateVisibleCards]);
+    if (loading || allJobs.length === 0 || !needsTranslation(lang)) return;
+    const items = filtered.slice((page - 1) * PER, page * PER);
+    if (items.length === 0) return;
+
+    abortRef.current = false;
+    setIsTranslating(true);
+
+    (async () => {
+      const results: Record<number, TCard> = {};
+      for (const job of items) {
+        if (abortRef.current) break;
+
+        const ct = getCachedTranslation(job.title, lang);
+        const cc2 = getCachedTranslation(job.company, lang);
+        const cl = getCachedTranslation(job.location, lang);
+        const cd = job.description ? getCachedTranslation(job.description.slice(0, 200), lang) : null;
+
+        if (ct) {
+          results[job.id] = { title: ct, company: cc2 || job.company, location: cl || job.location, description: cd || job.description?.slice(0, 200) || '' };
+          continue;
+        }
+
+        try {
+          const [tTitle, tCompany, tLocation, tDesc] = await Promise.all([
+            translateText(job.title, lang),
+            translateText(job.company, lang),
+            translateText(job.location, lang),
+            job.description ? translateText(job.description.slice(0, 200), lang) : Promise.resolve(''),
+          ]);
+          results[job.id] = { title: tTitle, company: tCompany, location: tLocation, description: tDesc };
+        } catch {
+          results[job.id] = { title: job.title, company: job.company, location: job.location, description: job.description?.slice(0, 200) || '' };
+        }
+      }
+      if (!abortRef.current) {
+        setTCards(prev => ({ ...prev, ...results }));
+        setIsTranslating(false);
+      }
+    })();
+
+    return () => { abortRef.current = true; };
+  }, [lang, loading, allJobs.length, page, filtered.length]);
 
   const actualTotal = filtered.length;
   const totalPages = Math.max(1, Math.ceil(actualTotal / PER));
@@ -249,11 +240,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             const isLocked = pw.paywall;
             const detailHref = countryHref + "/" + job.id;
             const careerUrl = getCompanyCareerUrl(job);
-            const translated = translatedCards[job.id];
-            const displayTitle = translated?.title || job.title;
-            const displayDesc = translated?.description || job.description?.slice(0, 200) || '';
-            const displayCompany = translated?.company || job.company;
-            const displayLocation = translated?.location || job.location;
+            const tr = tCards[job.id];
             return (
               <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
@@ -266,13 +253,13 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                     <span className="text-xs text-gray-400">{job.posted}</span>
                   </div>
                   <Link href={detailHref} className="block">
-                    <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{displayTitle}</h2>
+                    <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{tr?.title || job.title}</h2>
                   </Link>
-                  <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : displayCompany}</p>
-                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{displayLocation}</p>
+                  <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : (tr?.company || job.company)}</p>
+                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{tr?.location || job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job, lang)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
-                  {displayDesc && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{displayDesc}</p>}
+                  {tr?.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{tr.description}</p>}
                   {isLocked && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       {unlockingId === job.id ? (

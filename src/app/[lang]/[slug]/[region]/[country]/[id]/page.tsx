@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, use, useCallback } from "react";
+import React, { useState, useEffect, use, useCallback, useRef } from "react";
 import Link from "next/link";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
-import { needsTranslation, translateText, getCachedTranslation, setCachedTranslation, LANG_TO_GT, translateJob } from "@/lib/translate";
+import { needsTranslation, translateJob } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -31,11 +31,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const [showPayment, setShowPayment] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [translatedJob, setTranslatedJob] = useState<{title:string;description:string;company:string;location:string} | null>(null);
+  const abortRef = useRef(false);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
   const countryHref = regionHref + "/" + cc;
 
+  // Load job data
   useEffect(() => {
     if (!rc || !cc || !jobId) return;
     setLoading(true); setDataError(false);
@@ -72,32 +74,31 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
     })();
   }, [rc, cc, jobId]);
 
-  // Clear translated job when language changes
-  useEffect(() => {
-    setTranslatedJob(null);
-    setTranslating(false);
-  }, [lang]);
+  // Clear translations when language changes
+  useEffect(() => { setTranslatedJob(null); setTranslating(false); }, [lang]);
 
-  // Translate job content when language changes or job loads
-  const doTranslation = useCallback(async (j: Job, l: Lang) => {
-    if (!j || !needsTranslation(l)) {
-      setTranslatedJob(j ? { title: j.title, description: j.description, company: j.company, location: j.location } : null);
+  // Translate job content when job loads or language changes
+  useEffect(() => {
+    if (!job || !needsTranslation(lang)) {
+      if (job) setTranslatedJob({ title: job.title, description: job.description, company: job.company, location: job.location });
       setTranslating(false);
       return;
     }
+    abortRef.current = false;
     setTranslating(true);
-    try {
-      const result = await translateJob(j, l);
-      setTranslatedJob(result);
-    } catch {
-      setTranslatedJob({ title: j.title, description: j.description, company: j.company, location: j.location });
-    }
-    setTranslating(false);
-  }, []);
 
-  useEffect(() => {
-    if (job) doTranslation(job, lang);
-  }, [job, lang, doTranslation]);
+    (async () => {
+      try {
+        const result = await translateJob(job, lang);
+        if (!abortRef.current) setTranslatedJob(result);
+      } catch {
+        if (!abortRef.current) setTranslatedJob({ title: job.title, description: job.description, company: job.company, location: job.location });
+      }
+      if (!abortRef.current) setTranslating(false);
+    })();
+
+    return () => { abortRef.current = true; };
+  }, [job, lang]);
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
@@ -108,7 +109,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const pwText = getPaywallText(lang);
   const careerUrl = job ? getCompanyCareerUrl(job) : '';
 
-  // Use translated content when available, or fall back to original
   const displayTitle = translatedJob?.title || job?.title || '';
   const displayDescription = translatedJob?.description || job?.description || '';
   const displayCompany = translatedJob?.company || job?.company || '';
@@ -267,7 +267,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               )}
             </div>
 
-            {/* Contact Information Section - only visible after payment (unlocked) */}
             {!isLocked && (
               <div className="mb-6 p-5 rounded-xl bg-sky-50 border border-sky-200">
                 <h3 className="text-base font-bold text-sky-900 mb-4 flex items-center gap-2">
@@ -275,7 +274,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                   {T.contactInfoTitle}
                 </h3>
                 <div className="space-y-3">
-                  {/* Email */}
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-sky-100 flex items-center justify-center">
                       <svg className="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -289,7 +287,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                       )}
                     </div>
                   </div>
-                  {/* Phone */}
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-sky-100 flex items-center justify-center">
                       <svg className="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
@@ -303,10 +300,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                       )}
                     </div>
                   </div>
-                  {/* Website */}
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-sky-100 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                      <svg className="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9m9-9c1.657 0 3 .895 3 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg>
                     </div>
                     <div>
                       <span className="text-xs text-sky-600 font-medium">{T.companySite}</span>
@@ -321,7 +317,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               </div>
             )}
 
-            {/* Locked contact info - hidden until payment */}
             {isLocked && (
               <div className="mb-6 p-5 rounded-xl bg-gray-50 border border-gray-200">
                 <h3 className="text-base font-bold text-gray-500 mb-4 flex items-center gap-2">
@@ -349,7 +344,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                      <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9m9-9c1.657 0 3 .895 3 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg>
                     </div>
                     <div>
                       <span className="text-xs text-gray-400 font-medium">{T.companySite}</span>
@@ -361,7 +356,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               </div>
             )}
 
-            {/* Apply Button - only visible when unlocked */}
             {careerUrl && !isLocked && (
               <div className="mb-6">
                 <a href={careerUrl} target="_blank" rel="noopener noreferrer"
