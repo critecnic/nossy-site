@@ -92,7 +92,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
               <SiteLogo size={48} />
               <div>
                 <NossyBrand variant="white" size={36} className="h-9 w-auto" />
-                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+                <p className="text-sky-400 text-sm font-medium italic">{T.tagline}</p>
               </div>
             </Link>
             <p className="text-gray-400 text-sm">{T.footerText}</p>

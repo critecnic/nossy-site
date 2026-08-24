@@ -26,6 +26,7 @@ interface Job {
 interface TranslatedCard {
   title: string;
   description: string;
+  location: string;
 }
 
 export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
@@ -97,11 +98,12 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       }
 
       try {
-        const [translatedTitle, translatedDesc] = await Promise.all([
+        const [translatedTitle, translatedDesc, translatedLocation] = await Promise.all([
           translateText(job.title, l),
           job.description ? translateText(job.description.slice(0, 200), l) : Promise.resolve(''),
+          translateText(job.location, l),
         ]);
-        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc };
+        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc, location: translatedLocation };
       } catch {
         newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '' };
       }
@@ -253,7 +255,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                     <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{displayTitle}</h2>
                   </Link>
                   <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : job.company}</p>
-                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
+                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{translated?.location || job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job, lang)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
                   {displayDesc && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{displayDesc}</p>}
@@ -305,7 +307,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
               <SiteLogo size={48} />
               <div>
                 <NossyBrand variant="white" size={36} className="h-9 w-auto" />
-                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+                <p className="text-sky-400 text-sm font-medium italic">{T.tagline}</p>
               </div>
             </Link>
             <p className="text-gray-400 text-sm">{T.footerText}</p>

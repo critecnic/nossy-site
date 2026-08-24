@@ -8,6 +8,7 @@ import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, getCompanyCareerUrl } from "@/lib/shared";
 import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
+import { needsTranslation, translateText, getCachedTranslation } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -27,10 +28,35 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
 
   useEffect(() => { params.then(p => setLangCode(p.lang)); }, [params]);
+
+  useEffect(() => {
+    if (!langCode || !needsTranslation(lang as Lang)) { setTranslatedLatest({}); return; }
+    setIsTranslating(true);
+    const jobs = latestData as Job[];
+    const newT: Record<number, {title:string;description:string;company:string}> = {};
+    let cancelled = false;
+    (async () => {
+      for (const job of jobs) {
+        if (cancelled) break;
+        const ct = getCachedTranslation(job.title, lang as Lang);
+        const cd = job.description ? getCachedTranslation(job.description.slice(0, 200), lang as Lang) : null;
+        const cc2 = getCachedTranslation(job.company, lang as Lang);
+        if (ct) { newT[job.id] = { title: ct, description: cd || job.description?.slice(0, 200) || '', company: cc2 || job.company }; continue; }
+        try {
+          const [t, d, c] = await Promise.all([translateText(job.title, lang as Lang), job.description ? translateText(job.description.slice(0, 200), lang as Lang) : Promise.resolve(''), translateText(job.company, lang as Lang)]);
+          newT[job.id] = { title: t, description: d, company: c };
+        } catch { newT[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '', company: job.company }; }
+      }
+      if (!cancelled) { setTranslatedLatest(newT); setIsTranslating(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [langCode]);
   const [latest, setLatest] = useState<Job[]>(latestData as Job[]);
   const [countries, setCountries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
   const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState(false);
+  const [translatedLatest, setTranslatedLatest] = useState<Record<number, {title:string;description:string;company:string}>>({});
+  const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => { setLatest(latestData as Job[]); setCountries(countriesData as CountryInfo[]); }, []);
 
@@ -66,7 +92,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
           <div className="flex justify-center mb-4">
             <NossyBrand variant="white" size={48} className="w-48 sm:w-64 md:w-80 h-auto" />
           </div>
-          <p className="text-lg sm:text-xl text-blue-100 max-w-xl mx-auto mb-2 italic">Seek and you shall find.</p>
+          <p className="text-lg sm:text-xl text-blue-100 max-w-xl mx-auto mb-2 italic">{T.tagline}</p>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
           <div className="flex items-center justify-center flex-wrap gap-x-8 gap-y-3 text-blue-100 text-sm">
             <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" /><strong>{TOTAL_JOBS.toLocaleString()}+</strong> {T.vacancies}</span>
@@ -120,13 +146,17 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {latest.slice(0, 20).map((job) => {
                 const m = getSectorMeta(job.sector); const tc = getTypeStyle(job.type);
+                const tr = translatedLatest[job.id];
+                const dTitle = tr?.title || job.title;
+                const dCompany = tr?.company || job.company;
+                const dDesc = tr?.description || job.description?.slice(0, 200) || "";
                 return (
                   <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
                     <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{job.title}</h3>
-                      <p className="text-xs font-medium text-gray-600 mb-2">{job.company}</p>
+                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{isTranslating && !tr ? <span className="inline-block w-3/4 h-4 bg-gray-200 rounded animate-pulse" /> : dTitle}</h3>
+                      <p className="text-xs font-medium text-gray-600 mb-2">{isTranslating && !tr ? <span className="inline-block w-1/2 h-3 bg-gray-200 rounded animate-pulse" /> : dCompany}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
                       <div className="mt-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sectorNames[lang]?.[job.sector] || job.sector}</span></div>
                     </div></article>);
@@ -168,7 +198,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
               <SiteLogo size={48} />
               <div>
                 <NossyBrand variant="white" size={36} className="h-9 w-auto" />
-                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+                <p className="text-sky-400 text-sm font-medium italic">{T.tagline}</p>
               </div>
             </Link>
             <div className="flex items-center gap-6 text-gray-400 text-sm">

@@ -184,7 +184,7 @@ export default function HowToFindTechJobsInEurope({ params }: { params: Promise<
               <SiteLogo size={48} />
               <div>
                 <NossyBrand variant="white" size={36} className="h-9 w-auto" />
-                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
+                <p className="text-sky-400 text-sm font-medium italic">{T.tagline}</p>
               </div>
             </Link>
             <div className="flex items-center gap-6 text-gray-400 text-sm">

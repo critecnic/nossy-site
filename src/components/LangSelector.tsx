@@ -35,8 +35,8 @@ export default function LangSelector({ lang, switchLang }: { lang: Lang; switchL
       </button>
 
       {open && (
-        <div role="listbox" aria-label="Select language" className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[200] max-h-80 overflow-y-auto">
-          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{(i18n[lang] || i18n['en']).language}</div>
+        <div role="listbox" aria-label={current.name} className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[200] max-h-80 overflow-y-auto">
+          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{current.name}</div>
           {LANGUAGES.map((l) => {
             const isActive = l.code === lang;
             return (
