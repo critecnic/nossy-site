@@ -116,3 +116,27 @@ Stage Summary:
 - Fix aplicado: React 19 + tsconfig corrigido + duplicatas removidas
 - Build 100% limpo, sem erros TypeScript
 
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix ALL i18n translation errors - when user selects a language, entire page must change including job descriptions
+
+Work Log:
+- Analyzed all 43 files in src/ folder using Explore agent for comprehensive i18n audit
+- Identified 4 CRITICAL, 3 HIGH, and 12 MEDIUM issues across the codebase
+- Created Python script (fix-i18n-0220.py) that applies all fixes and generates zip
+- Fix 1: Added 'language' and 'tagline' i18n keys to all 22 languages in i18n.ts
+- Fix 2: Fixed LangSelector.tsx - replaced undefined i18n[lang].language with current.name
+- Fix 3 (CRITICAL): Added translation system to Homepage - job cards now translate title, company, description when language changes
+- Fix 4: Fixed footer taglines on ALL 7 user-facing pages (homepage, region, country, job detail, 3 guides)
+- Fix 5: Added location translation to country page job cards (TranslatedCard interface + translateVisibleCards)
+- Generated and validated nossy-src-0220.zip (43 files, 124K)
+- Verified: 0 hardcoded taglines remain in user-facing pages
+
+Stage Summary:
+- Produced: /home/z/my-project/download/nossy-src-0220.zip
+- All 22 languages have 'language' and 'tagline' keys
+- Homepage job cards now translate when language changes (title, company, description)
+- Country page cards now also translate location
+- All footers use T.tagline instead of hardcoded English
+- LangSelector dropdown header fixed (was showing undefined)
