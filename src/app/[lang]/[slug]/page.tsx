@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -8,6 +8,7 @@ import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, getCompanyCareerUrl } from "@/lib/shared";
 import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
+import { needsTranslation, translateText, getCachedTranslation } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -22,6 +23,12 @@ interface Job {
 }
 interface CountryInfo { name: string; slug: string; region: string; count: number; }
 
+interface TranslatedCard {
+  title: string;
+  company: string;
+  location: string;
+}
+
 export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const [langCode, setLangCode] = useState("");
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
@@ -31,8 +38,67 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
   const [countries, setCountries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
   const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState(false);
+  const [translatedCards, setTranslatedCards] = useState<Record<number, TranslatedCard>>({});
+  const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => { setLatest(latestData as Job[]); setCountries(countriesData as CountryInfo[]); }, []);
+
+  // Translate homepage job cards when language changes
+  const translateHomeCards = useCallback(async (jobsToTranslate: Job[], l: Lang) => {
+    if (!needsTranslation(l) || jobsToTranslate.length === 0) {
+      setTranslatedCards({});
+      return;
+    }
+    setIsTranslating(true);
+    setTranslatedCards({}); // Clear old translations immediately
+
+    const newTranslations: Record<number, TranslatedCard> = {};
+
+    for (const job of jobsToTranslate) {
+      // Check cache first
+      const cachedTitle = getCachedTranslation(job.title, l);
+      const cachedCompany = getCachedTranslation(job.company, l);
+      const cachedLocation = getCachedTranslation(job.location, l);
+
+      if (cachedTitle) {
+        newTranslations[job.id] = {
+          title: cachedTitle,
+          company: cachedCompany || job.company,
+          location: cachedLocation || job.location,
+        };
+        continue;
+      }
+
+      try {
+        const [translatedTitle, translatedCompany, translatedLocation] = await Promise.all([
+          translateText(job.title, l),
+          translateText(job.company, l),
+          translateText(job.location, l),
+        ]);
+        newTranslations[job.id] = {
+          title: translatedTitle,
+          company: translatedCompany,
+          location: translatedLocation,
+        };
+      } catch {
+        newTranslations[job.id] = { title: job.title, company: job.company, location: job.location };
+      }
+    }
+
+    setTranslatedCards(newTranslations);
+    setIsTranslating(false);
+  }, []);
+
+  // Trigger translation when lang resolves and is stable
+  useEffect(() => {
+    if (!langCode || langCode === "pt-br" || langCode === "pt-pt") {
+      setTranslatedCards({});
+      setIsTranslating(false);
+      return;
+    }
+    const jobsToTranslate = (latestData as Job[]).slice(0, 20);
+    translateHomeCards(jobsToTranslate, langCode as Lang);
+  }, [langCode, translateHomeCards]);
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
@@ -112,7 +178,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
               <p>{T.error}</p>
               <button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">{T.reload}</button>
             </div>
-          ) : loading ? (
+          ) : isTranslating ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (<div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5"><div className="h-4 bg-gray-200 rounded w-1/3 mb-3" /><div className="h-5 bg-gray-200 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-200 rounded w-1/2 mb-3" /><div className="h-3 bg-gray-200 rounded w-full" /></div>))}
             </div>
@@ -120,14 +186,18 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {latest.slice(0, 20).map((job) => {
                 const m = getSectorMeta(job.sector); const tc = getTypeStyle(job.type);
+                const translated = translatedCards[job.id];
+                const displayTitle = translated?.title || job.title;
+                const displayCompany = translated?.company || job.company;
+                const displayLocation = translated?.location || job.location;
                 return (
                   <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
                     <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{job.title}</h3>
-                      <p className="text-xs font-medium text-gray-600 mb-2">{job.company}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
+                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{displayTitle}</h3>
+                      <p className="text-xs font-medium text-gray-600 mb-2">{displayCompany}</p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500"><span>{displayLocation}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
                       <div className="mt-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sectorNames[lang]?.[job.sector] || job.sector}</span></div>
                     </div></article>);
               })}

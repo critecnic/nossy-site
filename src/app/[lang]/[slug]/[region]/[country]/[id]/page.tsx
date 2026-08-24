@@ -72,6 +72,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
     })();
   }, [rc, cc, jobId]);
 
+  // Clear translated job when language changes
+  useEffect(() => {
+    setTranslatedJob(null);
+    setTranslating(false);
+  }, [lang]);
+
   // Translate job content when language changes or job loads
   const doTranslation = useCallback(async (j: Job, l: Lang) => {
     if (!j || !needsTranslation(l)) {

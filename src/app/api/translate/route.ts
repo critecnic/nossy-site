@@ -74,6 +74,8 @@ setInterval(() => {
 }, 60 * 60 * 1000); // Clean every hour
 
 export async function POST(req: NextRequest) {
+  let text: string = '';
+  let to: string = '';
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
     if (isTranslateRateLimited(ip)) {
@@ -81,7 +83,8 @@ export async function POST(req: NextRequest) {
     }
     
     const body = await req.json().catch(() => ({}));
-    const { text, to } = body;
+    if (body && typeof body.text === 'string') text = body.text;
+    if (body && typeof body.to === 'string') to = body.to;
     
     if (!text || typeof text !== 'string') {
       return NextResponse.json({ error: 'Missing text' }, { status: 400 });
@@ -123,6 +126,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ translated, cached: false });
   } catch (err: any) {
     console.error('Translation error:', err.message);
-    return NextResponse.json({ error: 'Translation failed', original: true }, { status: 200 });
+    return NextResponse.json({ translated: text, error: err.message, fallback: true }, { status: 200 });
   }
 }

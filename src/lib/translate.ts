@@ -155,10 +155,13 @@ export async function translateText(text: string, targetLang: Lang): Promise<str
       if (!res.ok) throw new Error('Translation API error');
       
       const data = await res.json();
-      if (data.translated) {
+      if (data.error && data.fallback) {
+        console.warn('Translation fallback for lang=' + targetLang + ':', data.error);
+        translatedChunks.push(chunk);
+      } else if (data.translated) {
         translatedChunks.push(data.translated);
       } else {
-        translatedChunks.push(chunk); // Fallback to original
+        translatedChunks.push(chunk);
       }
     }
     

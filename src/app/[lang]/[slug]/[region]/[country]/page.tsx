@@ -26,6 +26,8 @@ interface Job {
 interface TranslatedCard {
   title: string;
   description: string;
+  company: string;
+  location: string;
 }
 
 export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
@@ -76,6 +78,12 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     if (m) setCountryNameRaw(m.name);
   }, [countries, cc, countryName]);
 
+  // Clear translated cards when language changes
+  useEffect(() => {
+    setTranslatedCards({});
+    setIsTranslating(false);
+  }, [lang]);
+
   // Translate visible job cards when language changes
   const translateVisibleCards = useCallback(async (jobsToTranslate: Job[], l: Lang) => {
     if (!needsTranslation(l) || jobsToTranslate.length === 0) return;
@@ -86,24 +94,30 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     for (const job of jobsToTranslate) {
       // Skip if already translated for this language
       const cachedTitle = getCachedTranslation(job.title, l);
+      const cachedCompany = getCachedTranslation(job.company, l);
+      const cachedLocation = getCachedTranslation(job.location, l);
       const cachedDesc = job.description ? getCachedTranslation(job.description.slice(0, 200), l) : null;
 
       if (cachedTitle) {
         newTranslations[job.id] = {
           title: cachedTitle,
           description: cachedDesc || job.description?.slice(0, 200) || '',
+          company: cachedCompany || job.company,
+          location: cachedLocation || job.location,
         };
         continue;
       }
 
       try {
-        const [translatedTitle, translatedDesc] = await Promise.all([
+        const [translatedTitle, translatedCompany, translatedLocation, translatedDesc] = await Promise.all([
           translateText(job.title, l),
+          translateText(job.company, l),
+          translateText(job.location, l),
           job.description ? translateText(job.description.slice(0, 200), l) : Promise.resolve(''),
         ]);
-        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc };
+        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc, company: translatedCompany, location: translatedLocation };
       } catch {
-        newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '' };
+        newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '', company: job.company, location: job.location };
       }
     }
 
@@ -111,19 +125,19 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     setIsTranslating(false);
   }, []);
 
-  // When language or filtered jobs change, translate the visible cards
-  useEffect(() => {
-    if (loading || allJobs.length === 0) return;
-    const itemsToTranslate = filtered.slice((page - 1) * PER, page * PER);
-    translateVisibleCards(itemsToTranslate, lang);
-  }, [lang, loading, allJobs.length, page, filtered.length, translateVisibleCards]);
-
   const filtered = allJobs.filter(j => {
     if (typeFilter && typeFilter !== 'all' && j.type?.toLowerCase() !== typeFilter.toLowerCase()) return false;
     if (sectorFilter && sectorFilter !== 'all' && j.sector !== sectorFilter) return false;
     if (search) { const s = search.toLowerCase(); if (!j.title?.toLowerCase().includes(s) && !j.company?.toLowerCase().includes(s) && !j.sector?.toLowerCase().includes(s)) return false; }
     return true;
   });
+
+  // When language or filtered jobs change, translate the visible cards
+  useEffect(() => {
+    if (loading || allJobs.length === 0) return;
+    const itemsToTranslate = filtered.slice((page - 1) * PER, page * PER);
+    translateVisibleCards(itemsToTranslate, lang);
+  }, [lang, loading, allJobs.length, page, filtered.length, translateVisibleCards]);
 
   const actualTotal = filtered.length;
   const totalPages = Math.max(1, Math.ceil(actualTotal / PER));
@@ -238,6 +252,8 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             const translated = translatedCards[job.id];
             const displayTitle = translated?.title || job.title;
             const displayDesc = translated?.description || job.description?.slice(0, 200) || '';
+            const displayCompany = translated?.company || job.company;
+            const displayLocation = translated?.location || job.location;
             return (
               <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
@@ -252,8 +268,8 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                   <Link href={detailHref} className="block">
                     <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{displayTitle}</h2>
                   </Link>
-                  <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : job.company}</p>
-                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
+                  <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : displayCompany}</p>
+                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{displayLocation}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job, lang)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
                   {displayDesc && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{displayDesc}</p>}
