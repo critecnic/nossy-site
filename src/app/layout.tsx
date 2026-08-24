@@ -61,7 +61,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#0f172a" />
-        <meta name="google" content="notranslate" />
         <JsonLd />
       </head>
       <body className={geistSans.variable + " antialiased bg-gray-50 text-gray-900"}>

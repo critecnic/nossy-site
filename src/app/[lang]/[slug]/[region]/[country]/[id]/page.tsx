@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useCallback } from "react";
 import Link from "next/link";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
+import { needsTranslation, translateText, getCachedTranslation, setCachedTranslation, LANG_TO_GT, translateJob } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -18,6 +19,7 @@ interface Job {
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
   paywall: boolean; contactEmail: string; regiao?: string;
+  contactPhone?: string;
 }
 
 export default function JobDetailPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string; id: string }> }) {
@@ -27,6 +29,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translatedJob, setTranslatedJob] = useState<{title:string;description:string;company:string;location:string} | null>(null);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
@@ -68,6 +72,27 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
     })();
   }, [rc, cc, jobId]);
 
+  // Translate job content when language changes or job loads
+  const doTranslation = useCallback(async (j: Job, l: Lang) => {
+    if (!j || !needsTranslation(l)) {
+      setTranslatedJob(j ? { title: j.title, description: j.description, company: j.company, location: j.location } : null);
+      setTranslating(false);
+      return;
+    }
+    setTranslating(true);
+    try {
+      const result = await translateJob(j, l);
+      setTranslatedJob(result);
+    } catch {
+      setTranslatedJob({ title: j.title, description: j.description, company: j.company, location: j.location });
+    }
+    setTranslating(false);
+  }, []);
+
+  useEffect(() => {
+    if (job) doTranslation(job, lang);
+  }, [job, lang, doTranslation]);
+
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
@@ -76,6 +101,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const isLocked = pw.paywall && !showPayment;
   const pwText = getPaywallText(lang);
   const careerUrl = job ? getCompanyCareerUrl(job) : '';
+
+  // Use translated content when available, or fall back to original
+  const displayTitle = translatedJob?.title || job?.title || '';
+  const displayDescription = translatedJob?.description || job?.description || '';
+  const displayCompany = translatedJob?.company || job?.company || '';
+  const displayLocation = translatedJob?.location || job?.location || '';
 
   if (loading) {
     return (
@@ -150,7 +181,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           <Link href={countryHref} className="hover:text-sky-600 transition-colors">{cName}</Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          <span className="text-gray-900 font-medium truncate max-w-xs">{job.title}</span>
+          <span className="text-gray-900 font-medium truncate max-w-xs">{displayTitle}</span>
         </nav>
 
         <article className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -162,7 +193,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               {pw.paywall && <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-bold border border-amber-200">{pwText.premium}</span>}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">{job.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">
+              {translating ? <span className="inline-block w-3/4 h-8 bg-gray-200 rounded animate-pulse" /> : displayTitle}
+            </h1>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center gap-2">
@@ -173,12 +206,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 font-bold">{pwText.premium}</span>
                   </div>
                 ) : (
-                  <span className="text-sm font-medium text-gray-900">{job.company}</span>
+                  <span className="text-sm font-medium text-gray-900">{translating ? <span className="inline-block w-24 h-4 bg-gray-200 rounded animate-pulse" /> : displayCompany}</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span className="text-sm text-gray-600">{job.location}</span>
+                <span className="text-sm text-gray-600">{translating ? <span className="inline-block w-32 h-4 bg-gray-200 rounded animate-pulse" /> : displayLocation}</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -212,16 +245,117 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               </div>
             )}
 
-            {job.contactEmail && !isLocked && (
-              <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                  <span className="text-sm font-bold text-green-800">{T.contactAvailable}</span>
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">{T.descriptionFull}</h2>
+              {translating ? (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-4 bg-gray-100 rounded w-full" />
+                  <div className="h-4 bg-gray-100 rounded w-11/12" />
+                  <div className="h-4 bg-gray-100 rounded w-full" />
+                  <div className="h-4 bg-gray-100 rounded w-4/5" />
+                  <div className="h-4 bg-gray-100 rounded w-full" />
+                  <div className="h-4 bg-gray-100 rounded w-3/4" />
                 </div>
-                <a href={"mailto:" + job.contactEmail} className="text-sm text-green-700 hover:text-green-800 font-medium">{job.contactEmail}</a>
+              ) : (
+                <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">{displayDescription}</div>
+              )}
+            </div>
+
+            {/* Contact Information Section - only visible after payment (unlocked) */}
+            {!isLocked && (
+              <div className="mb-6 p-5 rounded-xl bg-sky-50 border border-sky-200">
+                <h3 className="text-base font-bold text-sky-900 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                  {T.contactInfoTitle}
+                </h3>
+                <div className="space-y-3">
+                  {/* Email */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-sky-100 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div>
+                      <span className="text-xs text-sky-600 font-medium">{T.companyEmail}</span>
+                      {job.contactEmail ? (
+                        <a href={"mailto:" + job.contactEmail} className="block text-sm text-gray-900 font-medium hover:text-sky-600 transition-colors">{job.contactEmail}</a>
+                      ) : (
+                        <span className="block text-sm text-gray-400">{T.notAvailable}</span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Phone */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-sky-100 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                    </div>
+                    <div>
+                      <span className="text-xs text-sky-600 font-medium">{T.companyPhone}</span>
+                      {job.contactPhone ? (
+                        <a href={"tel:" + job.contactPhone} className="block text-sm text-gray-900 font-medium hover:text-sky-600 transition-colors">{job.contactPhone}</a>
+                      ) : (
+                        <span className="block text-sm text-gray-400">{T.notAvailable}</span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Website */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-sky-100 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                    </div>
+                    <div>
+                      <span className="text-xs text-sky-600 font-medium">{T.companySite}</span>
+                      {careerUrl ? (
+                        <a href={careerUrl} target="_blank" rel="noopener noreferrer" className="block text-sm text-sky-600 font-medium hover:text-sky-700 transition-colors truncate max-w-xs">{careerUrl.replace(/^https?:\/\//, '')}</a>
+                      ) : (
+                        <span className="block text-sm text-gray-400">{T.notAvailable}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* Locked contact info - hidden until payment */}
+            {isLocked && (
+              <div className="mb-6 p-5 rounded-xl bg-gray-50 border border-gray-200">
+                <h3 className="text-base font-bold text-gray-500 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  {T.contactInfoTitle}
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-400 font-medium">{T.companyEmail}</span>
+                      <span className="block text-sm text-gray-300">{'*'.repeat(20)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-400 font-medium">{T.companyPhone}</span>
+                      <span className="block text-sm text-gray-300">{'*'.repeat(15)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-400 font-medium">{T.companySite}</span>
+                      <span className="block text-sm text-gray-300">{'*'.repeat(25)}</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-4 text-xs text-center text-amber-600 font-medium">{T.payToUnlock}</p>
+              </div>
+            )}
+
+            {/* Apply Button - only visible when unlocked */}
             {careerUrl && !isLocked && (
               <div className="mb-6">
                 <a href={careerUrl} target="_blank" rel="noopener noreferrer"
@@ -231,22 +365,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                 </a>
               </div>
             )}
-
-            {isLocked && careerUrl && (
-              <div className="mb-6">
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                    <span>{T.companyWebsite}: {'*****'}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">{T.descriptionFull}</h2>
-              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</div>
-            </div>
           </div>
         </article>
 
