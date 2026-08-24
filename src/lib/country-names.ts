@@ -4,65 +4,6 @@
 import type { Lang } from './i18n';
 
 export const COUNTRY_NAMES: Record<string, Record<string, string>> = {
-  en: {
-    "united-states": "United States",
-    "india": "India",
-    "united-kingdom": "United Kingdom",
-    "china": "China",
-    "germany": "Germany",
-    "france": "France",
-    "japao": "Japan",
-    "remoto-global": "Global Remote",
-    "singapura": "Singapore",
-    "sweden": "Sweden",
-    "coreia-do-sul": "South Korea",
-    "spain": "Spain",
-    "netherlands": "Netherlands",
-    "poland": "Poland",
-    "ireland": "Ireland",
-    "finland": "Finland",
-    "portugal": "Portugal",
-    "switzerland": "Switzerland",
-    "italy": "Italy",
-    "denmark": "Denmark",
-    "norway": "Norway",
-    "hong-kong": "Hong Kong",
-    "belgium": "Belgium",
-    "taiwan": "Taiwan",
-    "indonesia": "Indonesia",
-    "tailandia": "Thailand",
-    "malasia": "Malaysia",
-    "austria": "Austria",
-    "vietna": "Vietnam",
-    "filipinas": "Philippines",
-    "estonia": "Estonia",
-    "czech-republic": "Czech Republic",
-    "romania": "Romania",
-    "hungary": "Hungary",
-    "luxembourg": "Luxembourg",
-    "ukraine": "Ukraine",
-    "greece": "Greece",
-    "paquistao": "Pakistan",
-    "lithuania": "Lithuania",
-    "sri-lanka": "Sri Lanka",
-    "bulgaria": "Bulgaria",
-    "cyprus": "Cyprus",
-    "croatia": "Croatia",
-    "serbia": "Serbia",
-    "slovakia": "Slovakia",
-    "malta": "Malta",
-    "iceland": "Iceland",
-    "slovenia": "Slovenia",
-    "bangladesh": "Bangladesh",
-    "latvia": "Latvia",
-    "nepal": "Nepal",
-    "moldova": "Moldova",
-    "georgia": "Georgia",
-    "albania": "Albania",
-    "north-macedonia": "North Macedonia",
-    "bosnia-and-herzegovina": "Bosnia and Herzegovina",
-    "montenegro": "Montenegro",
-  },
   "pt-br": {
     "united-states": "Estados Unidos",
     "india": "Índia",
@@ -593,42 +534,6 @@ export const COUNTRY_NAMES: Record<string, Record<string, string>> = {
     "north-macedonia": "Северная Македония",
     "bosnia-and-herzegovina": "Босния и Герцеговина",
     "montenegro": "Черногория",
-  },
-  zh: {
-    "united-states": "美国", "india": "印度", "united-kingdom": "英国", "china": "中国", "germany": "德国", "france": "法国", "japao": "日本", "remoto-global": "全球远程", "singapura": "新加坡", "sweden": "瑞典", "coreia-do-sul": "韩国", "spain": "西班牙", "netherlands": "荷兰", "poland": "波兰", "ireland": "爱尔兰", "finland": "芬兰", "portugal": "葡萄牙", "switzerland": "瑞士", "italy": "意大利", "denmark": "丹麦", "norway": "挪威", "hong-kong": "香港", "belgium": "比利时", "taiwan": "台湾", "indonesia": "印度尼西亚", "tailandia": "泰国", "malasia": "马来西亚", "austria": "奥地利", "vietna": "越南", "filipinas": "菲律宾", "estonia": "爱沙尼亚", "czech-republic": "捷克共和国", "romania": "罗马尼亚", "hungary": "匈牙利", "luxembourg": "卢森堡", "ukraine": "乌克兰", "greece": "希腊", "paquistao": "巴基斯坦", "lithuania": "立陶宛", "sri-lanka": "斯里兰卡", "bulgaria": "保加利亚", "cyprus": "塞浦路斯", "croatia": "克罗地亚", "serbia": "塞尔维亚", "slovakia": "斯洛伐克", "malta": "马耳他", "iceland": "冰岛", "slovenia": "斯洛文尼亚", "bangladesh": "孟加拉国", "latvia": "拉脱维亚", "nepal": "尼泊尔", "moldova": "摩尔多瓦", "georgia": "格鲁吉亚", "albania": "阿尔巴尼亚", "north-macedonia": "北马其顿", "bosnia-and-herzegovina": "波黑", "montenegro": "黑山",
-  },
-  ja: {
-    "united-states": "アメリカ", "india": "インド", "united-kingdom": "イギリス", "china": "中国", "germany": "ドイツ", "france": "フランス", "japao": "日本", "remoto-global": "グローバルリモート", "singapura": "シンガポール", "sweden": "スウェーデン", "coreia-do-sul": "韓国", "spain": "スペイン", "netherlands": "オランダ", "poland": "ポーランド", "ireland": "アイルランド", "finland": "フィンランド", "portugal": "ポルトガル", "switzerland": "スイス", "italy": "イタリア", "denmark": "デンマーク", "norway": "ノルウェー", "hong-kong": "香港", "belgium": "ベルギー", "taiwan": "台湾", "indonesia": "インドネシア", "tailandia": "タイ", "malasia": "マレーシア", "austria": "オーストリア", "vietna": "ベトナム", "filipinas": "フィリピン", "estonia": "エストニア", "czech-republic": "チェコ", "romania": "ルーマニア", "hungary": "ハンガリー", "luxembourg": "ルクセンブルク", "ukraine": "ウクライナ", "greece": "ギリシャ", "paquistao": "パキスタン", "lithuania": "リトアニア", "sri-lanka": "スリランカ", "bulgaria": "ブルガリア", "cyprus": "キプロス", "croatia": "クロアチア", "serbia": "セルビア", "slovakia": "スロバキア", "malta": "マルタ", "iceland": "アイスランド", "slovenia": "スロベニア", "bangladesh": "バングラデシュ", "latvia": "ラトビア", "nepal": "ネパール", "moldova": "モルドバ", "georgia": "ジョージア", "albania": "アルバニア", "north-macedonia": "北マケドニア", "bosnia-and-herzegovina": "ボスニア・ヘルツェゴビナ", "montenegro": "モンテネグロ",
-  },
-  ko: {
-    "united-states": "미국", "india": "인도", "united-kingdom": "영국", "china": "중국", "germany": "독일", "france": "프랑스", "japao": "일본", "remoto-global": "글로벌 원격", "singapura": "싱가포르", "sweden": "스웨덴", "coreia-do-sul": "한국", "spain": "스페인", "netherlands": "네덜란드", "poland": "폴란드", "ireland": "아일랜드", "finland": "핀란드", "portugal": "포르투갈", "switzerland": "스위스", "italy": "이탈리아", "denmark": "덴마크", "norway": "노르웨이", "hong-kong": "홍콩", "belgium": "벨기에", "taiwan": "대만", "indonesia": "인도네시아", "tailandia": "태국", "malasia": "말레이시아", "austria": "오스트리아", "vietna": "베트남", "filipinas": "필리핀", "estonia": "에스토니아", "czech-republic": "체코", "romania": "루마니아", "hungary": "헝가리", "luxembourg": "룩셈부르크", "ukraine": "우크라이나", "greece": "그리스", "paquistao": "파키스탄", "lithuania": "리투아니아", "sri-lanka": "스리랑카", "bulgaria": "불가리아", "cyprus": "키프로스", "croatia": "크로아티아", "serbia": "세르비아", "slovakia": "슬로바키아", "malta": "몰타", "iceland": "아이슬란드", "slovenia": "슬로베니아", "bangladesh": "방글라데시", "latvia": "라트비아", "nepal": "네팔", "moldova": "몰도바", "georgia": "조지아", "albania": "알바니아", "north-macedonia": "북마케도니아", "bosnia-and-herzegovina": "보스니아 헤르체고비나", "montenegro": "몬테네그로",
-  },
-  hi: {
-    "united-states": "संयुक्त राज्य", "india": "भारत", "united-kingdom": "यूनाइटेड किंगडम", "china": "चीन", "germany": "जर्मनी", "france": "फ्रांस", "japao": "जापान", "remoto-global": "ग्लोबल रिमोट", "singapura": "सिंगापुर", "sweden": "स्वीडन", "coreia-do-sul": "दक्षिण कोरिया", "spain": "स्पेन", "netherlands": "नीदरलैंड", "poland": "पोलैंड", "ireland": "आयरलैंड", "finland": "फिनलैंड", "portugal": "पुर्तगाल", "switzerland": "स्विट्ज़रलैंड", "italy": "इटली", "denmark": "डेनमार्क", "norway": "नॉर्वे", "hong-kong": "हांगकांग", "belgium": "बेल्जियम", "taiwan": "ताइवान", "indonesia": "इंडोनेशिया", "tailandia": "थाईलैंड", "malasia": "मलेशिया", "austria": "ऑस्ट्रिया", "vietna": "वियतनाम", "filipinas": "फिलीपींस", "estonia": "एस्टोनिया", "czech-republic": "चेक गणराज्य", "romania": "रोमानिया", "hungary": "हंगरी", "luxembourg": "लक्ज़मबर्ग", "ukraine": "यूक्रेन", "greece": "ग्रीस", "paquistao": "पाकिस्तान", "lithuania": "लिथुआनिया", "sri-lanka": "श्रीलंका", "bulgaria": "बुल्गारिया", "cyprus": "साइप्रस", "croatia": "क्रोएशिया", "serbia": "सर्बिया", "slovakia": "स्लोवाकिया", "malta": "माल्टा", "iceland": "आइसलैंड", "slovenia": "स्लोवेनिया", "bangladesh": "बांग्लादेश", "latvia": "लातविया", "nepal": "नेपाल", "moldova": "मोल्दोवा", "georgia": "जॉर्जिया", "albania": "अल्बानिया", "north-macedonia": "उत्तर मैसेडोनिया", "bosnia-and-herzegovina": "बोस्निया और हर्ज़ेगोविना", "montenegro": "मोंटेनेग्रो",
-  },
-  bn: {
-    "united-states": "যুক্তরাষ্ট্র", "india": "ভারত", "united-kingdom": "যুক্তরাজ্য", "china": "চীন", "germany": "জার্মানি", "france": "ফ্রান্স", "japao": "জাপান", "remoto-global": "গ্লোবাল রিমোট", "singapura": "সিঙ্গাপুর", "sweden": "সুইডেন", "coreia-do-sul": "দক্ষিণ কোরিয়া", "spain": "স্পেন", "netherlands": "নেদারল্যান্ডস", "poland": "পোল্যান্ড", "ireland": "আয়ারল্যান্ড", "finland": "ফিনল্যান্ড", "portugal": "পর্তুগাল", "switzerland": "সুইজারল্যান্ড", "italy": "ইতালি", "denmark": "ডেনমার্ক", "norway": "নরওয়ে", "hong-kong": "হংকং", "belgium": "বেলজিয়াম", "taiwan": "তাইওয়ান", "indonesia": "ইন্দোনেশিয়া", "tailandia": "থাইল্যান্ড", "malasia": "মালয়েশিয়া", "austria": "অস্ট্রিয়া", "vietna": "ভিয়েতনাম", "filipinas": "ফিলিপাইন", "estonia": "এস্তোনিয়া", "czech-republic": "চেক প্রজাতন্ত্র", "romania": "রোমানিয়া", "hungary": "হাঙ্গেরি", "luxembourg": "লাক্সেমবার্গ", "ukraine": "ইউক্রেন", "greece": "গ্রিস", "paquistao": "পাকিস্তান", "lithuania": "লিথুয়ানিয়া", "sri-lanka": "শ্রীলঙ্কা", "bulgaria": "বুলগারিয়া", "cyprus": "সাইপ্রাস", "croatia": "ক্রোয়েশিয়া", "serbia": "সার্বিয়া", "slovakia": "স্লোভাকিয়া", "malta": "মাল্টা", "iceland": "আইসল্যান্ড", "slovenia": "স্লোভেনিয়া", "bangladesh": "বাংলাদেশ", "latvia": "লাতভিয়া", "nepal": "নেপাল", "moldova": "মোলদোভা", "georgia": "জর্জিয়া", "albania": "আলবেনিয়া", "north-macedonia": "উত্তর ম্যাসেডোনিয়া", "bosnia-and-herzegovina": "বসনিয়া ও হার্জেগোভিনা", "montenegro": "মন্টেনিগ্রো",
-  },
-  ar: {
-    "united-states": "الولايات المتحدة", "india": "الهند", "united-kingdom": "المملكة المتحدة", "china": "الصين", "germany": "ألمانيا", "france": "فرنسا", "japao": "اليابان", "remoto-global": "عمل عن بعد", "singapura": "سنغافورة", "sweden": "السويد", "coreia-do-sul": "كوريا الجنوبية", "spain": "إسبانيا", "netherlands": "هولندا", "poland": "بولندا", "ireland": "أيرلندا", "finland": "فنلندا", "portugal": "البرتغال", "switzerland": "سويسرا", "italy": "إيطاليا", "denmark": "الدنمارك", "norway": "النرويج", "hong-kong": "هونغ كونغ", "belgium": "بلجيكا", "taiwan": "تايوان", "indonesia": "إندونيسيا", "tailandia": "تايلاند", "malasia": "ماليزيا", "austria": "النمسا", "vietna": "فيتنام", "filipinas": "الفلبين", "estonia": "إستونيا", "czech-republic": "جمهورية التشيك", "romania": "رومانيا", "hungary": "المجر", "luxembourg": "لوكسمبورغ", "ukraine": "أوكرانيا", "greece": "اليونان", "paquistao": "باكستان", "lithuania": "ليتوانيا", "sri-lanka": "سريلانكا", "bulgaria": "بلغاريا", "cyprus": "قبرص", "croatia": "كرواتيا", "serbia": "صربيا", "slovakia": "سلوفاكيا", "malta": "مالطا", "iceland": "آيسلندا", "slovenia": "سلوفينيا", "bangladesh": "بنغلاديش", "latvia": "لاتفيا", "nepal": "نيبال", "moldova": "مولدوفا", "georgia": "جورجيا", "albania": "ألبانيا", "north-macedonia": "مقدونيا الشمالية", "bosnia-and-herzegovina": "البوسنة والهرسك", "montenegro": "الجبل الأسود",
-  },
-  tr: {
-    "united-states": "Amerika Birleşik Devletleri", "india": "Hindistan", "united-kingdom": "Birleşik Krallık", "china": "Çin", "germany": "Almanya", "france": "Fransa", "japao": "Japonya", "remoto-global": "Global Uzaktan", "singapura": "Singapur", "sweden": "İsveç", "coreia-do-sul": "Güney Kore", "spain": "İspanya", "netherlands": "Hollanda", "poland": "Polonya", "ireland": "İrlanda", "finland": "Finlandiya", "portugal": "Portekiz", "switzerland": "İsviçre", "italy": "İtalya", "denmark": "Danimarka", "norway": "Norveç", "hong-kong": "Hong Kong", "belgium": "Belçika", "taiwan": "Tayvan", "indonesia": "Endonezya", "tailandia": "Tayland", "malasia": "Malezya", "austria": "Avusturya", "vietna": "Vietnam", "filipinas": "Filipinler", "estonia": "Estonya", "czech-republic": "Çek Cumhuriyeti", "romania": "Romanya", "hungary": "Macaristan", "luxembourg": "Lüksemburg", "ukraine": "Ukrayna", "greece": "Yunanistan", "paquistao": "Pakistan", "lithuania": "Litvanya", "sri-lanka": "Sri Lanka", "bulgaria": "Bulgaristan", "cyprus": "Kıbrıs", "croatia": "Hırvatistan", "serbia": "Sırbistan", "slovakia": "Slovakya", "malta": "Malta", "iceland": "İzlanda", "slovenia": "Slovenya", "bangladesh": "Bangladeş", "latvia": "Letonya", "nepal": "Nepal", "moldova": "Moldova", "georgia": "Gürcistan", "albania": "Arnavutluk", "north-macedonia": "Kuzey Makedonya", "bosnia-and-herzegovina": "Bosna-Hersek", "montenegro": "Karadağ",
-  },
-  vi: {
-    "united-states": "Hoa Kỳ", "india": "Ấn Độ", "united-kingdom": "Vương quốc Anh", "china": "Trung Quốc", "germany": "Đức", "france": "Pháp", "japao": "Nhật Bản", "remoto-global": "From xa toàn cầu", "singapura": "Singapore", "sweden": "Thụy Điển", "coreia-do-sul": "Hàn Quốc", "spain": "Tây Ban Nha", "netherlands": "Hà Lan", "poland": "Ba Lan", "ireland": "Ireland", "finland": "Phần Lan", "portugal": "Bồ Đào Nha", "switzerland": "Thụy Sĩ", "italy": "Ý", "denmark": "Đan Mạch", "norway": "Na Uy", "hong-kong": "Hồng Kông", "belgium": "Bỉ", "taiwan": "Đài Loan", "indonesia": "Indonesia", "tailandia": "Thái Lan", "malasia": "Malaysia", "austria": "Áo", "vietna": "Việt Nam", "filipinas": "Philippines", "estonia": "Estonia", "czech-republic": "Cộng hòa Séc", "romania": "Romania", "hungary": "Hungary", "luxembourg": "Luxembourg", "ukraine": "Ukraine", "greece": "Hy Lạp", "paquistao": "Pakistan", "lithuania": "Litva", "sri-lanka": "Sri Lanka", "bulgaria": "Bulgaria", "cyprus": "Síp", "croatia": "Croatia", "serbia": "Serbia", "slovakia": "Slovakia", "malta": "Malta", "iceland": "Iceland", "slovenia": "Slovenia", "bangladesh": "Bangladesh", "latvia": "Latvia", "nepal": "Nepal", "moldova": "Moldova", "georgia": "Georgia", "albania": "Albania", "north-macedonia": "Bắc Macedonia", "bosnia-and-herzegovina": "Bosnia và Herzegovina", "montenegro": "Montenegro",
-  },
-  th: {
-    "united-states": "สหรัฐอเมริกา", "india": "อินเดีย", "united-kingdom": "สหราชอาณาจักร", "china": "จีน", "germany": "เยอรมนี", "france": "ฝรั่งเศส", "japao": "ญี่ปุ่น", "remoto-global": "ระยะไกลทั่วโลก", "singapura": "สิงคโปร์", "sweden": "สวีเดน", "coreia-do-sul": "เกาหลีใต้", "spain": "สเปน", "netherlands": "เนเธอร์แลนด์", "poland": "โปแลนด์", "ireland": "ไอร์แลนด์", "finland": "ฟินแลนด์", "portugal": "โปรตุเกส", "switzerland": "สวิตเซอร์แลนด์", "italy": "อิตาลี", "denmark": "เดนมาร์ก", "norway": "นอร์เวย์", "hong-kong": "ฮ่องกง", "belgium": "เบลเยียม", "taiwan": "ไต้หวัน", "indonesia": "อินโดนีเซีย", "tailandia": "ไทย", "malasia": "มาเลเซีย", "austria": "ออสเตรีย", "vietna": "เวียดนาม", "filipinas": "ฟิลิปปินส์", "estonia": "เอสโตเนีย", "czech-republic": "สาธารณรัฐเช็ก", "romania": "โรมาเนีย", "hungary": "ฮังการี", "luxembourg": "ลักเซมเบิร์ก", "ukraine": "ยูเครน", "greece": "กรีซ", "paquistao": "ปากีสถาน", "lithuania": "ลิทัวเนีย", "sri-lanka": "ศรีลังกา", "bulgaria": "บัลแกเรีย", "cyprus": "ไซปรัส", "croatia": "โครเอเชีย", "serbia": "เซอร์เบีย", "slovakia": "สโลวาเกีย", "malta": "มอลตา", "iceland": "ไอซ์แลนด์", "slovenia": "สโลเวเนีย", "bangladesh": "บังกลาเทศ", "latvia": "ลัตเวีย", "nepal": "เนปาล", "moldova": "มอลโดวา", "georgia": "จอร์เจีย", "albania": "แอลเบเนีย", "north-macedonia": "มาซิโดเนียเหนือ", "bosnia-and-herzegovina": "บอสเนียและเฮอร์เซโกวีนา", "montenegro": "มอนเตเนโกร",
-  },
-  ur: {
-    "united-states": "ریاستہائے متحدہ", "india": "بھارت", "united-kingdom": "مملکت متحدہ", "china": "چین", "germany": "جرمنی", "france": "فرانس", "japao": "جاپان", "remoto-global": "گلوبل ریموٹ", "singapura": "سنگاپور", "sweden": "سویڈن", "coreia-do-sul": "جنوبی کوریا", "spain": "سپین", "netherlands": "نیدرلینڈز", "poland": "پولینڈ", "ireland": "آئرلینڈ", "finland": "فن لینڈ", "portugal": "پرتگال", "switzerland": "سوئٹزرلینڈ", "italy": "اٹلی", "denmark": "ڈنمارک", "norway": "ناروے", "hong-kong": "ہانگ کانگ", "belgium": "بلجیم", "taiwan": "تائیوان", "indonesia": "انڈونیشیا", "tailandia": "تھائی لینڈ", "malasia": "ملیشیا", "austria": "آسٹریا", "vietna": "ویتنام", "filipinas": "فلپائن", "estonia": "اسٹونیا", "czech-republic": "چیک جمہوریہ", "romania": "رومانیہ", "hungary": "ہنگری", "luxembourg": "لکسمبرگ", "ukraine": "یوکرین", "greece": "یونان", "paquistao": "پاکستان", "lithuania": "لیتھوانیا", "sri-lanka": "سری لنکا", "bulgaria": "بلغاریہ", "cyprus": "قبرص", "croatia": "کروشیا", "serbia": "سربیا", "slovakia": "سلوواکیا", "malta": "مالٹا", "iceland": "آئس لینڈ", "slovenia": "سلووینیا", "bangladesh": "بنگلہ دیش", "latvia": "لٹویا", "nepal": "نیپال", "moldova": "مولدووا", "georgia": "جورجیا", "albania": "البانیہ", "north-macedonia": "شمالی مقدونیہ", "bosnia-and-herzegovina": "بوسنیا اور ہرزیگوینا", "montenegro": "مونٹینیگرو",
-  },
-  tl: {
-    "united-states": "Estados Unidos", "india": "India", "united-kingdom": "United Kingdom", "china": "China", "germany": "Germany", "france": "France", "japao": "Japan", "remoto-global": "Global Remote", "singapura": "Singapore", "sweden": "Sweden", "coreia-do-sul": "South Korea", "spain": "Spain", "netherlands": "Netherlands", "poland": "Poland", "ireland": "Ireland", "finland": "Finland", "portugal": "Portugal", "switzerland": "Switzerland", "italy": "Italy", "denmark": "Denmark", "norway": "Norway", "hong-kong": "Hong Kong", "belgium": "Belgium", "taiwan": "Taiwan", "indonesia": "Indonesia", "tailandia": "Thailand", "malasia": "Malaysia", "austria": "Austria", "vietna": "Vietnam", "filipinas": "Philippines", "estonia": "Estonia", "czech-republic": "Czech Republic", "romania": "Romania", "hungary": "Hungary", "luxembourg": "Luxembourg", "ukraine": "Ukraine", "greece": "Greece", "paquistao": "Pakistan", "lithuania": "Lithuania", "sri-lanka": "Sri Lanka", "bulgaria": "Bulgaria", "cyprus": "Cyprus", "croatia": "Croatia", "serbia": "Serbia", "slovakia": "Slovakia", "malta": "Malta", "iceland": "Iceland", "slovenia": "Slovenia", "bangladesh": "Bangladesh", "latvia": "Latvia", "nepal": "Nepal", "moldova": "Moldova", "georgia": "Georgia", "albania": "Albania", "north-macedonia": "North Macedonia", "bosnia-and-herzegovina": "Bosnia and Herzegovina", "montenegro": "Montenegro",
-  },
-  sw: {
-    "united-states": "Marekani", "india": "India", "united-kingdom": "Ufalme wa Muungano", "china": "China", "germany": "Ujerumani", "france": "Ufaransa", "japao": "Japani", "remoto-global": "Umbali wa Kimataifa", "singapura": "Singapoo", "sweden": "Uswidi", "coreia-do-sul": "Korea Kusini", "spain": "Hispania", "netherlands": "Uholanzi", "poland": "Polandi", "ireland": "Ayalandi", "finland": "Ufini", "portugal": "Ureno", "switzerland": "Uswisi", "italy": "Italia", "denmark": "Denmaki", "norway": "Norwe", "hong-kong": "Hong Kong", "belgium": "Ubelgiji", "taiwan": "Taiwani", "indonesia": "Indonesia", "tailandia": "Tailandia", "malasia": "Malesia", "austria": "Austria", "vietna": "Vietinamu", "filipinas": "Filipino", "estonia": "Estonia", "czech-republic": "Jamhuri ya Czech", "romania": "Romania", "hungary": "Hungaria", "luxembourg": "Luxemburg", "ukraine": "Ukraini", "greece": "Ugiriki", "paquistao": "Pakistani", "lithuania": "Lithuania", "sri-lanka": "Sri Lanka", "bulgaria": "Bulgaria", "cyprus": "Kupros", "croatia": "Kroeshia", "serbia": "Serbia", "slovakia": "Slovakia", "malta": "Malta", "iceland": "Aislandi", "slovenia": "Slovenia", "bangladesh": "Bangladeshi", "latvia": "Latvia", "nepal": "Nepal", "moldova": "Moldova", "georgia": "Georgia", "albania": "Albania", "north-macedonia": "Macedonia Kaskazini", "bosnia-and-herzegovina": "Bosnia na Herzegovina", "montenegro": "Montenegro",
   },
 };
 
