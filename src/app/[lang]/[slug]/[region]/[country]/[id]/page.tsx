@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useCallback } from "react";
 import Link from "next/link";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
+import { needsTranslation, translateText, getCachedTranslation, setCachedTranslation, LANG_TO_GT, translateJob } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -28,6 +29,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translatedJob, setTranslatedJob] = useState<{title:string;description:string;company:string;location:string} | null>(null);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
@@ -69,6 +72,27 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
     })();
   }, [rc, cc, jobId]);
 
+  // Translate job content when language changes or job loads
+  const doTranslation = useCallback(async (j: Job, l: Lang) => {
+    if (!j || !needsTranslation(l)) {
+      setTranslatedJob(j ? { title: j.title, description: j.description, company: j.company, location: j.location } : null);
+      setTranslating(false);
+      return;
+    }
+    setTranslating(true);
+    try {
+      const result = await translateJob(j, l);
+      setTranslatedJob(result);
+    } catch {
+      setTranslatedJob({ title: j.title, description: j.description, company: j.company, location: j.location });
+    }
+    setTranslating(false);
+  }, []);
+
+  useEffect(() => {
+    if (job) doTranslation(job, lang);
+  }, [job, lang, doTranslation]);
+
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
@@ -77,6 +101,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const isLocked = pw.paywall && !showPayment;
   const pwText = getPaywallText(lang);
   const careerUrl = job ? getCompanyCareerUrl(job) : '';
+
+  // Use translated content when available, or fall back to original
+  const displayTitle = translatedJob?.title || job?.title || '';
+  const displayDescription = translatedJob?.description || job?.description || '';
+  const displayCompany = translatedJob?.company || job?.company || '';
+  const displayLocation = translatedJob?.location || job?.location || '';
 
   if (loading) {
     return (
@@ -151,7 +181,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           <Link href={countryHref} className="hover:text-sky-600 transition-colors">{cName}</Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          <span className="text-gray-900 font-medium truncate max-w-xs">{job.title}</span>
+          <span className="text-gray-900 font-medium truncate max-w-xs">{displayTitle}</span>
         </nav>
 
         <article className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -163,7 +193,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               {pw.paywall && <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-bold border border-amber-200">{pwText.premium}</span>}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">{job.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">
+              {translating ? <span className="inline-block w-3/4 h-8 bg-gray-200 rounded animate-pulse" /> : displayTitle}
+            </h1>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center gap-2">
@@ -174,12 +206,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 font-bold">{pwText.premium}</span>
                   </div>
                 ) : (
-                  <span className="text-sm font-medium text-gray-900">{job.company}</span>
+                  <span className="text-sm font-medium text-gray-900">{translating ? <span className="inline-block w-24 h-4 bg-gray-200 rounded animate-pulse" /> : displayCompany}</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span className="text-sm text-gray-600">{job.location}</span>
+                <span className="text-sm text-gray-600">{translating ? <span className="inline-block w-32 h-4 bg-gray-200 rounded animate-pulse" /> : displayLocation}</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -215,7 +247,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
 
             <div className="mb-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">{T.descriptionFull}</h2>
-              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</div>
+              {translating ? (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-4 bg-gray-100 rounded w-full" />
+                  <div className="h-4 bg-gray-100 rounded w-11/12" />
+                  <div className="h-4 bg-gray-100 rounded w-full" />
+                  <div className="h-4 bg-gray-100 rounded w-4/5" />
+                  <div className="h-4 bg-gray-100 rounded w-full" />
+                  <div className="h-4 bg-gray-100 rounded w-3/4" />
+                </div>
+              ) : (
+                <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">{displayDescription}</div>
+              )}
             </div>
 
             {/* Contact Information Section - only visible after payment (unlocked) */}
@@ -286,7 +329,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                     </div>
                     <div>
                       <span className="text-xs text-gray-400 font-medium">{T.companyEmail}</span>
-                      <span className="block text-sm text-gray-300">{'*' * 20}</span>
+                      <span className="block text-sm text-gray-300">{'*'.repeat(20)}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -295,7 +338,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                     </div>
                     <div>
                       <span className="text-xs text-gray-400 font-medium">{T.companyPhone}</span>
-                      <span className="block text-sm text-gray-300">{'*' * 15}</span>
+                      <span className="block text-sm text-gray-300">{'*'.repeat(15)}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -304,7 +347,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                     </div>
                     <div>
                       <span className="text-xs text-gray-400 font-medium">{T.companySite}</span>
-                      <span className="block text-sm text-gray-300">{'*' * 25}</span>
+                      <span className="block text-sm text-gray-300">{'*'.repeat(25)}</span>
                     </div>
                   </div>
                 </div>

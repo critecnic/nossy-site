@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, formatSalary, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
+import { needsTranslation, translateText, getCachedTranslation } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -20,6 +21,11 @@ interface Job {
   salaryCurrency: string; salaryPeriod: string;
   description: string; sector: string; posted: string; type: string;
   paywall: boolean; contactEmail: string;
+}
+
+interface TranslatedCard {
+  title: string;
+  description: string;
 }
 
 export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
@@ -41,6 +47,8 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [page, setPage] = useState(1);
   const [countries, setCountries] = useState<any[]>(countriesData);
   const [unlockingId, setUnlockingId] = useState<number | null>(null);
+  const [translatedCards, setTranslatedCards] = useState<Record<number, TranslatedCard>>({});
+  const [isTranslating, setIsTranslating] = useState(false);
   const PER = 18;
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
@@ -67,6 +75,48 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     const m = countries.find((c: any) => c.slug === cc);
     if (m) setCountryNameRaw(m.name);
   }, [countries, cc, countryName]);
+
+  // Translate visible job cards when language changes
+  const translateVisibleCards = useCallback(async (jobsToTranslate: Job[], l: Lang) => {
+    if (!needsTranslation(l) || jobsToTranslate.length === 0) return;
+    setIsTranslating(true);
+
+    const newTranslations: Record<number, TranslatedCard> = {};
+
+    for (const job of jobsToTranslate) {
+      // Skip if already translated for this language
+      const cachedTitle = getCachedTranslation(job.title, l);
+      const cachedDesc = job.description ? getCachedTranslation(job.description.slice(0, 200), l) : null;
+
+      if (cachedTitle) {
+        newTranslations[job.id] = {
+          title: cachedTitle,
+          description: cachedDesc || job.description?.slice(0, 200) || '',
+        };
+        continue;
+      }
+
+      try {
+        const [translatedTitle, translatedDesc] = await Promise.all([
+          translateText(job.title, l),
+          job.description ? translateText(job.description.slice(0, 200), l) : Promise.resolve(''),
+        ]);
+        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc };
+      } catch {
+        newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '' };
+      }
+    }
+
+    setTranslatedCards(prev => ({ ...prev, ...newTranslations }));
+    setIsTranslating(false);
+  }, []);
+
+  // When language or filtered jobs change, translate the visible cards
+  useEffect(() => {
+    if (loading || allJobs.length === 0) return;
+    const itemsToTranslate = filtered.slice((page - 1) * PER, page * PER);
+    translateVisibleCards(itemsToTranslate, lang);
+  }, [lang, loading, allJobs.length, page, filtered.length, translateVisibleCards]);
 
   const filtered = allJobs.filter(j => {
     if (typeFilter && typeFilter !== 'all' && j.type?.toLowerCase() !== typeFilter.toLowerCase()) return false;
@@ -185,6 +235,9 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             const isLocked = pw.paywall;
             const detailHref = countryHref + "/" + job.id;
             const careerUrl = getCompanyCareerUrl(job);
+            const translated = translatedCards[job.id];
+            const displayTitle = translated?.title || job.title;
+            const displayDesc = translated?.description || job.description?.slice(0, 200) || '';
             return (
               <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
@@ -197,13 +250,13 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                     <span className="text-xs text-gray-400">{job.posted}</span>
                   </div>
                   <Link href={detailHref} className="block">
-                    <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{job.title}</h2>
+                    <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{displayTitle}</h2>
                   </Link>
                   <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : job.company}</p>
                   <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job, lang)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
-                  {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>}
+                  {displayDesc && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{displayDesc}</p>}
                   {isLocked && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       {unlockingId === job.id ? (
