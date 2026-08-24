@@ -140,3 +140,26 @@ Stage Summary:
 - Country page cards now also translate location
 - All footers use T.tagline instead of hardcoded English
 - LangSelector dropdown header fixed (was showing undefined)
+---
+Task ID: 1
+Agent: main
+Task: Fix all i18n translation issues for NOSSY and generate src/ zip
+
+Work Log:
+- Analyzed 2 user screenshots showing Japanese and German pages with Portuguese descriptions
+- Read all critical source files: homepage, country page, job detail, region page, LangSelector, i18n.ts, translate.ts
+- Identified 6 bugs: no homepage translation, incomplete country page translation, missing i18n keys, hardcoded taglines, undefined LangSelector ref, broken zip structure
+- Wrote comprehensive fix script (fix-i18n-final.py) that fixes all issues
+- Generated zip with src/ as root directory (43 files)
+- All 22 verification checks passed
+
+Stage Summary:
+- Produced: /home/z/my-project/download/nossy-src-0220.zip
+- All 43 files inside src/ directory in zip
+- Homepage now translates title, company, description for all 20 job cards
+- Country page now translates title, description, company, location
+- Job detail page already had translation (unchanged)
+- All 22 languages have language + tagline keys in i18n.ts
+- All footer taglines use {T.tagline} instead of hardcoded text
+- LangSelector uses current.name instead of undefined i18n[lang].language
+
