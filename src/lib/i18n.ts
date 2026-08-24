@@ -699,47 +699,47 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companySite": "Website",
     "notAvailable": "Not available",
     "language": "Lugha",
-    "tagline": "Tafuta utapata.",
+    "tagline": "Tafuta utapata."
     "language": "Wika",
-    "tagline": "Hanapin at makikita mo.",
+    "tagline": "Hanapin at makikita mo."
     "language": "زبان",
-    "tagline": "تلاش کریں اور پائیں گاؔ",
+    "tagline": "تلاش کریں اور پائیں گا۔"
     "language": "ภาษา",
-    "tagline": "ค้นหาแล้วคุณจะพบ.",
+    "tagline": "ค้นหาแล้วคุณจะพบ."
     "language": "Ngon ngu",
-    "tagline": "Tim va ban se tim thay.",
+    "tagline": "Tim va ban se tim thay."
     "language": "Dil",
-    "tagline": "Arayin ve bulacaksiniz.",
+    "tagline": "Arayin ve bulacaksiniz."
     "language": "اللغة",
-    "tagline": "ابحث وستجد.",
+    "tagline": "ابحث وستجد."
     "language": "ভাষা",
-    "tagline": "খুঁজুন এবং পাবেন।",
+    "tagline": "খুঁজুন এবং পাবেন।"
     "language": "भाषा",
-    "tagline": "खोजें और पाएंगे।",
+    "tagline": "खोजें और पाएंगे।"
     "language": "언어",
-    "tagline": "찾으면 찾을 수 있습니다.",
+    "tagline": "찾으면 찾을 수 있습니다."
     "language": "言語",
-    "tagline": "探せば見つかります。",
+    "tagline": "探せば見つかります。"
     "language": "语言",
-    "tagline": "寻找，你将找到。",
+    "tagline": "寻找，你将找到。"
     "language": "Yazyk",
-    "tagline": "Ishite i naydyote.",
+    "tagline": "Iskhite i naydyote."
     "language": "Jezyk",
-    "tagline": "Szukaj a znajdziesz.",
+    "tagline": "Szukaj a znajdziesz."
     "language": "Taal",
-    "tagline": "Zoek en u zult vinden.",
+    "tagline": "Zoek en u zult vinden."
     "language": "Lingua",
-    "tagline": "Cerca e troverai.",
+    "tagline": "Cerca e troverai."
     "language": "Sprache",
-    "tagline": "Suchen und Sie werden finden.",
+    "tagline": "Suchen und Sie werden finden."
     "language": "Langue",
-    "tagline": "Cherchez et vous trouverez.",
+    "tagline": "Cherchez et vous trouverez."
     "language": "Idioma",
-    "tagline": "Busca y encontraras.",
+    "tagline": "Busca y encontraras."
     "language": "Idioma",
-    "tagline": "Procure e encontrara.",
+    "tagline": "Procure e encontrara."
     "language": "Idioma",
-    "tagline": "Busque e encontrara.",
+    "tagline": "Busque e encontrara."
     "language": "Language",
     "tagline": "Seek and you shall find.",
   },

@@ -29,11 +29,15 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
 
   useEffect(() => { params.then(p => setLangCode(p.lang)); }, [params]);
 
+  // Translate homepage job cards when language changes
   useEffect(() => {
-    if (!langCode || !needsTranslation(lang as Lang)) { setTranslatedLatest({}); return; }
+    if (!langCode || !needsTranslation(lang as Lang)) {
+      setTranslatedLatest({});
+      return;
+    }
     setIsTranslating(true);
     const jobs = latestData as Job[];
-    const newT: Record<number, {title:string;description:string;company:string}> = {};
+    const newT: Record<number, {title:string;description:string;company:string;location:string}> = {};
     let cancelled = false;
     (async () => {
       for (const job of jobs) {
@@ -41,11 +45,20 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         const ct = getCachedTranslation(job.title, lang as Lang);
         const cd = job.description ? getCachedTranslation(job.description.slice(0, 200), lang as Lang) : null;
         const cc2 = getCachedTranslation(job.company, lang as Lang);
-        if (ct) { newT[job.id] = { title: ct, description: cd || job.description?.slice(0, 200) || '', company: cc2 || job.company }; continue; }
+        if (ct) {
+          newT[job.id] = { title: ct, description: cd || job.description?.slice(0, 200) || "", company: cc2 || job.company, location: job.location };
+          continue;
+        }
         try {
-          const [t, d, c] = await Promise.all([translateText(job.title, lang as Lang), job.description ? translateText(job.description.slice(0, 200), lang as Lang) : Promise.resolve(''), translateText(job.company, lang as Lang)]);
-          newT[job.id] = { title: t, description: d, company: c };
-        } catch { newT[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '', company: job.company }; }
+          const [t, d, c] = await Promise.all([
+            translateText(job.title, lang as Lang),
+            job.description ? translateText(job.description.slice(0, 200), lang as Lang) : Promise.resolve(""),
+            translateText(job.company, lang as Lang),
+          ]);
+          newT[job.id] = { title: t, description: d, company: c, location: job.location };
+        } catch {
+          newT[job.id] = { title: job.title, description: job.description?.slice(0, 200) || "", company: job.company, location: job.location };
+        }
       }
       if (!cancelled) { setTranslatedLatest(newT); setIsTranslating(false); }
     })();
@@ -55,7 +68,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
   const [countries, setCountries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
   const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState(false);
-  const [translatedLatest, setTranslatedLatest] = useState<Record<number, {title:string;description:string;company:string}>>({});
+  const [translatedLatest, setTranslatedLatest] = useState<Record<number, {title:string;description:string;company:string;location:string}>>({});
   const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => { setLatest(latestData as Job[]); setCountries(countriesData as CountryInfo[]); }, []);
@@ -159,6 +172,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                       <p className="text-xs font-medium text-gray-600 mb-2">{isTranslating && !tr ? <span className="inline-block w-1/2 h-3 bg-gray-200 rounded animate-pulse" /> : dCompany}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
                       <div className="mt-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sectorNames[lang]?.[job.sector] || job.sector}</span></div>
+                      {dDesc && <p className="text-xs text-gray-500 line-clamp-2 mt-2 leading-relaxed">{isTranslating && !tr ? <span className="inline-block w-full h-3 bg-gray-100 rounded animate-pulse" /> : dDesc}</p>}
                     </div></article>);
               })}
             </div>)}

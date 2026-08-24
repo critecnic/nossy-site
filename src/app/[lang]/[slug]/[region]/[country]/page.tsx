@@ -26,6 +26,7 @@ interface Job {
 interface TranslatedCard {
   title: string;
   description: string;
+  company: string;
   location: string;
 }
 
@@ -85,27 +86,31 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     const newTranslations: Record<number, TranslatedCard> = {};
 
     for (const job of jobsToTranslate) {
-      // Skip if already translated for this language
       const cachedTitle = getCachedTranslation(job.title, l);
       const cachedDesc = job.description ? getCachedTranslation(job.description.slice(0, 200), l) : null;
+      const cachedCompany = getCachedTranslation(job.company, l);
+      const cachedLocation = getCachedTranslation(job.location, l);
 
       if (cachedTitle) {
         newTranslations[job.id] = {
           title: cachedTitle,
-          description: cachedDesc || job.description?.slice(0, 200) || '',
+          description: cachedDesc || job.description?.slice(0, 200) || "",
+          company: cachedCompany || job.company,
+          location: cachedLocation || job.location,
         };
         continue;
       }
 
       try {
-        const [translatedTitle, translatedDesc, translatedLocation] = await Promise.all([
+        const [translatedTitle, translatedDesc, translatedCompany, translatedLocation] = await Promise.all([
           translateText(job.title, l),
-          job.description ? translateText(job.description.slice(0, 200), l) : Promise.resolve(''),
+          job.description ? translateText(job.description.slice(0, 200), l) : Promise.resolve(""),
+          translateText(job.company, l),
           translateText(job.location, l),
         ]);
-        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc, location: translatedLocation };
+        newTranslations[job.id] = { title: translatedTitle, description: translatedDesc, company: translatedCompany, location: translatedLocation };
       } catch {
-        newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || '' };
+        newTranslations[job.id] = { title: job.title, description: job.description?.slice(0, 200) || "", company: job.company, location: job.location };
       }
     }
 
@@ -254,7 +259,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                   <Link href={detailHref} className="block">
                     <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{displayTitle}</h2>
                   </Link>
-                  <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : job.company}</p>
+                  <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : (translated?.company || job.company)}</p>
                   <p className="text-xs text-gray-400 mb-2 line-clamp-1">{translated?.location || job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job, lang)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
