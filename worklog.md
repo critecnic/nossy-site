@@ -1,27 +1,21 @@
-# NOSSY Translation System Fix — Work Log
-
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Complete audit and fix of translation system for 11 languages
+Task: 7 Correções Críticas de SEO NOSSY + limpeza de arquivos quebrados
 
 Work Log:
-- Read and audited src/lib/translate.ts (never audited before)
-- Read and audited src/app/api/translate/route.ts (never audited before)
-- Read and audited all 4 page components (homepage, region, country, job detail)
-- Read and verified src/lib/i18n.ts Lang type definition
-- Identified 6 bugs in translation pipeline
-- Fixed all 6 bugs across 5 files
-- Created comprehensive 68-check verification script
-- All 68 checks PASSED
-- TypeScript compiles with zero errors
+- Leitura completa de todos os arquivos relevantes do projeto (layout, robots, sitemap, pages, components, lib)
+- CORREÇÃO 1 (layout.tsx): Ativado @vercel/analytics/react, adicionado title template, robots googleBot, OG images absolutas, canonical, description melhorada
+- CORREÇÃO 2 (robots.ts): Removidas todas as regras Googlebot disallow que bloqueavam páginas de região/país/vaga. Mantido apenas disallow de /api/ e /data/
+- CORREÇÃO 3 (sitemap.ts): Reescrito com datas dinâmicas (new Date().toISOString()), adicionadas páginas de região (66 URLs) e país (~1,276 URLs) por idioma, total ~1,431 URLs
+- CORREÇÃO 4 ([lang]/[slug]/layout.tsx): Adicionado LOCALE_MAP com 22 idiomas, openGraph.locale por idioma, URL absoluta no OG
+- CORREÇÃO 5 (página individual): Já existia com Schema.org JobPosting JSON-LD + generateMetadata completo — nenhuma alteração necessária
+- CORREÇÃO 6 (cards clicáveis): Homepage — cards envolvidos em <Link> para página de detalhe usando regiao+country+id. Country page — cards inteiros envolvidos em <Link>, removido PaddlePayment inline
+- CORREÇÃO 7 (links com locale correto): Verificado que todas as 4 páginas já usam locale dinâmico — nenhuma alteração necessária
+- Removidos arquivos quebrados: src/lib/translate.ts e src/app/api/translate/route.ts (client-side translation que nunca funcionou)
+- TypeScript compila sem erros (tsc --noEmit = 0 errors)
 
 Stage Summary:
-- 5 files modified: translate.ts, route.ts, homepage, country page, job detail page
-- Translation pipeline now works for all 11 languages: en, es, fr, de, it, zh, ja, ar, ru, pt-pt, pt-br
-- Homepage now translates job cards (was completely missing before)
-- Country page now translates company + location (was missing before)
-- Country page clears old translations on language switch
-- Job detail page clears old translations on language switch
-- API route properly returns fallback text on error (was silent before)
-- API route variable scope fixed for error handling
+- 7 correções SEO aplicadas, 2 arquivos removidos, 0 erros TypeScript
+- Padrão 0220 mantido: pasta src/ intacta, estrutura de rotas preservada
+- Arquivos modificados: layout.tsx, robots.ts, sitemap.ts, [lang]/[slug]/layout.tsx, page.tsx (homepage), [region]/[country]/page.tsx

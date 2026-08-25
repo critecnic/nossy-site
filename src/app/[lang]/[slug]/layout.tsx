@@ -32,6 +32,31 @@ export function generateStaticParams() {
   return LANGUAGES.map((lang) => ({ lang: lang.code, slug: LANG_SLUGS[lang.code] }));
 }
 
+const LOCALE_MAP: Record<string, string> = {
+  en: 'en_US',
+  'pt-br': 'pt_BR',
+  'pt-pt': 'pt_PT',
+  es: 'es_ES',
+  fr: 'fr_FR',
+  de: 'de_DE',
+  it: 'it_IT',
+  nl: 'nl_NL',
+  pl: 'pl_PL',
+  ru: 'ru_RU',
+  zh: 'zh_CN',
+  ja: 'ja_JP',
+  ko: 'ko_KR',
+  hi: 'hi_IN',
+  bn: 'bn_BD',
+  ar: 'ar_SA',
+  tr: 'tr_TR',
+  vi: 'vi_VN',
+  th: 'th_TH',
+  ur: 'ur_PK',
+  tl: 'tl_PH',
+  sw: 'sw_TZ',
+};
+
 export async function generateMetadata({
   params,
 }: { params: Promise<{ lang: string; slug: string }> }): Promise<Metadata> {
@@ -39,15 +64,25 @@ export async function generateMetadata({
   const lang = langCode as Lang;
   const langCfg = LANGUAGES.find((l) => l.code === lang);
   const total = TOTAL_JOBS.toLocaleString();
+  const url = "https://nossy.pro" + "/" + lang + "/" + slug;
+
   return {
     title: "NOSSY | " + (langCfg?.name || lang) + " | " + total + "+ " + (lang === "pt-br" || lang === "pt-pt" ? "Vagas" : "Jobs"),
     description: DESC[lang] || DESC["en"],
     alternates: {
-      canonical: "https://nossy.pro" + "/" + lang + "/" + slug,
+      canonical: url,
       languages: {
         "x-default": "/en/jobs",
         ...Object.fromEntries(LANGUAGES.map((l) => [l.code, "/" + l.code + "/" + LANG_SLUGS[l.code]])),
       },
+    },
+    openGraph: {
+      locale: LOCALE_MAP[lang] || 'en_US',
+      title: "NOSSY | " + total + "+ " + (lang === "pt-br" || lang === "pt-pt" ? "Vagas" : "Jobs"),
+      description: DESC[lang] || DESC["en"],
+      url,
+      siteName: "NOSSY",
+      type: "website",
     },
     robots: { index: true, follow: true },
   };

@@ -18,6 +18,7 @@ interface Job {
   id: number; title: string; company: string; companyUrl: string;
   location: string; country: string; countryName: string;
   salary: string; description: string; sector: string; posted: string; type: string; paywall: boolean;
+  regiao?: string;
 }
 interface CountryInfo { name: string; slug: string; region: string; count: number; }
 
@@ -131,8 +132,10 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {latest.map((job) => {
                 const m = getSectorMeta(job.sector); const tc = getTypeStyle(job.type);
-                return (
-                  <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
+                const jobRegion = job.regiao ? job.regiao.toLowerCase() : '';
+                const jobDetailHref = jobRegion && job.country ? homeHref + "/" + jobRegion + "/" + job.country + "/" + job.id : '';
+                const card = (
+                  <article className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
                     <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
@@ -141,6 +144,11 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                       <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
                       <div className="mt-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sectorNames[lang]?.[job.sector] || job.sector}</span></div>
                     </div></article>);
+                return jobDetailHref ? (
+                  <Link key={job.id} href={jobDetailHref} className="block">{card}</Link>
+                ) : (
+                  <div key={job.id}>{card}</div>
+                );
               })}
             </div>)}
         </section>

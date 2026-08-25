@@ -1,34 +1,50 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { TOTAL_JOBS } from "@/lib/countries";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
-// import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide | Seek and you shall find.",
-  description: "NOSSY - Seek and you shall find. Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA. Free global job search with real salaries and top companies. Find remote, hybrid and on-site positions in Software Engineering, Data Science, Cloud, AI and more.",
+  metadataBase: new URL("https://nossy.pro"),
+  title: {
+    default: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide | Seek and you shall find.",
+    template: "%s | NOSSY",
+  },
+  description: "Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across 60 countries in Europe, Asia and USA. Remote, on-site and hybrid positions. Free to browse. Find your next career opportunity on NOSSY.",
   keywords: ["jobs", "tech jobs", "job search", "careers", "remote jobs", "NOSSY", "seek and find", "jobs in Europe", "jobs in Asia", "jobs in USA", "software engineer jobs", "data science jobs", "cloud jobs", "AI jobs", "developer jobs", "IT vacancies 2025", "work from home jobs"],
   authors: [{ name: "NOSSY" }],
   creator: "NOSSY",
   publisher: "NOSSY",
-  metadataBase: new URL("https://nossy.pro"),
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     type: "website",
-    siteName: "NOSSY",
-    title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide | Seek and you shall find.",
-    description: "Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA. NOSSY - Seek and you shall find.",
-    url: "https://nossy.pro",
-    images: [{ url: "/og/og-default.png", width: 1200, height: 630, alt: "NOSSY - 45,039+ Tech Jobs Worldwide" }],
     locale: "en_US",
+    url: "https://nossy.pro",
+    siteName: "NOSSY",
+    title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide",
+    description: "Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across 60 countries. Remote, on-site and hybrid positions.",
+    images: [{ url: "https://nossy.pro/og/og-default.png", width: 1200, height: 630, alt: "NOSSY - " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs Worldwide" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "NOSSY | " + TOTAL_JOBS.toLocaleString() + "+ Tech Jobs",
     description: "Find your dream tech job across Europe, Asia and USA. NOSSY - Seek and you shall find.",
-    images: ["/og/og-default.png"],
+    images: ["https://nossy.pro/og/og-default.png"],
+  },
+  alternates: {
+    canonical: "https://nossy.pro",
   },
   icons: {
     icon: "/favicon.ico",
@@ -65,7 +81,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={geistSans.variable + " antialiased bg-gray-50 text-gray-900"}>
         {children}
-        {/* <Analytics /> */}
+        <Analytics />
       </body>
     </html>
   );

@@ -10,7 +10,6 @@ import { getCountryNameTranslated } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
-import PaddlePayment from "@/components/PaddlePayment";
 import countriesData from "@/data/countries.json";
 
 interface Job {
@@ -40,7 +39,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [sectorFilter, setSectorFilter] = useState("");
   const [page, setPage] = useState(1);
   const [countries] = useState<any[]>(countriesData);
-  const [unlockingId, setUnlockingId] = useState<number | null>(null);
   const PER = 18;
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
@@ -187,7 +185,8 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             const detailHref = countryHref + "/" + job.id;
             const careerUrl = getCompanyCareerUrl(job);
             return (
-              <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
+              <Link key={job.id} href={detailHref} className="block">
+              <article className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-lg transition-all duration-200 border-gray-100">
                 <div className={"h-1.5 w-full bg-gradient-to-r " + m.color} />
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -197,9 +196,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                     </div>
                     <span className="text-xs text-gray-400">{job.posted}</span>
                   </div>
-                  <Link href={detailHref} className="block">
-                    <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{job.title}</h2>
-                  </Link>
+                  <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{job.title}</h2>
                   <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : job.company}</p>
                   <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job, lang)}</span></div>
@@ -207,36 +204,33 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                   {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description.slice(0, 200)}</p>}
                   {isLocked && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
-                      {unlockingId === job.id ? (
-                        <PaddlePayment jobId={job.id} jobTitle={job.title} lang={lang} compact />
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <svg className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                            <span className="text-xs text-amber-700 font-medium">{T.contactAvailable}</span>
-                          </div>
-                          <button onClick={(e) => { e.stopPropagation(); setUnlockingId(job.id); }} className="text-xs px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm">
-                            {pwText.unlock}
-                          </button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                          <span className="text-xs text-amber-700 font-medium">{T.contactAvailable}</span>
                         </div>
-                      )}
+                        <span className="text-xs px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg shadow-sm">
+                          {pwText.unlock}
+                        </span>
+                      </div>
                     </div>
                   )}
                   {!isLocked && job.contactEmail && (
                     <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-1.5">
                       <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                      <a href={"mailto:" + job.contactEmail} className="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors truncate">{job.contactEmail}</a>
+                      <span className="text-xs font-medium text-sky-600 truncate">{job.contactEmail}</span>
                     </div>
                   )}
                   {!isLocked && !job.contactEmail && careerUrl && (
                     <div className="mt-2 pt-2 border-t border-gray-100">
-                      <Link href={detailHref} className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                         {T.viewJob}
-                      </Link>
+                      </span>
                     </div>
                   )}
-                </div></article>);
+                </div></article>
+              </Link>);
           })}</div>
           {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.prevPage}</button>
