@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { translateJobFull, needsServerTranslation, getMyMemoryLang } from "@/lib/translate-server";
+import { needsServerTranslation } from "@/lib/translate-server";
 import type { Lang } from "@/lib/i18n";
 import fs from "fs";
 import path from "path";
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Check cache
+    // Check cache — instant response
     const cacheKey = `${file}:${jobId}:${lang}`;
     const cached = detailCache.get(cacheKey);
     if (cached && Date.now() - cached.ts < DETAIL_CACHE_TTL) {
@@ -46,9 +46,42 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Translate full job
-    console.log(`[NOSSY API] Translating job detail id=${jobId} for lang=${lang}`);
-    const translated = await translateJobFull(job, lang);
+    // Return raw data IMMEDIATELY, translate in background
+    const result = { ...job, _pendingTranslation: true };
+
+    // Fire-and-forget background translation
+    translateDetailAndCache(cacheKey, job, lang, file, jobId).catch((err) => {
+      console.error('[NOSSY API] Background detail translation failed:', err.message);
+    });
+
+    return new NextResponse(JSON.stringify(result), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store", 'X-Translation-Status': 'pending' },
+    });
+  } catch (err: any) {
+    console.error('[NOSSY API] Job detail error:', err.message);
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+}
+
+// Background translation for job detail
+async function translateDetailAndCache(
+  cacheKey: string,
+  job: any,
+  lang: Lang,
+  file: string,
+  jobId: string
+): Promise<void> {
+  try {
+    const { translateJobFull } = await import("@/lib/translate-server");
+
+    console.log(`[NOSSY API] Background translating job detail id=${jobId} for lang=${lang}`);
+
+    const translated = await Promise.race([
+      translateJobFull(job, lang),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Detail translation timeout (8s)')), 8000)
+      ),
+    ]);
 
     const result = {
       ...job,
@@ -60,12 +93,9 @@ export async function GET(req: NextRequest) {
     };
 
     detailCache.set(cacheKey, { data: result, ts: Date.now() });
-
-    return new NextResponse(JSON.stringify(result), {
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600", 'X-Translated': 'fresh' },
-    });
+    console.log(`[NOSSY API] Detail translation cached for id=${jobId}, lang=${lang}`);
   } catch (err: any) {
-    console.error('[NOSSY API] Job detail error:', err.message);
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    console.error(`[NOSSY API] Background detail translation error:`, err.message);
+    detailCache.set(cacheKey, { data: job, ts: Date.now() - DETAIL_CACHE_TTL + 60_000 });
   }
 }

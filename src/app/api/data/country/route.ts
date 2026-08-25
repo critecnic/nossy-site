@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { translateJobListFields, needsServerTranslation } from "@/lib/translate-server";
+import { needsServerTranslation } from "@/lib/translate-server";
 import type { Lang } from "@/lib/i18n";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
@@ -26,8 +26,8 @@ function safeFilePath(file: string): string | null {
   return resolved;
 }
 
-// Cache for translated file responses: "file:lang" → data
-const translatedCache = new Map<string, any>();
+// Lightweight in-memory cache for translated results
+const translatedCache = new Map<string, { data: any; ts: number }>();
 const TRANSLATED_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
 export async function GET(req: NextRequest) {
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Check translated cache
+    // Check translated cache FIRST — instant response, no API call
     const cacheKey = file + ':' + lang;
     const cached = translatedCache.get(cacheKey);
     if (cached && Date.now() - cached.ts < TRANSLATED_CACHE_TTL) {
@@ -70,7 +70,8 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Parse and translate
+    // For NON-cached requests: return raw data IMMEDIATELY with _pendingTranslation flag
+    // This prevents the page from hanging while translation happens in background
     const jobs = JSON.parse(raw);
     if (!Array.isArray(jobs) || jobs.length === 0) {
       return new NextResponse(raw, {
@@ -78,24 +79,66 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Translate title, company, location for all jobs (list view fields)
-    console.log(`[NOSSY API] Translating ${jobs.length} jobs for ${lang}, file=${file}`);
-    const translatedMap = await translateJobListFields(jobs, lang);
+    // Return raw data immediately so the page loads instantly
+    // Start background translation (fire-and-forget, will be cached for next request)
+    const responseHeaders = {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      'X-Translation-Status': 'pending',
+    };
 
-    // Apply translations
-    const translated = jobs.map((job: any) => {
-      const t = translatedMap.get(job.id);
-      return t ? { ...job, title: t.title, company: t.company, location: t.location, _translated: true } : job;
+    // Fire background translation (don't await — page already responding)
+    translateAndCache(cacheKey, file, jobs, lang).catch((err) => {
+      console.error('[NOSSY API] Background translation failed:', err.message);
     });
 
-    // Cache result
-    translatedCache.set(cacheKey, { data: translated, ts: Date.now() });
-
-    return new NextResponse(JSON.stringify(translated), {
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600", 'X-Translated': 'fresh' },
+    return new NextResponse(JSON.stringify(jobs.map((job: any) => ({ ...job, _pendingTranslation: true }))), {
+      headers: responseHeaders,
     });
   } catch (err: any) {
     console.error('[NOSSY API] Error:', err.message);
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+}
+
+// Background translation — caches result for subsequent requests
+async function translateAndCache(
+  cacheKey: string,
+  file: string,
+  jobs: any[],
+  lang: Lang
+): Promise<void> {
+  try {
+    // Dynamic import to avoid blocking the main response
+    const { translateJobListFields } = await import("@/lib/translate-server");
+
+    // Translate with a 5-second timeout per job (3 fields in parallel)
+    const MAX_JOBS_TO_TRANSLATE = 30; // Limit to prevent Vercel 10s timeout
+    const jobsToTranslate = jobs.slice(0, MAX_JOBS_TO_TRANSLATE);
+
+    console.log(`[NOSSY API] Background translating ${jobsToTranslate.length}/${jobs.length} jobs for ${lang}, file=${file}`);
+
+    const translatedMap = await Promise.race([
+      translateJobListFields(jobsToTranslate, lang),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Translation timeout (8s)')), 8000)
+      ),
+    ]);
+
+    // Apply translations
+    const translated = jobs.map((job: any) => {
+      const t = translatedMap.get(job.id);
+      return t
+        ? { ...job, title: t.title, company: t.company, location: t.location, _translated: true }
+        : job;
+    });
+
+    // Cache for future requests (instant delivery)
+    translatedCache.set(cacheKey, { data: translated, ts: Date.now() });
+    console.log(`[NOSSY API] Translation cached for ${lang}, file=${file}`);
+  } catch (err: any) {
+    console.error(`[NOSSY API] Background translation error for ${lang}:`, err.message);
+    // Even on failure, cache raw data with a short TTL to avoid retrying constantly
+    translatedCache.set(cacheKey, { data: jobs, ts: Date.now() - TRANSLATED_CACHE_TTL + 60_000 }); // 1 min TTL on failure
   }
 }
