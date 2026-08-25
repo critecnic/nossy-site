@@ -50,9 +50,23 @@ export async function generateMetadata({
 
   return {
     title: `${regionInfo?.flag || ''} ${regionName} | Tech Jobs | NOSSY`,
-    description: regionInfo?.seoDescription || descFn(regionName, countStr),
+    description: descFn(regionName, countStr) || regionInfo?.seoDescription,
     alternates: { canonical: url, languages: alternates },
-    robots: { index: false, follow: true },
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: "website",
+      title: `${regionInfo?.flag || ''} ${regionName} | Tech Jobs | NOSSY`,
+      description: descFn(regionName, countStr),
+      url,
+      siteName: "NOSSY",
+      images: [{ url: "https://nossy.pro/og/og-default.png", width: 1200, height: 630, alt: regionName }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${regionInfo?.flag || ''} ${regionName} | Tech Jobs | NOSSY`,
+      description: descFn(regionName, countStr),
+      images: ["https://nossy.pro/og/og-default.png"],
+    },
   };
 }
 

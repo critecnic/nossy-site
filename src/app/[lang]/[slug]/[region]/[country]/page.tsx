@@ -29,7 +29,8 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const cc = resolvedParams?.country || '';
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [allJobs, setAllJobs] = useState<Job[]>([]);
-  const [countryNameRaw, setCountryNameRaw] = useState("");
+  const initialCountryName = countriesData.find((c: any) => c.slug === cc)?.name || '';
+  const [countryNameRaw, setCountryNameRaw] = useState(initialCountryName);
   const countryName = countryNameRaw ? getCountryNameTranslated(cc, lang, countryNameRaw) : '';
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
@@ -58,13 +59,6 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
         setLoadProgress(100); setLoading(false);
       }).catch(() => { setDataError(true); setLoading(false); });
   }, [rc, cc, langCode]);
-
-  // Set country name from countries data if not set by jobs
-  useEffect(() => {
-    if (countryNameRaw || !cc || countries.length === 0) return;
-    const m = countries.find((c: any) => c.slug === cc);
-    if (m) setCountryNameRaw(m.name);
-  }, [countries, cc, countryNameRaw]);
 
   // Computed: filtered jobs
   const filtered = allJobs.filter(j => {
@@ -121,8 +115,8 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
         </div>
 
         <div className="relative w-full sm:w-80 mb-5">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={T.searchPlaceholder} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
+          <svg className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={T.searchPlaceholder} className="w-full ps-10 pe-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
         </div>
 
         <div className="mb-4">

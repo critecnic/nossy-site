@@ -59,7 +59,7 @@ function JsonLd() {
     "name": "NOSSY",
     "alternateName": "NOSSY Jobs",
     "url": "https://nossy.pro",
-    "description": "Browse " + TOTAL_JOBS + "+ tech job vacancies across Europe, Asia and USA",
+    "description": "Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA",
     "publisher": { "@type": "Organization", "name": "NOSSY" },
     "potentialAction": {
       "@type": "SearchAction",
@@ -75,7 +75,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#0f172a" />
         <JsonLd />
       </head>

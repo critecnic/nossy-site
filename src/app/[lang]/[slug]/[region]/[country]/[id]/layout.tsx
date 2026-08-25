@@ -39,6 +39,18 @@ const JOB_META_DESC: Record<string, (title: string, company: string, location: s
   nl: (t, c, l, tp, s) => `Solliciteer voor ${t} bij ${c} in ${l}.${tp ? ' ' + tp + ' positie.' : ''}${s ? ' Salaris: ' + s + '.' : ''} Meer vacatures op NOSSY.`,
   pl: (t, c, l, tp, s) => `Aplikuj na ${t} w ${c} w ${l}.${tp ? ' Stanowisko ' + tp + '.' : ''}${s ? ' Wynagrodzenie: ' + s + '.' : ''} Wiecej ofert na NOSSY.`,
   ru: (t, c, l, tp, s) => `Откликнитесь на ${t} в ${c} в ${l}.${tp ? ' ' + tp + '.' : ''}${s ? ' Зарплата: ' + s + '.' : ''} Больше вакансий на NOSSY.`,
+  zh: (t, c, l, tp, s) => `${t} - ${c}${l}科技职位 | NOSSY`,
+  ja: (t, c, l, tp, s) => `${t} - ${c}${l}テック求人 | NOSSY`,
+  ko: (t, c, l, tp, s) => `${t} - ${c}${l} 기술 채용 | NOSSY`,
+  hi: (t, c, l, tp, s) => `${t} - ${c}${l} टेक नौकरी | NOSSY`,
+  bn: (t, c, l, tp, s) => `${t} - ${c}${l} টেক চাকরি | NOSSY`,
+  ar: (t, c, l, tp, s) => `${t} - ${c}${l} وظيفة تقنية | NOSSY`,
+  tr: (t, c, l, tp, s) => `${t} - ${c}${l} teknoloji işi | NOSSY`,
+  vi: (t, c, l, tp, s) => `${t} - ${c}${l} việc làm công nghệ | NOSSY`,
+  th: (t, c, l, tp, s) => `${t} - ${c}${l} งานด้านเทคโนโลยี | NOSSY`,
+  ur: (t, c, l, tp, s) => `${t} - ${c}${l} ٹیک نوکری | NOSSY`,
+  tl: (t, c, l, tp, s) => `${t} - ${c}${l} tech job | NOSSY`,
+  sw: (t, c, l, tp, s) => `${t} - ${c}${l} kazi ya teknolojia | NOSSY`,
 };
 
 const FALLBACK_JOB_DESC: Record<string, (countryName: string, regionName: string) => string> = {
@@ -88,7 +100,7 @@ export async function generateMetadata({
       description,
       url,
       siteName: "NOSSY",
-      images: [{ url: "/og/og-default.png", width: 1200, height: 630, alt: job.title }],
+      images: [{ url: "https://nossy.pro/og/og-default.png", width: 1200, height: 630, alt: job.title }],
     };
   }
 
@@ -117,7 +129,7 @@ function JobPostingSchema({ job, url }: { job: Job; url: string }) {
         addressCountry: job.country,
       },
     },
-    employmentType: job.type === "Remote" ? "FULL_TIME" : "FULL_TIME",
+    employmentType: { "Remote": "FULL_TIME", "Contract": "CONTRACTOR", "Part-time": "PART_TIME", "Internship": "INTERN" }[job.type] || "FULL_TIME",
     applicantLocationRequirements: { "@type": "Country", name: job.countryName || job.country },
   };
 

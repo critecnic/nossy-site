@@ -11,7 +11,6 @@ import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-na
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
-import LangUpdater from "@/components/LangUpdater";
 import countriesData from "@/data/countries.json";
 
 interface Job {
@@ -55,7 +54,6 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
-      <LangUpdater lang={lang} />
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href={homeHref} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -113,7 +111,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         <section className="mb-14">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">{T.latestJobs}</h2>
-            <Link href={homeHref + "/europa"} className="text-sky-600 hover:text-sky-700 text-sm font-semibold flex items-center gap-1 group">
+            <Link href={homeHref} className="text-sky-600 hover:text-sky-700 text-sm font-semibold flex items-center gap-1 group">
               {T.viewAllJobs}
               <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>

@@ -21,7 +21,7 @@ const COUNTRY_META_DESC: Record<string, (n: string, c: string) => string> = {
   ja: (n: string, c: string) => `${n}で${c}+のテック求人を探す。ソフトウェアエンジニア、データサイエンス、クラウド、リモートなど。NOSSYで無料。`,
   ko: (n: string, c: string) => `${n}에서 ${c}+개의 테크 췄용 정보를 찾아보세요. 소프트웨어 엔지니어링, 데이터 사이언스, 클라우드, 원격 등. NOSSY에서 무료.`,
   hi: (n: string, c: string) => `${n} में ${c}+ टेक नौकरियाँ खोजें। सॉफ्टवेयर इंजीनियरिंग, डेटा साइंस, क्लाउड और बहुत कुछ। NOSSY पर मुफ्त।`,
-  bn: (n: string, c: string) => `${n}-এ ${c}+ টেক চাকরি খুঁজুন করুন। সফটওয়েয়ার ইংজিনিয়ারিং, ডাটা সাইন্স, ক্লাউড এবং আরও অনেক। NOSSY-এ বিনামূল্যে।`,
+  bn: (n: string, c: string) => `${n}-এ ${c}+ টেক চাকরি খুঁজুন। সফটওয়েয়ার ইংজিনিয়ারিং, ডাটা সাইন্স, ক্লাউড এবং আরও অনেক। NOSSY-এ বিনামূল্যে।`,
   ar: (n: string, c: string) => `ابحث عن ${c}+ وظيفة تقنية في ${n}. هندسة برمجية، علوم بيانات، حوسبة سحابية والمزيد. مجاناً على NOSSY.`,
   tr: (n: string, c: string) => `${n}'da ${c}+ teknoloji iş ilanı bulun. Yazılım mühendisliği, veri bilimi, bulut, uzaktan ve daha fazlası. NOSSY'da üccretsiz.`,
   vi: (n: string, c: string) => `Tìm ${c}+ việc làm công nghệ tại ${n}. Phát triển phần mềm, khoa học dữ liệu, đám mây, từ xa và hơn. Miễn phí trên NOSSY.`,
@@ -42,6 +42,18 @@ const COUNTRY_META_TITLE: Record<string, (n: string, c: string) => string> = {
   nl: (n: string, c: string) => `Tech Vacatures in ${n} | ${c}+ Vacatures | NOSSY`,
   pl: (n: string, c: string) => `Praca IT w ${n} | ${c}+ Ofert | NOSSY`,
   ru: (n: string, c: string) => `Работа в IT в ${n} | ${c}+ вакансий | NOSSY`,
+  zh: (n: string, c: string) => `探索${n}的${c}+科技职位 | NOSSY`,
+  ja: (n: string, c: string) => `${n}の${c}+テック求人 | NOSSY`,
+  ko: (n: string, c: string) => `${n}의 ${c}+ 기술 채용 | NOSSY`,
+  hi: (n: string, c: string) => `${n} में ${c}+ टेक नौकरियां | NOSSY`,
+  bn: (n: string, c: string) => `${n}-এ ${c}+ টেক চাকরি | NOSSY`,
+  ar: (n: string, c: string) => `${c}+ وظيفة تقنية في ${n} | NOSSY`,
+  tr: (n: string, c: string) => `${n}'da ${c}+ Teknoloji İş İlanı | NOSSY`,
+  vi: (n: string, c: string) => `${c}+ việc làm công nghệ tại ${n} | NOSSY`,
+  th: (n: string, c: string) => `${c}+ งานด้านเทคโนโลยีใน${n} | NOSSY`,
+  ur: (n: string, c: string) => `${n} میں ${c}+ ٹیک نوکریاں | NOSSY`,
+  tl: (n: string, c: string) => `${c}+ Tech Jobs sa ${n} | NOSSY`,
+  sw: (n: string, c: string) => `${c}+ Nafasi za Kazi za Teknolojia ${n} | NOSSY`,
 };
 
 export async function generateMetadata({
@@ -70,7 +82,21 @@ export async function generateMetadata({
     title: titleFn(countryName, countStr),
     description: descFn(countryName, countStr),
     alternates: { canonical: url, languages: alternates },
-    robots: { index: false, follow: true },
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: "website",
+      title: titleFn(countryName, countStr),
+      description: descFn(countryName, countStr),
+      url,
+      siteName: "NOSSY",
+      images: [{ url: "https://nossy.pro/og/og-default.png", width: 1200, height: 630, alt: countryName }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: titleFn(countryName, countStr),
+      description: descFn(countryName, countStr),
+      images: ["https://nossy.pro/og/og-default.png"],
+    },
   };
 }
 

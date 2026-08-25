@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
 import { TOTAL_JOBS } from "@/lib/countries";
 import type { Lang } from "@/lib/i18n";
+import LangUpdater from "@/components/LangUpdater";
 
 const DESC: Record<string, string> = {
   en: "NOSSY - Seek and you shall find. Browse " + TOTAL_JOBS.toLocaleString() + "+ tech job vacancies across Europe, Asia and USA. Free to browse!",
@@ -33,28 +34,11 @@ export function generateStaticParams() {
 }
 
 const LOCALE_MAP: Record<string, string> = {
-  en: 'en_US',
-  'pt-br': 'pt_BR',
-  'pt-pt': 'pt_PT',
-  es: 'es_ES',
-  fr: 'fr_FR',
-  de: 'de_DE',
-  it: 'it_IT',
-  nl: 'nl_NL',
-  pl: 'pl_PL',
-  ru: 'ru_RU',
-  zh: 'zh_CN',
-  ja: 'ja_JP',
-  ko: 'ko_KR',
-  hi: 'hi_IN',
-  bn: 'bn_BD',
-  ar: 'ar_SA',
-  tr: 'tr_TR',
-  vi: 'vi_VN',
-  th: 'th_TH',
-  ur: 'ur_PK',
-  tl: 'tl_PH',
-  sw: 'sw_TZ',
+  en: 'en_US', 'pt-br': 'pt_BR', 'pt-pt': 'pt_PT', es: 'es_ES', fr: 'fr_FR',
+  de: 'de_DE', it: 'it_IT', nl: 'nl_NL', pl: 'pl_PL', ru: 'ru_RU',
+  zh: 'zh_CN', ja: 'ja_JP', ko: 'ko_KR', hi: 'hi_IN', bn: 'bn_BD',
+  ar: 'ar_SA', tr: 'tr_TR', vi: 'vi_VN', th: 'th_TH', ur: 'ur_PK',
+  tl: 'tl_PH', sw: 'sw_TZ',
 };
 
 export async function generateMetadata({
@@ -88,6 +72,13 @@ export async function generateMetadata({
   };
 }
 
-export default function LangSlugLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function LangSlugLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ lang: string; slug: string }>;
+}) {
+  const { lang } = await params;
+  return <><LangUpdater lang={lang} />{children}</>;
 }

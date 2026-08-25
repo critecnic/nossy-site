@@ -3,21 +3,20 @@
 import { useEffect } from 'react';
 
 /**
- * Sets <html lang="..."> dynamically based on the current page language.
- * The root layout defaults to lang="en", so this component overrides it
- * for non-English pages. Googlebot executes JavaScript, so this works for SEO.
+ * Sets <html lang="..."> and <html dir="..."> dynamically.
+ * Included in [lang]/[slug]/layout.tsx so it runs on ALL pages.
  */
 export default function LangUpdater({ lang }: { lang: string }) {
   useEffect(() => {
-    const map: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'pt-br': 'pt-BR', 'pt-pt': 'pt-PT', 'zh': 'zh-CN',
-      'en': 'en', 'es': 'es', 'fr': 'fr', 'de': 'de', 'it': 'it',
-      'nl': 'nl', 'pl': 'pl', 'ru': 'ru', 'ja': 'ja', 'ko': 'ko',
-      'hi': 'hi', 'bn': 'bn', 'ar': 'ar', 'tr': 'tr', 'vi': 'vi',
+      'en': 'en', 'es': 'es-ES', 'fr': 'fr-FR', 'de': 'de-DE', 'it': 'it-IT',
+      'nl': 'nl-NL', 'pl': 'pl-PL', 'ru': 'ru-RU', 'ja': 'ja', 'ko': 'ko',
+      'hi': 'hi', 'bn': 'bn', 'ar': 'ar', 'tr': 'tr-TR', 'vi': 'vi',
       'th': 'th', 'ur': 'ur', 'tl': 'tl', 'sw': 'sw',
     };
-    const htmlLang = map[lang] || lang;
-    document.documentElement.lang = htmlLang;
+    document.documentElement.lang = langMap[lang] || lang;
+    document.documentElement.dir = (lang === 'ar' || lang === 'ur') ? 'rtl' : 'ltr';
   }, [lang]);
   return null;
 }

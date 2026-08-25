@@ -9,7 +9,6 @@ import { getRegionName } from "@/lib/shared";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
-import LangUpdater from "@/components/LangUpdater";
 
 export default function TopTechSkillsDemand({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const [langCode, setLangCode] = useState("");
@@ -23,14 +22,13 @@ export default function TopTechSkillsDemand({ params }: { params: Promise<{ lang
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
-      <LangUpdater lang={lang} />
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href={homeHref} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <SiteLogo size={38} />
             <NossyBrand variant="dark" size={28} className="h-7 w-auto" />
           </Link>
-          <LangSelector lang={lang} switchLang={(l) => window.location.href = "/" + l + "/" + LANG_SLUGS[l]} />
+          <LangSelector lang={lang} switchLang={(l) => { const path = window.location.pathname; const rest = path.replace(/^\/[a-z]+\/[a-z-]+/, ""); window.location.href = "/" + l + "/" + LANG_SLUGS[l] + rest; }} />
         </div>
       </header>
 

@@ -11,6 +11,7 @@ import { getCountryNameTranslated } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
+import allCountries from "@/data/countries.json";
 
 interface CountryInfo { name: string; slug: string; region: string; count: number; }
 
@@ -20,22 +21,10 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
   const langCode = resolvedParams?.lang || '';
   const rc = resolvedParams?.region || '';
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
-  const [regionCountries, setRegionCountries] = useState<CountryInfo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dataError, setDataError] = useState(false);
+  const regionCountries = (allCountries as CountryInfo[]).filter((c) => c.region === rc).sort((a, b) => b.count - a.count);
 
   const homeHref = "/" + lang + "/" + LANG_SLUGS[lang];
   const regionHref = homeHref + "/" + rc;
-
-  useEffect(() => {
-    if (!rc) return; setLoading(true); setDataError(false);
-    fetch("/data/countries.json")
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((cd: CountryInfo[]) => {
-        const ac = (cd || []).filter((c) => c.region === rc).sort((a, b) => b.count - a.count);
-        setRegionCountries(ac); setLoading(false);
-      }).catch(() => { setDataError(true); setLoading(false); });
-  }, [rc]);
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
@@ -65,12 +54,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
           <h1 className="text-3xl font-extrabold text-gray-900">{rCfg?.flag} {rName}</h1>
           <p className="text-gray-500 mt-1">{rCfg?.jobCount.toLocaleString()}+ {T.vacancies}</p>
         </div>
-        {dataError ? (
-          <div className="text-center py-12 text-gray-400"><p className="text-3xl mb-2">&#9888;&#65039;</p><p>{T.error}</p><button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">{T.reload}</button></div>
-        ) : loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{Array.from({ length: 10 }).map((_, i) => (<div key={i} className="animate-pulse h-24 rounded-xl bg-gray-100" />))}</div>
-        ) : (
-          <section>
+        <section>
             <h2 className="text-xl font-bold text-gray-900 mb-4">{T.browseByCountry}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {regionCountries.map((c) => (
@@ -82,8 +66,7 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
                   </div>
                 </Link>))}
             </div>
-          </section>
-        )}
+        </section>
       </main>
       <footer className="bg-gray-900 text-white py-12 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
