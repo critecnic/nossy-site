@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, use, useCallback, useRef } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
-import { needsTranslation, translateJob } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -29,76 +28,45 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-  const [translating, setTranslating] = useState(false);
-  const [translatedJob, setTranslatedJob] = useState<{title:string;description:string;company:string;location:string} | null>(null);
-  const abortRef = useRef(false);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
   const countryHref = regionHref + "/" + cc;
 
-  // Load job data
+  // Load job data WITH server-side translation
   useEffect(() => {
     if (!rc || !cc || !jobId) return;
     setLoading(true); setDataError(false);
-    const baseFile = rc + "_" + cc;
-    const loadFile = async (f: string): Promise<Job[]> => {
-      try {
-        const r = await fetch("/api/data/country?file=" + encodeURIComponent(f + ".json"));
-        if (!r.ok) return [];
+    const baseFile = rc + "_" + cc + ".json";
+
+    // Try loading from job-detail API (has translation)
+    fetch("/api/data/job-detail?file=" + encodeURIComponent(baseFile) + "&id=" + encodeURIComponent(jobId) + "&lang=" + encodeURIComponent(langCode))
+      .then(r => {
+        if (!r.ok) throw new Error();
         return r.json();
-      } catch { return []; }
-    };
-    (async () => {
-      try {
-        let jobs = await loadFile(baseFile);
-        if (!jobs.length) {
-          for (let i = 1; i <= 4; i++) {
-            const part = await loadFile(baseFile + "-" + i);
-            if (part.length) { jobs = part; break; }
-          }
-        }
-        if (!jobs.length) {
-          for (let i = 1; i <= 4; i++) {
-            const part = await loadFile(baseFile + "-" + i);
-            const found = (part || []).find((j: Job) => String(j.id) === String(jobId));
-            if (found) { setJob(found); setLoading(false); return; }
-          }
-        }
-        const found = (jobs || []).find((j: Job) => String(j.id) === String(jobId));
-        if (found) setJob(found);
+      })
+      .then((data: Job) => {
+        setJob(data);
         setLoading(false);
-      } catch {
-        setDataError(true); setLoading(false);
-      }
-    })();
-  }, [rc, cc, jobId]);
-
-  // Clear translations when language changes
-  useEffect(() => { setTranslatedJob(null); setTranslating(false); }, [lang]);
-
-  // Translate job content when job loads or language changes
-  useEffect(() => {
-    if (!job || !needsTranslation(lang)) {
-      if (job) setTranslatedJob({ title: job.title, description: job.description, company: job.company, location: job.location });
-      setTranslating(false);
-      return;
-    }
-    abortRef.current = false;
-    setTranslating(true);
-
-    (async () => {
-      try {
-        const result = await translateJob(job, lang);
-        if (!abortRef.current) setTranslatedJob(result);
-      } catch {
-        if (!abortRef.current) setTranslatedJob({ title: job.title, description: job.description, company: job.company, location: job.location });
-      }
-      if (!abortRef.current) setTranslating(false);
-    })();
-
-    return () => { abortRef.current = true; };
-  }, [job, lang]);
+      })
+      .catch(() => {
+        // Fallback: try loading from country API and find the job
+        const loadFromCountry = async () => {
+          try {
+            const r = await fetch("/api/data/country?file=" + encodeURIComponent(baseFile) + "&lang=" + encodeURIComponent(langCode));
+            if (!r.ok) { setDataError(true); setLoading(false); return; }
+            const jobs: Job[] = await r.json();
+            const found = jobs.find(j => String(j.id) === String(jobId));
+            if (found) setJob(found);
+            else setDataError(true);
+          } catch {
+            setDataError(true);
+          }
+          setLoading(false);
+        };
+        loadFromCountry();
+      });
+  }, [rc, cc, jobId, langCode]);
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
@@ -108,11 +76,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const isLocked = pw.paywall && !showPayment;
   const pwText = getPaywallText(lang);
   const careerUrl = job ? getCompanyCareerUrl(job) : '';
-
-  const displayTitle = translatedJob?.title || job?.title || '';
-  const displayDescription = translatedJob?.description || job?.description || '';
-  const displayCompany = translatedJob?.company || job?.company || '';
-  const displayLocation = translatedJob?.location || job?.location || '';
 
   if (loading) {
     return (
@@ -187,7 +150,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           <Link href={countryHref} className="hover:text-sky-600 transition-colors">{cName}</Link>
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          <span className="text-gray-900 font-medium truncate max-w-xs">{displayTitle}</span>
+          <span className="text-gray-900 font-medium truncate max-w-xs">{job.title}</span>
         </nav>
 
         <article className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -199,9 +162,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               {pw.paywall && <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-bold border border-amber-200">{pwText.premium}</span>}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">
-              {translating ? <span className="inline-block w-3/4 h-8 bg-gray-200 rounded animate-pulse" /> : displayTitle}
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">{job.title}</h1>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center gap-2">
@@ -212,12 +173,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 font-bold">{pwText.premium}</span>
                   </div>
                 ) : (
-                  <span className="text-sm font-medium text-gray-900">{translating ? <span className="inline-block w-24 h-4 bg-gray-200 rounded animate-pulse" /> : displayCompany}</span>
+                  <span className="text-sm font-medium text-gray-900">{job.company}</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span className="text-sm text-gray-600">{translating ? <span className="inline-block w-32 h-4 bg-gray-200 rounded animate-pulse" /> : displayLocation}</span>
+                <span className="text-sm text-gray-600">{job.location}</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -253,18 +214,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
 
             <div className="mb-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">{T.descriptionFull}</h2>
-              {translating ? (
-                <div className="space-y-3 animate-pulse">
-                  <div className="h-4 bg-gray-100 rounded w-full" />
-                  <div className="h-4 bg-gray-100 rounded w-11/12" />
-                  <div className="h-4 bg-gray-100 rounded w-full" />
-                  <div className="h-4 bg-gray-100 rounded w-4/5" />
-                  <div className="h-4 bg-gray-100 rounded w-full" />
-                  <div className="h-4 bg-gray-100 rounded w-3/4" />
-                </div>
-              ) : (
-                <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">{displayDescription}</div>
-              )}
+              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</div>
             </div>
 
             {!isLocked && (

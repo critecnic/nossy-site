@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -8,12 +8,10 @@ import type { Lang } from "@/lib/i18n";
 import { getFlag } from "@/lib/flags";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, getCompanyCareerUrl } from "@/lib/shared";
 import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
-import { needsTranslation, translateText, getCachedTranslation, setCachedTranslation } from "@/lib/translate";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
 import LangUpdater from "@/components/LangUpdater";
-import latestData from "@/data/latest_20.json";
 import countriesData from "@/data/countries.json";
 
 interface Job {
@@ -23,64 +21,28 @@ interface Job {
 }
 interface CountryInfo { name: string; slug: string; region: string; count: number; }
 
-interface TCard { title: string; company: string; location: string; }
-
 export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const [langCode, setLangCode] = useState("");
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
-  const [latest] = useState<Job[]>(latestData as Job[]);
+  const [latest, setLatest] = useState<Job[]>([]);
   const [countries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
-  const [dataError] = useState(false);
-  const [tCards, setTCards] = useState<Record<number, TCard>>({});
-  const [busy, setBusy] = useState(false);
-  const abortRef = useRef(false);
+  const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState(false);
 
   useEffect(() => { params.then(p => setLangCode(p.lang)); }, [params]);
 
-  // When lang resolves, translate all visible cards
+  // Fetch latest jobs from API (with server-side translation)
   useEffect(() => {
     if (!langCode) return;
-    const l = langCode as Lang;
-    if (!needsTranslation(l)) { setTCards({}); setBusy(false); return; }
-
-    abortRef.current = false;
-    setBusy(true);
-    setTCards({});
-
-    const jobs = (latestData as Job[]).slice(0, 20);
-
-    (async () => {
-      const results: Record<number, TCard> = {};
-      for (const job of jobs) {
-        if (abortRef.current) break;
-
-        // Check cache
-        const ct = getCachedTranslation(job.title, l);
-        const cc = getCachedTranslation(job.company, l);
-        const cl = getCachedTranslation(job.location, l);
-        if (ct) {
-          results[job.id] = { title: ct, company: cc || job.company, location: cl || job.location };
-          continue;
-        }
-
-        try {
-          const [tTitle, tCompany, tLocation] = await Promise.all([
-            translateText(job.title, l),
-            translateText(job.company, l),
-            translateText(job.location, l),
-          ]);
-          results[job.id] = { title: tTitle, company: tCompany, location: tLocation };
-        } catch {
-          results[job.id] = { title: job.title, company: job.company, location: job.location };
-        }
-      }
-      if (!abortRef.current) {
-        setTCards(results);
-        setBusy(false);
-      }
-    })();
-
-    return () => { abortRef.current = true; };
+    setLoading(true);
+    setDataError(false);
+    fetch("/api/data/latest?lang=" + encodeURIComponent(langCode))
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then((data: Job[]) => {
+        setLatest((data || []).slice(0, 20));
+        setLoading(false);
+      })
+      .catch(() => { setDataError(true); setLoading(false); });
   }, [langCode]);
 
   const T = i18n[lang] || i18n["en"];
@@ -161,23 +123,22 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
               <p>{T.error}</p>
               <button onClick={() => window.location.reload()} className="mt-3 text-sky-600 font-medium text-sm hover:underline">{T.reload}</button>
             </div>
-          ) : busy ? (
+          ) : loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (<div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5"><div className="h-4 bg-gray-200 rounded w-1/3 mb-3" /><div className="h-5 bg-gray-200 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-200 rounded w-1/2 mb-3" /><div className="h-3 bg-gray-200 rounded w-full" /></div>))}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {latest.slice(0, 20).map((job) => {
+              {latest.map((job) => {
                 const m = getSectorMeta(job.sector); const tc = getTypeStyle(job.type);
-                const tr = tCards[job.id];
                 return (
                   <article key={job.id} className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition-all border-gray-100">
                     <div className={"h-1 w-full bg-gradient-to-r " + m.color} />
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{tr?.title || job.title}</h3>
-                      <p className="text-xs font-medium text-gray-600 mb-2">{tr?.company || job.company}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500"><span>{tr?.location || job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
+                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{job.title}</h3>
+                      <p className="text-xs font-medium text-gray-600 mb-2">{job.company}</p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500"><span>{job.location}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
                       <div className="mt-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sectorNames[lang]?.[job.sector] || job.sector}</span></div>
                     </div></article>);
               })}

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { translateJobListFields, needsServerTranslation } from "@/lib/translate-server";
+import type { Lang } from "@/lib/i18n";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 const MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -24,6 +26,10 @@ function safeFilePath(file: string): string | null {
   return resolved;
 }
 
+// Cache for translated file responses: "file:lang" → data
+const translatedCache = new Map<string, any>();
+const TRANSLATED_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
 export async function GET(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
   if (isApiRateLimited(ip)) {
@@ -31,6 +37,8 @@ export async function GET(req: NextRequest) {
   }
 
   const file = req.nextUrl.searchParams.get("file");
+  const lang = (req.nextUrl.searchParams.get("lang") || 'pt-br') as Lang;
+
   if (!file) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
@@ -41,14 +49,53 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const data = fs.readFileSync(safePath, "utf-8");
-    if (data.length > MAX_RESPONSE_SIZE) {
+    const raw = fs.readFileSync(safePath, "utf-8");
+    if (raw.length > MAX_RESPONSE_SIZE) {
       return NextResponse.json({ error: "Response too large" }, { status: 413 });
     }
-    return new NextResponse(data, {
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
+
+    // If Portuguese (source language), return raw data immediately
+    if (!needsServerTranslation(lang)) {
+      return new NextResponse(raw, {
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
+      });
+    }
+
+    // Check translated cache
+    const cacheKey = file + ':' + lang;
+    const cached = translatedCache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < TRANSLATED_CACHE_TTL) {
+      return new NextResponse(JSON.stringify(cached.data), {
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600", 'X-Translated': 'cached' },
+      });
+    }
+
+    // Parse and translate
+    const jobs = JSON.parse(raw);
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+      return new NextResponse(raw, {
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600" },
+      });
+    }
+
+    // Translate title, company, location for all jobs (list view fields)
+    console.log(`[NOSSY API] Translating ${jobs.length} jobs for ${lang}, file=${file}`);
+    const translatedMap = await translateJobListFields(jobs, lang);
+
+    // Apply translations
+    const translated = jobs.map((job: any) => {
+      const t = translatedMap.get(job.id);
+      return t ? { ...job, title: t.title, company: t.company, location: t.location, _translated: true } : job;
     });
-  } catch {
+
+    // Cache result
+    translatedCache.set(cacheKey, { data: translated, ts: Date.now() });
+
+    return new NextResponse(JSON.stringify(translated), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600", 'X-Translated': 'fresh' },
+    });
+  } catch (err: any) {
+    console.error('[NOSSY API] Error:', err.message);
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 }
