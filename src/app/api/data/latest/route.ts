@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { translateJobListFields, needsServerTranslation } from "@/lib/translate-server";
+import { needsServerTranslation } from "@/lib/translate-server";
 import type { Lang } from "@/lib/i18n";
 import fs from "fs";
 import path from "path";
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Check cache
+    // Check cache — instant response
     const cached = latestCache.get(lang);
     if (cached && Date.now() - cached.ts < LATEST_CACHE_TTL) {
       return new NextResponse(JSON.stringify(cached.data), {
@@ -31,9 +31,33 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Translate
-    console.log(`[NOSSY API] Translating latest 20 for lang=${lang}`);
-    const translatedMap = await translateJobListFields(jobs, lang);
+    // Return raw data IMMEDIATELY, translate in background
+    const result = jobs.map((job: any) => ({ ...job, _pendingTranslation: true }));
+
+    translateLatestAndCache(lang, jobs).catch((err) => {
+      console.error('[NOSSY API] Background latest translation failed:', err.message);
+    });
+
+    return new NextResponse(JSON.stringify(result), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store", 'X-Translation-Status': 'pending' },
+    });
+  } catch (err: any) {
+    console.error('[NOSSY API] Latest error:', err.message);
+    return NextResponse.json({ error: "Failed to load" }, { status: 500 });
+  }
+}
+
+async function translateLatestAndCache(lang: Lang, jobs: any[]): Promise<void> {
+  try {
+    const { translateJobListFields } = await import("@/lib/translate-server");
+
+    console.log(`[NOSSY API] Background translating latest 20 for lang=${lang}`);
+    const translatedMap = await Promise.race([
+      translateJobListFields(jobs, lang),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Latest translation timeout (8s)')), 8000)
+      ),
+    ]);
 
     const translated = jobs.map((job: any) => {
       const t = translatedMap.get(job.id);
@@ -41,12 +65,9 @@ export async function GET(req: NextRequest) {
     });
 
     latestCache.set(lang, { data: translated, ts: Date.now() });
-
-    return new NextResponse(JSON.stringify(translated), {
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=1800", 'X-Translated': 'fresh' },
-    });
+    console.log(`[NOSSY API] Latest translation cached for lang=${lang}`);
   } catch (err: any) {
-    console.error('[NOSSY API] Latest error:', err.message);
-    return NextResponse.json({ error: "Failed to load" }, { status: 500 });
+    console.error(`[NOSSY API] Background latest translation error:`, err.message);
+    latestCache.set(lang, { data: jobs, ts: Date.now() - LATEST_CACHE_TTL + 60_000 });
   }
 }
