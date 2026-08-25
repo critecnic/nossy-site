@@ -80,3 +80,27 @@ Stage Summary:
 - Todas as 36 correções aplicadas
 - TypeScript: 0 erros
 - Zip final: 136KB
+---
+Task ID: 1
+Agent: main
+Task: Rewrite translation system from MyMemory to GLM-4-Flash
+
+Work Log:
+- Analyzed current broken translation architecture (background pattern, client never re-fetches)
+- Tested MyMemory API: 500 char limit (code had 2000), 403 on long text
+- Presented 3 alternatives + comparison to user
+- User chose Option 1 (LLM Agent) with GLM from Zhipu AI
+- Rewrote src/lib/translate-server.ts: replaced MyMemory with GLM-4-Flash batch translation
+- Rewrote src/app/api/data/job-detail/route.ts: synchronous translation, no background pattern
+- Rewrote src/app/api/data/country/route.ts: synchronous translation, no background pattern  
+- Rewrote src/app/api/data/latest/route.ts: synchronous translation, no background pattern
+- All 3 routes now return Cache-Control: public, s-maxage for Vercel edge caching
+- Client pages (page.tsx) require ZERO changes
+- TypeScript: 0 errors
+
+Stage Summary:
+- 4 files modified: translate-server.ts + 3 API routes
+- Architecture: synchronous GLM batch translation with in-memory cache + Vercel edge cache
+- Client code untouched - works as-is
+- User needs to: 1) Create account at open.bigmodel.cn, 2) Get API key, 3) Set GLM_API_KEY on Vercel
+
