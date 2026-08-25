@@ -1,0 +1,6 @@
+
+======================================================================
+  TESTE COMPARATIVO - 3 ALTERNATIVAS DE TRADUÇÃO + ATUAL
+======================================================================
+Textos: 5 | Idiomas: 6 | Total testes por alternativa: 30
+Texto descrição: Vaga para desenvolvedor senior com experiencia em React, Nod...

@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-08-25 18:44:11",
+  "results": {
+    "MyMemory": {
+      "ok": 4,
+      "fail": 2,
+      "rate": 66.7,
+      "avg_ms": 1017,
+      "max_ms": 1125,
+      "errors": [
+        "title -> en: fallback/uppercase",
+        "title -> de: fallback/uppercase"
+      ]
+    },
+    "Lingva": {
+      "ok": 0,
+      "fail": 6,
+      "rate": 0.0,
+      "avg_ms": 0,
+      "max_ms": 0,
+      "errors": [
+        "title -> en: all instances failed",
+        "title -> de: all instances failed",
+        "title -> ja: all instances failed",
+        "location -> en: all instances failed",
+        "location -> de: all instances failed"
+      ]
+    },
+    "Libre": {
+      "ok": 0,
+      "fail": 6,
+      "rate": 0.0,
+      "avg_ms": 0,
+      "max_ms": 0,
+      "errors": [
+        "title -> en: all instances failed",
+        "title -> de: all instances failed",
+        "title -> ja: all instances failed",
+        "location -> en: all instances failed",
+        "location -> de: all instances failed"
+      ]
+    },
+    "Static": {
+      "ok": 6,
+      "fail": 0,
+      "rate": 100.0,
+      "avg_ms": 0,
+      "max_ms": 0,
+      "errors": []
+    }
+  }
+}
