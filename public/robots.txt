@@ -1,0 +1,8 @@
+# NOSSY - Seek and you shall find.
+User-agent: *
+Allow: /
+
+Sitemap: https://nossy.pro/sitemap.xml
+
+# Block API and data endpoints from indexing
+Disallow: /api/

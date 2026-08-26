@@ -1,5 +1,5 @@
 // ============================================================
-// NOSSY Translation Library v2.0 — GLM-4-Flash (Zhipu AI)
+// NOSSY Translation Library v2.1 — Google Gemini 2.0 Flash
 // Replaces MyMemory with LLM-based batch translation.
 // One API call translates an entire page of jobs.
 // Synchronous: client receives translated data immediately.
@@ -59,20 +59,41 @@ function setCache(key: string, data: any): void {
   cache.set(key, { data, ts: Date.now() });
 }
 
-// ---- GLM-4-Flash API ----
-const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-const GLM_MODEL = 'glm-4-flash';
+// ---- Google Gemini Flash API ----
+const GEMINI_MODEL = 'gemini-2.0-flash';
 const MAX_RETRIES = 2;
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function callGLM(systemPrompt: string, userContent: string): Promise<string | null> {
-  const apiKey = process.env.GLM_API_KEY;
+async function callGemini(systemPrompt: string, userContent: string, jsonMode = false): Promise<string | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error('[NOSSY Translate] GLM_API_KEY not configured. Translations will return original text.');
+    console.error('[NOSSY Translate] GEMINI_API_KEY not configured. Translations will return original text.');
     return null;
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+  const body: any = {
+    systemInstruction: {
+      parts: [{ text: systemPrompt }],
+    },
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: userContent }],
+      },
+    ],
+    generationConfig: {
+      temperature: 0.1,
+    },
+  };
+
+  // Force JSON output when possible
+  if (jsonMode) {
+    body.generationConfig.responseMimeType = 'application/json';
   }
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -80,20 +101,10 @@ async function callGLM(systemPrompt: string, userContent: string): Promise<strin
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 12000);
 
-      const res = await fetch(GLM_API_URL, {
+      const res = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: GLM_MODEL,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userContent },
-          ],
-          temperature: 0.1,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
 
@@ -101,21 +112,22 @@ async function callGLM(systemPrompt: string, userContent: string): Promise<strin
 
       if (!res.ok) {
         const errorBody = await res.text().catch(() => '');
-        console.error(`[NOSSY Translate] GLM API ${res.status}: ${errorBody.slice(0, 200)}`);
+        console.error(`[NOSSY Translate] Gemini API ${res.status}: ${errorBody.slice(0, 300)}`);
         if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; }
         return null;
       }
 
       const data = await res.json();
-      const text = data.choices?.[0]?.message?.content;
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
       if (!text || !text.trim()) {
-        console.error('[NOSSY Translate] GLM returned empty content');
+        console.error('[NOSSY Translate] Gemini returned empty content');
         return null;
       }
 
       return text.trim();
     } catch (err: any) {
-      console.error(`[NOSSY Translate] GLM call failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, err.message);
+      console.error(`[NOSSY Translate] Gemini call failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, err.message);
       if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; }
       return null;
     }
@@ -124,12 +136,10 @@ async function callGLM(systemPrompt: string, userContent: string): Promise<strin
   return null;
 }
 
-// ---- JSON extraction from LLM response ----
+// ---- JSON extraction (fallback if jsonMode fails) ----
 function extractJSON(text: string): string {
-  // Try markdown code block first
   const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (codeBlockMatch) return codeBlockMatch[1].trim();
-  // Try to find JSON array or object
   const arrMatch = text.match(/(\[[\s\S]*\])/);
   if (arrMatch) return arrMatch[1].trim();
   const objMatch = text.match(/(\{[\s\S]*\})/);
@@ -139,7 +149,7 @@ function extractJSON(text: string): string {
 
 // ---- Public API ----
 
-/** Batch translate job list fields (title, company, location) — ONE API call for all jobs */
+/** Batch translate job list fields (title, company, location) — ONE API call */
 export async function translateJobListFields(
   jobs: Array<{ id: number; title: string; company: string; location: string }>,
   targetLang: Lang
@@ -163,17 +173,17 @@ export async function translateJobListFields(
 Rules:
 - Translate ONLY the values of "title", "company", and "location" fields
 - NEVER change the "id" field
-- Return ONLY a valid JSON array, nothing else
+- Return ONLY a valid JSON array with the same structure, nothing else
 - Keep brand/company names in original language if they are international brands
 - Use standard native names for cities and countries
 - For job titles, use the most natural equivalent in ${langName}`;
 
-  console.log(`[NOSSY Translate] Translating ${jobs.length} job fields to ${langName} via GLM-4-Flash`);
+  console.log(`[NOSSY Translate] Translating ${jobs.length} job fields to ${langName} via Gemini Flash`);
 
-  const response = await callGLM(systemPrompt, JSON.stringify(jobsData));
+  const response = await callGemini(systemPrompt, JSON.stringify(jobsData), true);
 
   if (!response) {
-    console.warn('[NOSSY Translate] GLM failed, returning original text');
+    console.warn('[NOSSY Translate] Gemini failed, returning original text');
     return new Map(jobs.map(j => [j.id, { title: j.title, company: j.company, location: j.location }]));
   }
 
@@ -192,7 +202,6 @@ Rules:
       }
     }
 
-    // Cache the result
     const cacheObj: Record<string, any> = {};
     for (const [k, v] of results) cacheObj[String(k)] = v;
     setCache(cacheKey, cacheObj);
@@ -200,7 +209,7 @@ Rules:
     console.log(`[NOSSY Translate] Translated ${results.size}/${jobs.length} job fields to ${langName}`);
     return results;
   } catch (err: any) {
-    console.error('[NOSSY Translate] Failed to parse GLM response:', err.message, response.slice(0, 200));
+    console.error('[NOSSY Translate] Failed to parse Gemini response:', err.message, response.slice(0, 200));
     return new Map(jobs.map(j => [j.id, { title: j.title, company: j.company, location: j.location }]));
   }
 }
@@ -214,14 +223,11 @@ export async function translateJobFull(
     return { title: job.title, description: job.description, company: job.company, location: job.location };
   }
 
-  // Simple cache key based on title prefix + lang
   const cacheKey = `detail:${targetLang}:${job.title.slice(0, 80)}`;
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
   const langName = LANG_NAMES[targetLang] || targetLang;
-
-  // Truncate description to keep within token limits (~4000 chars max for free tier)
   const maxDescLen = 3000;
   const desc = job.description.length > maxDescLen
     ? job.description.slice(0, maxDescLen) + '\n...(description truncated)'
@@ -235,14 +241,14 @@ Rules:
 - Return ONLY a valid JSON object with the same 4 keys, nothing else
 - Keep the description formatting (paragraphs, lists)
 - Keep company name in original language if it is a brand
-- Use natural, professional language`;  
+- Use natural, professional language`;
 
-  console.log(`[NOSSY Translate] Translating job detail to ${langName} via GLM-4-Flash`);
+  console.log(`[NOSSY Translate] Translating job detail to ${langName} via Gemini Flash`);
 
-  const response = await callGLM(systemPrompt, JSON.stringify(jobData));
+  const response = await callGemini(systemPrompt, JSON.stringify(jobData), true);
 
   if (!response) {
-    console.warn('[NOSSY Translate] GLM failed for detail, returning original text');
+    console.warn('[NOSSY Translate] Gemini failed for detail, returning original text');
     return { title: job.title, description: job.description, company: job.company, location: job.location };
   }
 
@@ -260,7 +266,7 @@ Rules:
     console.log(`[NOSSY Translate] Job detail translated to ${langName} successfully`);
     return result;
   } catch (err: any) {
-    console.error('[NOSSY Translate] Failed to parse GLM detail response:', err.message);
+    console.error('[NOSSY Translate] Failed to parse Gemini detail response:', err.message);
     return { title: job.title, description: job.description, company: job.company, location: job.location };
   }
 }

@@ -1,0 +1,75 @@
+{
+  "design": {
+    "title": "W-W (World of Work) - Preview",
+    "style_name": "Dark Tech Preview",
+    "palette": {"background": "#0a0f1a", "primary": "#e8ecf4", "accent": "#3b82f6"},
+    "typography": {"heading": "Inter", "body": "Inter", "numeric": "Inter"},
+    "reference": "Dark tech product showcase"
+  },
+  "global_css_path": "/home/z/my-project/download/slides/global.css",
+  "slides_dir": "/home/z/my-project/download/slides",
+  "language": "pt",
+  "speaker_notes": "none",
+  "slides": [
+    {
+      "title": "Capa W-W",
+      "layout": "cover",
+      "output_path": "/home/z/my-project/download/slides/slide_01.html",
+      "task_brief": "Slide de capa para o site W-W (World of Work). Fundo escuro com glow azul e verde. No centro: logo grande 'W-W' em branco com subtítulo 'World of Work' em azul (#3b82f6). Abaixo: 'Plataforma Global de Empregos' em cinza claro. Badge no topo: 'PRÉVIA DO SITE'. Rodapé com 4 stat-cards em linha: '20 Países', '10 Idiomas', '200+ Páginas', 'SEO Avançado'. Nenhuma imagem de screenshot nesta página."
+    },
+    {
+      "title": "Página Inicial Desktop",
+      "layout": "split text+image",
+      "output_path": "/home/z/my-project/download/slides/slide_02.html",
+      "task_brief": "Slide mostrando a página inicial do site em desktop. Lado esquerdo (35%): título 'Página Inicial' em branco, subtítulo 'Desktop — 1440px', badge 'DESKTOP', e 4 bullet points: 'Hero com busca global', 'Grid de 20 países com bandeiras', 'Navegação por setores', 'Design responsivo premium'. Lado direito (65%): imagem da screenshot ../home-desktop.png preenchendo o espaço. A imagem deve ter border-radius 8px e box-shadow."
+    },
+    {
+      "title": "Seção Países",
+      "layout": "split text+image",
+      "output_path": "/home/z/my-project/download/slides/slide_03.html",
+      "task_brief": "Slide mostrando a seção de países. Lado esquerdo (35%): título 'Seção de Países', subtítulo 'Navegação global por país', badge 'GLOBAL', bullet points: '20 países com bandeiras nativas', 'Contagem de vagas por país', 'Redirecionamento por /código-do-país', 'Zero favorecimento — 100% igualitário'. Lado direito (65%): imagem da screenshot ../home-countries.png."
+    },
+    {
+      "title": "Índia - Página de Vagas",
+      "layout": "split text+image",
+      "output_path": "/home/z/my-project/download/slides/slide_04.html",
+      "task_brief": "Slide mostrando a página da Índia. Lado esquerdo (35%): título 'Índia', badge 'IN', flag emoji 🇮🇳, bullet points: '8 vagas por setor', 'Empresas reais indianas', 'SEO localizado em Hindi', 'JSON-LD JobPosting para Google Jobs'. Lado direito (65%): imagem da screenshot ../india-desktop.png."
+    },
+    {
+      "title": "EUA - Página de Vagas",
+      "layout": "split text+image",
+      "output_path": "/home/z/my-project/download/slides/slide_05.html",
+      "task_brief": "Slide mostrando a página dos EUA. Lado esquerdo (35%): título 'Estados Unidos', badge 'US', flag emoji 🇺🇸, bullet points: 'Vagas em tecnologia e negócios', 'Salários em USD', 'Mercado de trabalho maduro', 'Otimizado para buscas locais'. Lado direito (65%): imagem da screenshot ../usa-desktop.png."
+    },
+    {
+      "title": "Brasil - Página de Vagas",
+      "layout": "split text+image",
+      "output_path": "/home/z/my-project/download/slides/slide_06.html",
+      "task_brief": "Slide mostrando a página do Brasil. Lado esquerdo (35%): título 'Brasil', badge 'BR', flag emoji 🇧🇷, bullet points: 'Vagas em Português do Brasil', 'Setores: Tech, Saúde, Finanças', 'SEO com palavras-chave locais', 'Layout 100% responsivo'. Lado direito (65%): imagem da screenshot ../brazil-desktop.png."
+    },
+    {
+      "title": "Nigéria - Página de Vagas",
+      "layout": "split text+image",
+      "output_path": "/home/z/my-project/download/slides/slide_07.html",
+      "task_brief": "Slide mostrando a página da Nigéria. Lado esquerdo (35%): título 'Nigéria', badge 'NG', flag emoji 🇳🇬, bullet points: 'Foco em emprego africano', 'Mercado emergente prioritário', 'Keywords em Inglês local', 'Alvo do SEO Google para desemprego alto'. Lado direito (65%): imagem da screenshot ../nigeria-desktop.png."
+    },
+    {
+      "title": "Views Mobile",
+      "layout": "bento grid",
+      "output_path": "/home/z/my-project/download/slides/slide_08.html",
+      "task_brief": "Slide com grid de 3 capturas mobile lado a lado. Título no topo: 'Versão Mobile' com badge 'RESPONSIVO'. Subtítulo: 'Experiência otimizada para smartphones'. Abaixo, 3 imagens em linha horizontal com espaçamento: ../home-mobile.png (rótulo 'Home'), ../india-mobile.png (rótulo 'Índia'), ../brazil-mobile.png (rótulo 'Brasil'). Cada imagem com altura de ~480px e border-radius 8px."
+    },
+    {
+      "title": "SEO e Tecnologia",
+      "layout": "stats",
+      "output_path": "/home/z/my-project/download/slides/slide_09.html",
+      "task_brief": "Slide de estatísticas técnicas e SEO. Título: 'Infraestrutura SEO & Técnica'. Badge: 'TECNOLOGIA'. Grid 2x3 de stat-cards: (1) '200+' / 'URLs no Sitemap', (2) '20' / 'Países com Metadata Única', (3) '180' / 'Páginas Setor-País', (4) '30+' / 'Variantes Hreflang', (5) '5' / 'Tipos de JSON-LD', (6) '6' / 'Robots de Busca Configurados'. Abaixo do grid, uma linha com feature-tags: 'Google Jobs', 'Sitemap Dinâmico', 'robots.ts', 'Open Graph', 'Twitter Cards', 'Breadcrumbs', 'CollectionPage', 'WebSite Schema'. Nenhuma imagem de screenshot."
+    },
+    {
+      "title": "Próximos Passos",
+      "layout": "closing",
+      "output_path": "/home/z/my-project/download/slides/slide_10.html",
+      "task_brief": "Slide de fechamento. Título grande: 'Próximos Passos' em branco. Badge: 'ROADMAP'. Lista de 4 itens com números grandes em azul (#3b82f6) à esquerda e texto à direita: (1) 'Publicar na Internet' — Deploy na Vercel + domínio ww.jobs, (2) 'Painel Admin' — Gerenciar vagas, países e setores, (3) 'Busca Automática' — API de raspar vagas de sites reais por cidade/estado/país, (4) 'PayPal Checkout' — Pagamento automático com liberação instantânea de acesso. Rodapé: 'W-W — World of Work' em cinza. Glow azul no fundo. Nenhuma imagem."
+    }
+  ]
+}
