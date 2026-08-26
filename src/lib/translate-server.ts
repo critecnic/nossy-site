@@ -1,7 +1,7 @@
-// NOSSY Translation v3.1 — Google Gemini 2.0 Flash
-// Simples, robusto, sem tipos genericos complexos.
-// Se Gemini falha, retorna texto original (sem travar o site).
-// Se traduziu com sucesso, o CDN pode cachear.
+// NOSSY Translation v3.2 — Google Gemini 2.0 Flash
+// Se Gemini falhar, retorna texto original.
+// Se traduziu, o CDN pode cachear.
+// Retorno: { map, ok } ou { title, description, company, location, ok }
 
 import type { Lang } from './i18n';
 
@@ -20,7 +20,7 @@ export function needsServerTranslation(lang: string): boolean {
   return !SOURCE_LANGS.has(lang);
 }
 
-// ---- Cache in-memory ----
+// ---- Cache ----
 const cache = new Map<string, { data: any; ts: number }>();
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 const MAX_CACHE = 5000;
@@ -49,7 +49,7 @@ function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 async function callGemini(systemPrompt: string, userContent: string, jsonMode = false): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error('[NOSSY] GEMINI_API_KEY not set');
+    console.error('[NOSSY] GEMINI_API_KEY is NOT set in environment variables');
     return null;
   }
 
@@ -74,18 +74,18 @@ async function callGemini(systemPrompt: string, userContent: string, jsonMode = 
       clearTimeout(timer);
 
       if (!res.ok) {
-        const err = await res.text().catch(() => '');
-        console.error(`[NOSSY] Gemini ${res.status}: ${err.slice(0, 200)}`);
+        const errText = await res.text().catch(() => '');
+        console.error(`[NOSSY] Gemini HTTP ${res.status}: ${errText.slice(0, 200)}`);
         if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; }
         return null;
       }
 
       const data = await res.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text?.trim()) { console.error('[NOSSY] Gemini empty response'); return null; }
+      if (!text?.trim()) { console.error('[NOSSY] Gemini returned empty'); return null; }
       return text.trim();
     } catch (err: any) {
-      console.error(`[NOSSY] Gemini fail ${attempt + 1}:`, err.message);
+      console.error(`[NOSSY] Gemini attempt ${attempt+1} error:`, err.message);
       if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; }
       return null;
     }
@@ -103,19 +103,14 @@ function extractJSON(text: string): string {
   return text.trim();
 }
 
-// ============================================
-// PUBLIC API - Retorna { map, ok }
-// map = dados traduzidos (ou originais se falhou)
-// ok = true se Gemini traduziu, false se falhou
-// ============================================
+// ---- Public API ----
 
 export async function translateJobListFields(
   jobs: Array<{ id: number; title: string; company: string; location: string }>,
   targetLang: Lang
 ): Promise<{ map: Map<number, { title: string; company: string; location: string }>; ok: boolean }> {
-  // Retorno padrão: nada pra traduzir
-  const emptyResult = { map: new Map<number, { title: string; company: string; location: string }>(), ok: true };
-  if (!needsServerTranslation(targetLang) || jobs.length === 0) return emptyResult;
+  const empty = { map: new Map<number, { title: string; company: string; location: string }>(), ok: true };
+  if (!needsServerTranslation(targetLang) || jobs.length === 0) return empty;
 
   const BATCH = 30;
   const allResults = new Map<number, { title: string; company: string; location: string }>();
@@ -125,17 +120,13 @@ export async function translateJobListFields(
     const batch = jobs.slice(i, i + BATCH);
     const cacheKey = `list:${targetLang}:${batch.map(j => j.id).join(',')}`;
     const cached = getCached(cacheKey);
-
     if (cached) {
-      for (const [k, v] of Object.entries(cached as Record<string, any>)) {
-        allResults.set(Number(k), v);
-      }
+      for (const [k, v] of Object.entries(cached as Record<string, any>)) allResults.set(Number(k), v);
       continue;
     }
 
     const langName = LANG_NAMES[targetLang] || targetLang;
     const jobsData = batch.map(j => ({ id: j.id, title: j.title, company: j.company, location: j.location }));
-
     const sysPrompt = `You are a professional translator. Translate job listings from Portuguese to ${langName}.
 Rules:
 - Translate ONLY the values of "title", "company", and "location" fields
@@ -149,7 +140,7 @@ Rules:
     const response = await callGemini(sysPrompt, JSON.stringify(jobsData), true);
 
     if (!response) {
- console.warn(`[NOSSY] Batch ${Math.floor(i/BATCH)+1} failed`);
+      console.warn(`[NOSSY] Batch ${Math.floor(i/BATCH)+1} FAILED - returning original text`);
       anyFailed = true;
       for (const j of batch) allResults.set(j.id, { title: j.title, company: j.company, location: j.location });
       continue;
@@ -171,8 +162,9 @@ Rules:
         }
       }
       setCache(cacheKey, batchCache);
+      console.log(`[NOSSY] Batch ${Math.floor(i/BATCH)+1} OK: ${Object.keys(batchCache).length} translated`);
     } catch (e: any) {
-      console.error(`[NOSSY] Batch ${Math.floor(i/BATCH)+1} parse error:`, e.message);
+      console.error(`[NOSSY] Batch ${Math.floor(i/BATCH)+1} PARSE ERROR:`, e.message);
       anyFailed = true;
       for (const j of batch) allResults.set(j.id, { title: j.title, company: j.company, location: j.location });
     }
@@ -205,7 +197,7 @@ Rules:
   const response = await callGemini(sysPrompt, JSON.stringify(job), true);
 
   if (!response) {
-    console.warn('[NOSSY] Detail translation failed');
+    console.warn('[NOSSY] Detail FAILED - returning original text');
     return { ...passThrough, ok: false };
   }
 
@@ -219,9 +211,10 @@ Rules:
       ok: true,
     };
     setCache(cacheKey, result);
+    console.log(`[NOSSY] Detail OK: ${result.title.slice(0, 50)}`);
     return result;
   } catch (e: any) {
-    console.error('[NOSSY] Detail parse error:', e.message);
+    console.error('[NOSSY] Detail PARSE ERROR:', e.message);
     return { ...passThrough, ok: false };
   }
 }
