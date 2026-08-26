@@ -88,22 +88,18 @@ export async function GET(req: NextRequest) {
     let jobs: any[];
     let total: number;
 
-    // Try direct file first
-    const directExists = await fsp.access(safePath).then(() => true).catch(() => false);
-
-    if (directExists) {
+    // Try chunked files FIRST (avoids 413 on large files like USA 12MB+)
+    const chunkResult = await loadJobsFromChunks(baseName, page, limit);
+    if (chunkResult) {
+      jobs = chunkResult.jobs;
+      total = chunkResult.total;
+    } else {
+      // Fallback: read direct file (only for small files)
       const raw = await fsp.readFile(safePath, "utf-8");
       const allJobs = JSON.parse(raw);
       total = allJobs.length;
       const offset = (page - 1) * limit;
       jobs = allJobs.slice(offset, offset + limit);
-    } else {
-      const chunkResult = await loadJobsFromChunks(baseName, page, limit);
-      if (!chunkResult) {
-        return NextResponse.json({ error: "File not found" }, { status: 404 });
-      }
-      jobs = chunkResult.jobs;
-      total = chunkResult.total;
     }
 
     const totalPagesCount = Math.max(1, Math.ceil(total / limit));
