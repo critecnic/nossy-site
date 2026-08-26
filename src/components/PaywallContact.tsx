@@ -28,7 +28,7 @@ function loadPayPalSdkOnce(): Promise<boolean> {
     return sdkLoadPromise;
   }
   sdkLoadPromise = new Promise((resolve) => {
-    if (typeof window !== "undefined" && (window as Record<string, unknown>).paypal) {
+    if (typeof window !== "undefined" && (window as unknown as Record<string, unknown>).paypal) {
       resolve(true);
       return;
     }
@@ -105,10 +105,10 @@ export default function PaywallContact({ contactEmail, companyData, jobId, lang 
     const container = btnContainerRef.current;
     container.innerHTML = "";
 
-    const pp = (window as Record<string, unknown>).paypal as Record<string, unknown> | undefined;
+    const pp = (window as unknown as Record<string, unknown>).paypal as Record<string, unknown> | undefined;
     if (!pp || typeof pp !== "object") return;
 
-    const Buttons = (pp.Buttons as unknown) as new (opts: Record<string, unknown>) => { render: (el: HTMLElement) => void };
+    const Buttons = (pp.Buttons as unknown) as (opts: Record<string, unknown>) => { render: (el: HTMLElement) => void };
     if (typeof Buttons !== "function") return;
 
     Buttons({

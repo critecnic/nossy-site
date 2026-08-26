@@ -24,6 +24,35 @@ function safeFilePath(file: string): string | null {
   return resolved;
 }
 
+async function findJob(baseName: string, jobId: string): Promise<any | null> {
+  // Try direct file first
+  const directPath = safeFilePath(`${baseName}.json`);
+  if (directPath) {
+    try {
+      const raw = await fsp.readFile(directPath, 'utf-8');
+      const jobs = JSON.parse(raw);
+      return jobs.find((j: any) => String(j.id) === String(jobId)) || null;
+    } catch {}
+  }
+
+  // Try split index + chunks
+  const indexPath = path.join(DATA_DIR, `${baseName}_index.json`);
+  try {
+    const idxRaw = await fsp.readFile(indexPath, 'utf-8');
+    const idx = JSON.parse(idxRaw);
+    for (const chunkFile of idx.chunks) {
+      const chunkPath = safeFilePath(chunkFile);
+      if (!chunkPath) continue;
+      const chunkRaw = await fsp.readFile(chunkPath, 'utf-8');
+      const chunkJobs = JSON.parse(chunkRaw);
+      const job = chunkJobs.find((j: any) => String(j.id) === String(jobId));
+      if (job) return job;
+    }
+  } catch {}
+
+  return null;
+}
+
 export async function GET(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
   if (isRateLimited(ip)) {
@@ -39,15 +68,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing file or id" }, { status: 400 });
   }
 
-  const safePath = safeFilePath(file);
-  if (!safePath) {
+  const baseName = file.replace('.json', '');
+
+  // Validate base name
+  if (!/^[a-z0-9][a-z0-9\-_]*$/.test(baseName)) {
     return NextResponse.json({ error: "Invalid file" }, { status: 400 });
   }
 
   try {
-    const raw = await fsp.readFile(safePath, "utf-8");
-    const jobs: any[] = JSON.parse(raw);
-    const job = jobs.find(j => String(j.id) === String(jobId));
+    const job = await findJob(baseName, jobId);
 
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
@@ -61,7 +90,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Traduz via Gemini
-    console.log(`[NOSSY API] Job detail id=${jobId} lang=${lang}`);
+    console.log(`[NOSSY API] Job detail id=${jobId} file=${file} lang=${lang}`);
     const translated = await translateJobFull(job, lang);
 
     const result = {
@@ -72,7 +101,6 @@ export async function GET(req: NextRequest) {
       location: translated.location,
     };
 
-    // So cacheia no CDN se traduziu com sucesso
     const cacheHeader = translated.ok
       ? "public, s-maxage=3600, stale-while-revalidate=600"
       : "no-store";

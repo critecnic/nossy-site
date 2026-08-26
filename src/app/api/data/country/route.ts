@@ -6,6 +6,7 @@ import { promises as fsp } from "fs";
 import path from "path";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
+const CHUNK_SIZE = 1000;
 
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
@@ -22,6 +23,43 @@ function safeFilePath(file: string): string | null {
   const resolved = path.resolve(DATA_DIR, file);
   if (!resolved.startsWith(DATA_DIR + path.sep) && resolved !== DATA_DIR) return null;
   return resolved;
+}
+
+async function getIndex(baseName: string): Promise<{ chunks: string[]; totalJobs: number } | null> {
+  try {
+    const indexPath = path.join(DATA_DIR, `${baseName}_index.json`);
+    const raw = await fsp.readFile(indexPath, 'utf-8');
+    const idx = JSON.parse(raw);
+    return { chunks: idx.chunks, totalJobs: idx.totalJobs };
+  } catch {
+    return null;
+  }
+}
+
+async function loadJobsFromChunks(baseName: string, page: number, limit: number): Promise<{ jobs: any[]; total: number } | null> {
+  const idx = await getIndex(baseName);
+  if (!idx) return null;
+
+  const total = idx.totalJobs;
+  const globalOffset = (page - 1) * limit;
+  const startChunk = Math.floor(globalOffset / CHUNK_SIZE);
+  const endChunk = Math.min(
+    Math.floor((globalOffset + limit - 1) / CHUNK_SIZE),
+    idx.chunks.length - 1
+  );
+
+  let combined: any[] = [];
+  for (let c = startChunk; c <= endChunk; c++) {
+    const chunkPath = safeFilePath(idx.chunks[c]);
+    if (!chunkPath) continue;
+    try {
+      const chunkRaw = await fsp.readFile(chunkPath, 'utf-8');
+      combined = combined.concat(JSON.parse(chunkRaw));
+    } catch {}
+  }
+
+  const localOffset = globalOffset - (startChunk * CHUNK_SIZE);
+  return { jobs: combined.slice(localOffset, localOffset + limit), total };
 }
 
 export async function GET(req: NextRequest) {
@@ -46,31 +84,46 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const raw = await fsp.readFile(safePath, "utf-8");
-    const jobs = JSON.parse(raw);
+    const baseName = file.replace('.json', '');
+    let jobs: any[];
+    let total: number;
+
+    // Try direct file first
+    const directExists = await fsp.access(safePath).then(() => true).catch(() => false);
+
+    if (directExists) {
+      const raw = await fsp.readFile(safePath, "utf-8");
+      const allJobs = JSON.parse(raw);
+      total = allJobs.length;
+      const offset = (page - 1) * limit;
+      jobs = allJobs.slice(offset, offset + limit);
+    } else {
+      const chunkResult = await loadJobsFromChunks(baseName, page, limit);
+      if (!chunkResult) {
+        return NextResponse.json({ error: "File not found" }, { status: 404 });
+      }
+      jobs = chunkResult.jobs;
+      total = chunkResult.total;
+    }
+
+    const totalPagesCount = Math.max(1, Math.ceil(total / limit));
+
     if (!Array.isArray(jobs) || jobs.length === 0) {
-      return NextResponse.json({ jobs: [], total: 0, page: 1, totalPages: 0 }, {
+      return NextResponse.json({ jobs: [], total, page: 1, totalPages: totalPagesCount }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
-    const total = jobs.length;
-    const totalPages = Math.max(1, Math.ceil(total / limit));
-    const offset = (page - 1) * limit;
-    const pageJobs = jobs.slice(offset, offset + limit);
-
-    // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
-      return NextResponse.json({ jobs: pageJobs, total, page, totalPages }, {
+      return NextResponse.json({ jobs, total, page, totalPages: totalPagesCount }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
-    // Traduz apenas a página atual via Gemini (máx ~100 jobs = 4 batches < 10s)
-    console.log(`[NOSSY API] Country ${file} page ${page}: ${pageJobs.length}/${total} jobs lang=${lang}`);
-    const { map: translatedMap, ok: translateOk } = await translateJobListFields(pageJobs, lang);
+    console.log(`[NOSSY API] Country ${file} page ${page}: ${jobs.length}/${total} jobs lang=${lang}`);
+    const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
 
-    const translated = pageJobs.map((job: any) => {
+    const translated = jobs.map((job: any) => {
       const t = translatedMap.get(job.id);
       return t
         ? { ...job, title: t.title, company: t.company, location: t.location }
@@ -81,7 +134,7 @@ export async function GET(req: NextRequest) {
       ? "public, s-maxage=3600, stale-while-revalidate=600"
       : "no-store";
 
-    return NextResponse.json({ jobs: translated, total, page, totalPages }, {
+    return NextResponse.json({ jobs: translated, total, page, totalPages: totalPagesCount }, {
       headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {

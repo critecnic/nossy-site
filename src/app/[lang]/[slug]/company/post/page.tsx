@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { COUNTRIES } from "@/lib/countries";
-import { LANGUAGES, LANG_SLUGS, sectorNames, countryNames, default as i18n } from "@/lib/i18n";
+import { COUNTRIES, REGIONS } from "@/lib/countries";
+import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import SiteLogo from "@/components/SiteLogo";
 
@@ -197,7 +197,7 @@ export default function CompanyPostPage({ params }: { params: Promise<{ lang: st
                   <select value={jobCountry} onChange={(e) => { setJobCountry(e.target.value); const c = COUNTRIES.find(x => x.code === e.target.value); if (c) setSalaryCurrency(c.currency.code); }} className={selectClass}>
                     <option value="">{T.selectCountry2}...</option>
                     {COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.flag} {countryNames[lang]?.[c.code] || c.name}</option>
+                      <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
                     ))}
                   </select>
                 </div>

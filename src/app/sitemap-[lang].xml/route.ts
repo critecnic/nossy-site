@@ -2,20 +2,21 @@ import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
 import { REGIONS } from "@/lib/countries";
 import { NextResponse } from "next/server";
 
-export async function GET(_req: Request, { params }: { params: Promise<{ lang: string }> }) {
-  const { lang: langCode } = await params;
+type Ctx = { params: Promise<Record<string, string>> };
+
+export async function GET(_req: Request, ctx: Ctx) {
+  const params = await ctx.params;
+  const langCode = params.lang;
   const lang = LANGUAGES.find(l => l.code === langCode);
   if (!lang) return NextResponse.json({ error: "Unknown lang" }, { status: 404 });
 
-  const slug = LANG_SLUGS[lang.code];
+  const slug = LANG_SLUGS[lang.code as keyof typeof LANG_SLUGS];
   const today = new Date().toISOString().split('T')[0];
 
   const entries: string[] = [];
 
-  // Global page for this language
   entries.push(sitemapUrl(`https://nossy.pro/${lang.code}/${slug}/`, today));
 
-  // Region pages with hreflang alternates
   for (const region of REGIONS) {
     const url = `https://nossy.pro/${lang.code}/${slug}/${region.code}/`;
     const alternates = LANGUAGES.map(l =>
@@ -29,7 +30,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ lang: s
 ${alternates}
   </url>`);
 
-    // Sub-country pages
     if (region.countries) {
       for (const cName of Object.keys(region.countries)) {
         const cSlug = cName.toLowerCase().replace(/\s+/g, '-');

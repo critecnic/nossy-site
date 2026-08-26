@@ -17,6 +17,7 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "@typescript-eslint/no-unused-disable-directive": "off",
     
     // React rules
+    "react/no-direct-mutation-state": "off",
     "react-hooks/exhaustive-deps": "off",
     "react-hooks/purity": "off",
     "react/no-unescaped-entities": "off",
