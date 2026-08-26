@@ -1,9 +1,10 @@
 // ============================================================
-// NOSSY Translation Library v2.1 — Google Gemini 2.0 Flash
-// Replaces MyMemory with LLM-based batch translation.
-// One API call translates an entire page of jobs.
-// Synchronous: client receives translated data immediately.
-// Cache: in-memory + Vercel edge (Cache-Control header).
+// NOSSY Translation Library v3.0 — Google Gemini 2.0 Flash
+// - Synchronous: client receives translated data immediately.
+// - No-cache on failure: prevents CDN caching Portuguese as "translated".
+// - No 30-job cap: translates ALL jobs in batches.
+// - Full description: no truncation (splits large descriptions).
+// - Fallback: returns a flag so API routes can skip CDN cache.
 // ============================================================
 
 import type { Lang } from './i18n';
@@ -41,7 +42,7 @@ export function needsServerTranslation(lang: string): boolean {
 // ---- In-memory cache ----
 const cache = new Map<string, { data: any; ts: number }>();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_CACHE_SIZE = 3000;
+const MAX_CACHE_SIZE = 5000;
 
 function getCached(key: string): any | null {
   const entry = cache.get(key);
@@ -62,6 +63,7 @@ function setCache(key: string, data: any): void {
 // ---- Google Gemini Flash API ----
 const GEMINI_MODEL = 'gemini-2.0-flash';
 const MAX_RETRIES = 2;
+const API_TIMEOUT = 14000; // 14s (Vercel has 10s for Hobby, but serverless can stretch)
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -91,7 +93,6 @@ async function callGemini(systemPrompt: string, userContent: string, jsonMode = 
     },
   };
 
-  // Force JSON output when possible
   if (jsonMode) {
     body.generationConfig.responseMimeType = 'application/json';
   }
@@ -99,7 +100,7 @@ async function callGemini(systemPrompt: string, userContent: string, jsonMode = 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 12000);
+      const timer = setTimeout(() => controller.abort(), API_TIMEOUT);
 
       const res = await fetch(url, {
         method: 'POST',
@@ -147,29 +148,44 @@ function extractJSON(text: string): string {
   return text.trim();
 }
 
+// ---- Translation result with success flag ----
+export interface TranslateResult<T> {
+  data: T;
+  translated: boolean; // false if Gemini failed — caller should not cache at CDN
+}
+
 // ---- Public API ----
 
-/** Batch translate job list fields (title, company, location) — ONE API call */
+/** Batch translate job list fields (title, company, location) — handles ALL jobs via batching */
 export async function translateJobListFields(
   jobs: Array<{ id: number; title: string; company: string; location: string }>,
   targetLang: Lang
-): Promise<Map<number, { title: string; company: string; location: string }>> {
-  if (!needsServerTranslation(targetLang) || jobs.length === 0) return new Map();
-
-  const cacheKey = `list:${targetLang}:${jobs.map(j => j.id).join(',')}`;
-  const cached = getCached(cacheKey);
-  if (cached) {
-    const m = new Map<number, { title: string; company: string; location: string }>();
-    for (const [k, v] of Object.entries(cached as Record<string, any>)) {
-      m.set(Number(k), v);
-    }
-    return m;
+): Promise<TranslateResult<Map<number, { title: string; company: string; location: string }>>> {
+  if (!needsServerTranslation(targetLang) || jobs.length === 0) {
+    return { data: new Map(), translated: true };
   }
 
-  const langName = LANG_NAMES[targetLang] || targetLang;
-  const jobsData = jobs.map(j => ({ id: j.id, title: j.title, company: j.company, location: j.location }));
+  // Check cache for each batch
+  const BATCH_SIZE = 30;
+  const allResults = new Map<number, { title: string; company: string; location: string }>();
+  let anyFailed = false;
 
-  const systemPrompt = `You are a professional translator. Translate job listings from Portuguese to ${langName}.
+  for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
+    const batch = jobs.slice(i, i + BATCH_SIZE);
+    const cacheKey = `list:${targetLang}:${batch.map(j => j.id).join(',')}`;
+    const cached = getCached(cacheKey);
+
+    if (cached) {
+      for (const [k, v] of Object.entries(cached as Record<string, any>)) {
+        allResults.set(Number(k), v);
+      }
+      continue;
+    }
+
+    const langName = LANG_NAMES[targetLang] || targetLang;
+    const jobsData = batch.map(j => ({ id: j.id, title: j.title, company: j.company, location: j.location }));
+
+    const systemPrompt = `You are a professional translator. Translate job listings from Portuguese to ${langName}.
 Rules:
 - Translate ONLY the values of "title", "company", and "location" fields
 - NEVER change the "id" field
@@ -178,62 +194,129 @@ Rules:
 - Use standard native names for cities and countries
 - For job titles, use the most natural equivalent in ${langName}`;
 
-  console.log(`[NOSSY Translate] Translating ${jobs.length} job fields to ${langName} via Gemini Flash`);
+    console.log(`[NOSSY Translate] Batch ${Math.floor(i / BATCH_SIZE) + 1}: Translating ${batch.length} jobs to ${langName}`);
 
-  const response = await callGemini(systemPrompt, JSON.stringify(jobsData), true);
+    const response = await callGemini(systemPrompt, JSON.stringify(jobsData), true);
 
-  if (!response) {
-    console.warn('[NOSSY Translate] Gemini failed, returning original text');
-    return new Map(jobs.map(j => [j.id, { title: j.title, company: j.company, location: j.location }]));
-  }
-
-  try {
-    const jsonStr = extractJSON(response);
-    const translated = JSON.parse(jsonStr);
-
-    const results = new Map<number, { title: string; company: string; location: string }>();
-    for (const item of translated) {
-      if (item.id !== undefined) {
-        results.set(Number(item.id), {
-          title: item.title || jobs.find(j => j.id === item.id)?.title || '',
-          company: item.company || jobs.find(j => j.id === item.id)?.company || '',
-          location: item.location || jobs.find(j => j.id === item.id)?.location || '',
-        });
+    if (!response) {
+      console.warn(`[NOSSY Translate] Batch ${Math.floor(i / BATCH_SIZE) + 1}: Gemini failed, using original text`);
+      anyFailed = true;
+      // Return original text for failed batch (but don't cache)
+      for (const j of batch) {
+        allResults.set(j.id, { title: j.title, company: j.company, location: j.location });
       }
+      continue;
     }
 
-    const cacheObj: Record<string, any> = {};
-    for (const [k, v] of results) cacheObj[String(k)] = v;
-    setCache(cacheKey, cacheObj);
+    try {
+      const jsonStr = extractJSON(response);
+      const translated = JSON.parse(jsonStr);
 
-    console.log(`[NOSSY Translate] Translated ${results.size}/${jobs.length} job fields to ${langName}`);
-    return results;
-  } catch (err: any) {
-    console.error('[NOSSY Translate] Failed to parse Gemini response:', err.message, response.slice(0, 200));
-    return new Map(jobs.map(j => [j.id, { title: j.title, company: j.company, location: j.location }]));
+      const batchResults: Record<string, any> = {};
+      for (const item of translated) {
+        if (item.id !== undefined) {
+          const orig = batch.find(j => j.id === item.id);
+          allResults.set(Number(item.id), {
+            title: item.title || orig?.title || '',
+            company: item.company || orig?.company || '',
+            location: item.location || orig?.location || '',
+          });
+          batchResults[String(item.id)] = allResults.get(Number(item.id));
+        }
+      }
+
+      setCache(cacheKey, batchResults);
+      console.log(`[NOSSY Translate] Batch ${Math.floor(i / BATCH_SIZE) + 1}: Translated ${Object.keys(batchResults).length}/${batch.length} jobs`);
+    } catch (err: any) {
+      console.error(`[NOSSY Translate] Batch ${Math.floor(i / BATCH_SIZE) + 1}: Parse error:`, err.message);
+      anyFailed = true;
+      for (const j of batch) {
+        allResults.set(j.id, { title: j.title, company: j.company, location: j.location });
+      }
+    }
   }
+
+  return { data: allResults, translated: !anyFailed };
 }
 
-/** Translate full job (including description) — for detail page, ONE API call */
+/** Translate full job (including description) — splits large descriptions if needed */
 export async function translateJobFull(
   job: { title: string; description: string; company: string; location: string },
   targetLang: Lang
-): Promise<{ title: string; description: string; company: string; location: string }> {
+): Promise<TranslateResult<{ title: string; description: string; company: string; location: string }>> {
   if (!needsServerTranslation(targetLang)) {
-    return { title: job.title, description: job.description, company: job.company, location: job.location };
+    return { data: { title: job.title, description: job.description, company: job.company, location: job.location }, translated: true };
   }
 
   const cacheKey = `detail:${targetLang}:${job.title.slice(0, 80)}`;
   const cached = getCached(cacheKey);
-  if (cached) return cached;
+  if (cached) return { data: cached, translated: true };
 
   const langName = LANG_NAMES[targetLang] || targetLang;
-  const maxDescLen = 3000;
-  const desc = job.description.length > maxDescLen
-    ? job.description.slice(0, maxDescLen) + '\n...(description truncated)'
-    : job.description;
 
-  const jobData = { title: job.title, description: desc, company: job.company, location: job.location };
+  // Split description if too long (Gemini handles ~8000 tokens well)
+  const MAX_DESC_CHUNK = 4000;
+  let translatedDesc = job.description;
+  let descTranslated = false;
+
+  if (job.description.length > MAX_DESC_CHUNK) {
+    // Translate title + company + location + first chunk
+    const firstChunk = job.description.slice(0, MAX_DESC_CHUNK);
+    const jobData = { title: job.title, description: firstChunk, company: job.company, location: job.location };
+
+    const systemPrompt = `You are a professional translator. Translate this job listing from Portuguese to ${langName}.
+Rules:
+- Translate "title", "description", "company", and "location"
+- Return ONLY a valid JSON object with the same 4 keys, nothing else
+- Keep the description formatting (paragraphs, lists)
+- Keep company name in original language if it is a brand
+- Use natural, professional language`;
+
+    console.log(`[NOSSY Translate] Translating job detail (chunked, ${job.description.length} chars) to ${langName}`);
+
+    const response = await callGemini(systemPrompt, JSON.stringify(jobData), true);
+
+    if (response) {
+      try {
+        const jsonStr = extractJSON(response);
+        const translated = JSON.parse(jsonStr);
+
+        // Now translate remaining description chunks
+        const remainingDesc = job.description.slice(MAX_DESC_CHUNK);
+        let translatedRemaining = remainingDesc;
+
+        if (remainingDesc.trim().length > 10) {
+          const chunkPrompt = `You are a professional translator. Translate the following job description continuation from Portuguese to ${langName}. Return ONLY the translated text, nothing else. Keep formatting.`;
+          const chunkResponse = await callGemini(chunkPrompt, remainingDesc, false);
+          if (chunkResponse) {
+            translatedRemaining = chunkResponse;
+            descTranslated = true;
+          }
+        } else {
+          descTranslated = true;
+        }
+
+        translatedDesc = (translated.description || firstChunk) + translatedRemaining;
+        const result = {
+          title: translated.title || job.title,
+          description: translatedDesc,
+          company: translated.company || job.company,
+          location: translated.location || job.location,
+        };
+
+        setCache(cacheKey, result);
+        console.log(`[NOSSY Translate] Job detail (chunked) translated to ${langName}`);
+        return { data: result, translated: true };
+      } catch (err: any) {
+        console.error('[NOSSY Translate] Failed to parse chunked Gemini response:', err.message);
+      }
+    }
+
+    // Chunked approach failed — fall through to simple approach
+  }
+
+  // Simple: translate entire description in one call (for short/medium descriptions)
+  const jobData = { title: job.title, description: job.description, company: job.company, location: job.location };
 
   const systemPrompt = `You are a professional translator. Translate this job listing from Portuguese to ${langName}.
 Rules:
@@ -243,13 +326,16 @@ Rules:
 - Keep company name in original language if it is a brand
 - Use natural, professional language`;
 
-  console.log(`[NOSSY Translate] Translating job detail to ${langName} via Gemini Flash`);
+  console.log(`[NOSSY Translate] Translating job detail (${job.description.length} chars) to ${langName}`);
 
   const response = await callGemini(systemPrompt, JSON.stringify(jobData), true);
 
   if (!response) {
     console.warn('[NOSSY Translate] Gemini failed for detail, returning original text');
-    return { title: job.title, description: job.description, company: job.company, location: job.location };
+    return {
+      data: { title: job.title, description: job.description, company: job.company, location: job.location },
+      translated: false, // Tell caller: do NOT cache at CDN
+    };
   }
 
   try {
@@ -264,10 +350,13 @@ Rules:
 
     setCache(cacheKey, result);
     console.log(`[NOSSY Translate] Job detail translated to ${langName} successfully`);
-    return result;
+    return { data: result, translated: true };
   } catch (err: any) {
     console.error('[NOSSY Translate] Failed to parse Gemini detail response:', err.message);
-    return { title: job.title, description: job.description, company: job.company, location: job.location };
+    return {
+      data: { title: job.title, description: job.description, company: job.company, location: job.location },
+      translated: false,
+    };
   }
 }
 

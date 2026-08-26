@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { needsServerTranslation, translateJobListFields } from "@/lib/translate-server";
+import { needsServerTranslation, translateJobListFields, TranslateResult } from "@/lib/translate-server";
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { promises as fsp } from "fs";
@@ -37,19 +37,24 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Translate SYNCHRONOUSLY via GLM — one API call for all 20 jobs
+    // Translate ALL 20 jobs via Gemini
     console.log(`[NOSSY API] Translating latest ${jobs.length} jobs for lang=${lang}`);
-    const translatedMap = await translateJobListFields(jobs, lang);
+    const result: TranslateResult<Map<number, { title: string; company: string; location: string }>> = await translateJobListFields(jobs, lang);
 
     const translated = jobs.map((job: any) => {
-      const t = translatedMap.get(job.id);
+      const t = result.data.get(job.id);
       return t
         ? { ...job, title: t.title, company: t.company, location: t.location }
         : job;
     });
 
+    // Only cache at CDN if translation actually succeeded
+    const cacheControl = result.translated
+      ? "public, s-maxage=1800"
+      : "no-store";
+
     return new NextResponse(JSON.stringify(translated), {
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=1800" },
+      headers: { "Content-Type": "application/json", "Cache-Control": cacheControl },
     });
   } catch (err: any) {
     console.error('[NOSSY API] Latest error:', err.message);
