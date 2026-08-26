@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { needsServerTranslation, translateJobListFields, TranslateResult } from "@/lib/translate-server";
+import { needsServerTranslation, translateJobListFields } from "@/lib/translate-server";
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { promises as fsp } from "fs";
 import path from "path";
 
-// Simple rate limiting
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -30,31 +29,30 @@ export async function GET(req: NextRequest) {
     const raw = await fsp.readFile(filePath, "utf-8");
     const jobs = JSON.parse(raw);
 
-    // Portuguese — return as-is
+    // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
       return new NextResponse(raw, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=1800" },
       });
     }
 
-    // Translate ALL 20 jobs via Gemini
-    console.log(`[NOSSY API] Translating latest ${jobs.length} jobs for lang=${lang}`);
-    const result: TranslateResult<Map<number, { title: string; company: string; location: string }>> = await translateJobListFields(jobs, lang);
+    // Traduz via Gemini
+    console.log(`[NOSSY API] Latest ${jobs.length} jobs lang=${lang}`);
+    const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
 
     const translated = jobs.map((job: any) => {
-      const t = result.data.get(job.id);
+      const t = translatedMap.get(job.id);
       return t
         ? { ...job, title: t.title, company: t.company, location: t.location }
         : job;
     });
 
-    // Only cache at CDN if translation actually succeeded
-    const cacheControl = result.translated
+    const cacheHeader = translateOk
       ? "public, s-maxage=1800"
       : "no-store";
 
     return new NextResponse(JSON.stringify(translated), {
-      headers: { "Content-Type": "application/json", "Cache-Control": cacheControl },
+      headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {
     console.error('[NOSSY API] Latest error:', err.message);

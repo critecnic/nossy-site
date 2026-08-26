@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { needsServerTranslation, translateJobListFields, TranslateResult } from "@/lib/translate-server";
+import { needsServerTranslation, translateJobListFields } from "@/lib/translate-server";
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { promises as fsp } from "fs";
@@ -8,7 +8,6 @@ import path from "path";
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 const MAX_RESPONSE_SIZE = 10 * 1024 * 1024;
 
-// Simple rate limiting
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -58,34 +57,33 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Portuguese — return as-is
+    // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
       return new NextResponse(raw, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
-    // Translate ALL jobs via Gemini (batched internally)
-    console.log(`[NOSSY API] Translating ALL ${jobs.length} jobs for ${lang}, file=${file}`);
-    const result: TranslateResult<Map<number, { title: string; company: string; location: string }>> = await translateJobListFields(jobs, lang);
+    // Traduz TODAS as vagas via Gemini (batched)
+    console.log(`[NOSSY API] Country ${jobs.length} jobs lang=${lang}`);
+    const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
 
     const translated = jobs.map((job: any) => {
-      const t = result.data.get(job.id);
+      const t = translatedMap.get(job.id);
       return t
         ? { ...job, title: t.title, company: t.company, location: t.location }
         : job;
     });
 
-    // Only cache at CDN if translation actually succeeded
-    const cacheControl = result.translated
+    const cacheHeader = translateOk
       ? "public, s-maxage=3600, stale-while-revalidate=600"
       : "no-store";
 
     return new NextResponse(JSON.stringify(translated), {
-      headers: { "Content-Type": "application/json", "Cache-Control": cacheControl },
+      headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {
-    console.error('[NOSSY API] Error:', err.message);
+    console.error('[NOSSY API] Country error:', err.message);
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 }

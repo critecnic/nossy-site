@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { needsServerTranslation, translateJobFull, TranslateResult } from "@/lib/translate-server";
+import { needsServerTranslation, translateJobFull } from "@/lib/translate-server";
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { promises as fsp } from "fs";
@@ -7,7 +7,6 @@ import path from "path";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 
-// Simple rate limiting
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -54,32 +53,32 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
-    // Portuguese — return as-is, cached at edge
+    // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
       return new NextResponse(JSON.stringify(job), {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
-    // Translate SYNCHRONOUSLY via Gemini
-    console.log(`[NOSSY API] Translating job detail id=${jobId} for lang=${lang}`);
-    const result: TranslateResult<{ title: string; description: string; company: string; location: string }> = await translateJobFull(job, lang);
+    // Traduz via Gemini
+    console.log(`[NOSSY API] Job detail id=${jobId} lang=${lang}`);
+    const translated = await translateJobFull(job, lang);
 
-    const response = {
+    const result = {
       ...job,
-      title: result.data.title,
-      description: result.data.description,
-      company: result.data.company,
-      location: result.data.location,
+      title: translated.title,
+      description: translated.description,
+      company: translated.company,
+      location: translated.location,
     };
 
-    // Only cache at CDN if translation actually succeeded
-    const cacheControl = result.translated
+    // So cacheia no CDN se traduziu com sucesso
+    const cacheHeader = translated.ok
       ? "public, s-maxage=3600, stale-while-revalidate=600"
       : "no-store";
 
-    return new NextResponse(JSON.stringify(response), {
-      headers: { "Content-Type": "application/json", "Cache-Control": cacheControl },
+    return new NextResponse(JSON.stringify(result), {
+      headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {
     console.error('[NOSSY API] Job detail error:', err.message);
