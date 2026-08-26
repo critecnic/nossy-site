@@ -21,9 +21,12 @@ export function needsServerTranslation(lang: string): boolean {
 }
 
 // ---- Cache ----
+// NOTE: In-memory cache is ineffective on Vercel Hobby (serverless = new container per request).
+// CDN cache-control headers on API routes handle caching instead.
+// Kept as lightweight pass-through for local dev only.
 const cache = new Map<string, { data: any; ts: number }>();
-const CACHE_TTL = 24 * 60 * 60 * 1000;
-const MAX_CACHE = 5000;
+const CACHE_TTL = 5 * 60 * 1000; // 5 min (local dev only)
+const MAX_CACHE = 500;
 
 function getCached(key: string): any | null {
   const e = cache.get(key);
@@ -34,8 +37,8 @@ function getCached(key: string): any | null {
 
 function setCache(key: string, data: any): void {
   if (cache.size >= MAX_CACHE) {
-    const sorted = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts);
-    sorted.slice(0, Math.floor(MAX_CACHE * 0.25)).forEach(([k]) => cache.delete(k));
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
   }
   cache.set(key, { data, ts: Date.now() });
 }
@@ -64,7 +67,7 @@ async function callGemini(systemPrompt: string, userContent: string, jsonMode = 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 14000);
+      const timer = setTimeout(() => ctrl.abort(), 8000); // 8s < Vercel Hobby 10s limit
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

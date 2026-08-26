@@ -6,14 +6,13 @@ import { promises as fsp } from "fs";
 import path from "path";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
-const MAX_RESPONSE_SIZE = 10 * 1024 * 1024;
 
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   if (!apiRateLimits[ip]) apiRateLimits[ip] = [];
   apiRateLimits[ip] = apiRateLimits[ip].filter(t => now - t < 60000);
-  if (apiRateLimits[ip].length >= 60) return true;
+  if (apiRateLimits[ip].length >= 120) return true;
   apiRateLimits[ip].push(now);
   return false;
 }
@@ -34,6 +33,8 @@ export async function GET(req: NextRequest) {
   const file = req.nextUrl.searchParams.get("file");
   const langCode = req.nextUrl.searchParams.get("lang") || 'pt-br';
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || 'pt-br') as Lang;
+  const page = Math.max(1, parseInt(req.nextUrl.searchParams.get("page") || '1', 10));
+  const limit = Math.min(100, Math.max(1, parseInt(req.nextUrl.searchParams.get("limit") || '18', 10)));
 
   if (!file) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
@@ -46,29 +47,30 @@ export async function GET(req: NextRequest) {
 
   try {
     const raw = await fsp.readFile(safePath, "utf-8");
-    if (raw.length > MAX_RESPONSE_SIZE) {
-      return NextResponse.json({ error: "Response too large" }, { status: 413 });
-    }
-
     const jobs = JSON.parse(raw);
     if (!Array.isArray(jobs) || jobs.length === 0) {
-      return new NextResponse(raw, {
+      return NextResponse.json({ jobs: [], total: 0, page: 1, totalPages: 0 }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
+
+    const total = jobs.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const offset = (page - 1) * limit;
+    const pageJobs = jobs.slice(offset, offset + limit);
 
     // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
-      return new NextResponse(raw, {
+      return NextResponse.json({ jobs: pageJobs, total, page, totalPages }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
-    // Traduz TODAS as vagas via Gemini (batched)
-    console.log(`[NOSSY API] Country ${jobs.length} jobs lang=${lang}`);
-    const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
+    // Traduz apenas a página atual via Gemini (máx ~100 jobs = 4 batches < 10s)
+    console.log(`[NOSSY API] Country ${file} page ${page}: ${pageJobs.length}/${total} jobs lang=${lang}`);
+    const { map: translatedMap, ok: translateOk } = await translateJobListFields(pageJobs, lang);
 
-    const translated = jobs.map((job: any) => {
+    const translated = pageJobs.map((job: any) => {
       const t = translatedMap.get(job.id);
       return t
         ? { ...job, title: t.title, company: t.company, location: t.location }
@@ -79,7 +81,7 @@ export async function GET(req: NextRequest) {
       ? "public, s-maxage=3600, stale-while-revalidate=600"
       : "no-store";
 
-    return new NextResponse(JSON.stringify(translated), {
+    return NextResponse.json({ jobs: translated, total, page, totalPages }, {
       headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {

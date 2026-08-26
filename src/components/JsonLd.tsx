@@ -7,14 +7,14 @@ export function OrganizationJsonLd() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Work Versaly - Tech Jobs in 3 Regions",
-    description: "Browse 45,039+ tech jobs across 3 major regions: Europa, Asia, and EUA",
+    name: "NOSSY - Tech Jobs Worldwide",
+    description: "Browse 45,039+ tech jobs across major regions worldwide",
     numberOfItems: REGIONS.length,
     itemListElement: REGIONS.map((r, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: `Tech Jobs in ${r.name}`,
-      url: `https://workversely.com/en/jobs/${r.code}`,
+      url: `https://nossy.pro/en/jobs/${r.code}`,
     })),
   };
 
@@ -37,7 +37,7 @@ export function JobJsonLd({ title, description, company, companyUrl, location, s
     "@context": "https://schema.org/",
     "@type": "JobPosting",
     title,
-    description: `<p>${description}</p><p>Apply now on Work Versaly. Browse thousands of tech job vacancies across 3 major regions.</p>`,
+    description: `<p>${description}</p><p>Apply now on NOSSY. Browse thousands of tech job vacancies worldwide.</p>`,
     datePosted: posted,
     validThrough: new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
     employmentType: "FULL_TIME",
@@ -84,9 +84,9 @@ export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `Jobs in ${countryName} - Work Versaly`,
+    name: `Jobs in ${countryName} - NOSSY`,
     description: `Browse ${jobCount}+ tech job vacancies in ${countryName}. Top companies hiring now in Software Engineering, Data Science, Cloud & more.`,
-    url: `https://workversely.com/en/jobs/${countryCode}`,
+    url: `https://nossy.pro/en/jobs/${countryCode}`,
     about: { "@type": "Thing", name: `${countryName} Jobs` },
     mainEntity: {
       "@type": "ItemList",
@@ -109,7 +109,7 @@ export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs 
         },
       })) : [],
     },
-    isPartOf: { "@type": "WebSite", name: "Work Versaly", url: "https://workversely.com" },
+    isPartOf: { "@type": "WebSite", name: "NOSSY", url: "https://nossy.pro" },
   };
 
   return (

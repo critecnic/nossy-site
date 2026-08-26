@@ -9,7 +9,7 @@ interface HreflangTagsProps {
   currentLang?: string;
 }
 
-const BASE_URL = "https://workversely.com";
+const BASE_URL = "https://nossy.pro";
 
 export function HreflangTags({ currentCountry, currentLang }: HreflangTagsProps) {
   const links: { rel: string; hreflang: string; href: string }[] = [];

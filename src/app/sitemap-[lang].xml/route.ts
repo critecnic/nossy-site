@@ -13,13 +13,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ lang: s
   const entries: string[] = [];
 
   // Global page for this language
-  entries.push(sitemapUrl(`https://workversely.com/${lang.code}/${slug}/`, today));
+  entries.push(sitemapUrl(`https://nossy.pro/${lang.code}/${slug}/`, today));
 
   // Region pages with hreflang alternates
   for (const region of REGIONS) {
-    const url = `https://workversely.com/${lang.code}/${slug}/${region.code}/`;
+    const url = `https://nossy.pro/${lang.code}/${slug}/${region.code}/`;
     const alternates = LANGUAGES.map(l =>
-      `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/${region.code}/" />`
+      `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://nossy.pro/${l.code}/${LANG_SLUGS[l.code]}/${region.code}/" />`
     ).join("\n");
     entries.push(`  <url>
     <loc>${url}</loc>
@@ -33,9 +33,9 @@ ${alternates}
     if (region.countries) {
       for (const cName of Object.keys(region.countries)) {
         const cSlug = cName.toLowerCase().replace(/\s+/g, '-');
-        const cUrl = `https://workversely.com/${lang.code}/${slug}/${cSlug}/`;
+        const cUrl = `https://nossy.pro/${lang.code}/${slug}/${cSlug}/`;
         const cAlternates = LANGUAGES.map(l =>
-          `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/${cSlug}/" />`
+          `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://nossy.pro/${l.code}/${LANG_SLUGS[l.code]}/${cSlug}/" />`
         ).join("\n");
         entries.push(`  <url>
       <loc>${cUrl}</loc>
@@ -59,7 +59,7 @@ ${entries.join("\n")}
 
 function sitemapUrl(loc: string, lastmod: string): string {
   const alternates = LANGUAGES.map(l =>
-    `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://workversely.com/${l.code}/${LANG_SLUGS[l.code]}/" />`
+    `    <xhtml:link rel="alternate" hreflang="${l.code}" href="https://nossy.pro/${l.code}/${LANG_SLUGS[l.code]}/" />`
   ).join("\n");
   return `  <url>
     <loc>${loc}</loc>

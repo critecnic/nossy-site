@@ -1,4 +1,4 @@
-// Multi-currency formatting for Work Versaly Global
+// Multi-currency formatting for NOSSY
 
 export interface SalaryInfo {
   min: number;

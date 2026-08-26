@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -28,7 +28,10 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const rc = resolvedParams?.region || '';
   const cc = resolvedParams?.country || '';
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const initialCountryName = countriesData.find((c: any) => c.slug === cc)?.name || '';
   const [countryNameRaw, setCountryNameRaw] = useState(initialCountryName);
   const countryName = countryNameRaw ? getCountryNameTranslated(cc, lang, countryNameRaw) : '';
@@ -36,53 +39,50 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [dataError, setDataError] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
-  const [sectorFilter, setSectorFilter] = useState("");
-  const [page, setPage] = useState(1);
-  const [countries] = useState<any[]>(countriesData);
   const PER = 18;
+  const [countries] = useState<any[]>(countriesData);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
   const countryHref = regionHref + "/" + cc;
 
-  // Load jobs from API (with server-side translation)
-  useEffect(() => {
+  // Load jobs from paginated API (with server-side translation)
+  const fetchPage = useCallback((p: number) => {
     if (!rc || !cc || !langCode) return;
     setLoading(true); setDataError(false); setLoadProgress(10);
-    fetch("/api/data/country?file=" + encodeURIComponent(rc + "_" + cc + ".json") + "&lang=" + encodeURIComponent(langCode))
+    const sp = new URLSearchParams({
+      file: rc + "_" + cc + ".json",
+      lang: langCode,
+      page: String(p),
+      limit: String(PER),
+    });
+    fetch("/api/data/country?" + sp.toString())
       .then(r => { setLoadProgress(50); if (!r.ok) throw new Error(); return r.json(); })
-      .then((data: Job[]) => {
+      .then((data: { jobs: Job[]; total: number; page: number; totalPages: number }) => {
         setLoadProgress(90);
-        setAllJobs(data || []);
-        if (data && data.length > 0) setCountryNameRaw(data[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc);
+        setJobs(data.jobs || []);
+        setTotalJobs(data.total || 0);
+        setTotalPages(data.totalPages || 1);
+        setCurrentPage(data.page || 1);
+        if (data.jobs && data.jobs.length > 0) setCountryNameRaw(data.jobs[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc);
         setLoadProgress(100); setLoading(false);
       }).catch(() => { setDataError(true); setLoading(false); });
-  }, [rc, cc, langCode]);
+  }, [rc, cc, langCode, countries]);
 
-  // Computed: filtered jobs
-  const filtered = allJobs.filter(j => {
-    if (typeFilter && typeFilter !== 'all' && j.type?.toLowerCase() !== typeFilter.toLowerCase()) return false;
-    if (sectorFilter && sectorFilter !== 'all' && j.sector !== sectorFilter) return false;
-    if (search) { const s = search.toLowerCase(); if (!j.title?.toLowerCase().includes(s) && !j.company?.toLowerCase().includes(s) && !j.sector?.toLowerCase().includes(s)) return false; }
-    return true;
-  });
+  useEffect(() => { fetchPage(1); }, [fetchPage]);
 
-  const actualTotal = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(actualTotal / PER));
-  const paged = filtered.slice((page - 1) * PER, page * PER);
-  const workTypes = [...new Set(allJobs.map(j => j.type).filter(Boolean))];
-  const sectors = [...new Set(allJobs.map(j => j.sector).filter(Boolean))].sort();
+  // Client-side search filter on current page
+  const filtered = search
+    ? jobs.filter(j => {
+        const s = search.toLowerCase();
+        return j.title?.toLowerCase().includes(s) || j.company?.toLowerCase().includes(s) || j.sector?.toLowerCase().includes(s);
+      })
+    : jobs;
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
   const pwText = getPaywallText(lang);
-
-  useEffect(() => { setPage(1); }, [search, typeFilter, sectorFilter]);
-
-  const hasActiveFilters = typeFilter || sectorFilter || search;
-  function clearFilters() { setTypeFilter(""); setSectorFilter(""); setSearch(""); }
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
@@ -111,46 +111,13 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
 
         <div className="mb-6">
           <h1 className="text-3xl font-extrabold text-gray-900">{T.jobsIn.replace("{0}", countryName || cc)}</h1>
-          <p className="text-gray-500 mt-1">{actualTotal.toLocaleString()} {T.vacancies}</p>
+          <p className="text-gray-500 mt-1">{totalJobs.toLocaleString()} {T.vacancies}</p>
         </div>
 
         <div className="relative w-full sm:w-80 mb-5">
           <svg className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={T.searchPlaceholder} className="w-full ps-10 pe-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
         </div>
-
-        <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{T.filterByType}</p>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => setTypeFilter("")} className={"px-4 py-2 rounded-full text-sm font-medium border transition-all " + (!typeFilter ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300 hover:bg-sky-50")}>{T.allWorkTypes}</button>
-            {workTypes.map((t) => (
-              <button key={t} onClick={() => setTypeFilter(typeFilter === t ? "" : t)} className={"px-4 py-2 rounded-full text-sm font-medium border transition-all " + (typeFilter === t ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300 hover:bg-sky-50")}>{getTypeLabel(lang, t)}</button>
-            ))}
-          </div>
-        </div>
-
-        {sectors.length > 1 && (
-          <div className="mb-5">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{T.filterByCategory}</p>
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => setSectorFilter("")} className={"px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all " + (!sectorFilter ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300")}>{T.allCategories}</button>
-              {sectors.map((s) => {
-                const si = getSectorMeta(s);
-                return (<button key={s} onClick={() => setSectorFilter(sectorFilter === s ? "" : s)} className={"px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 " + (sectorFilter === s ? "bg-sky-500 text-white border-sky-500 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300")}><span>{si.icon}</span>{sectorNames[lang]?.[s] || s}</button>);
-              })}
-            </div>
-          </div>
-        )}
-
-        {hasActiveFilters && (
-          <div className="mb-4 flex items-center gap-3">
-            <span className="text-xs text-gray-500">{filtered.length} {T.vacancies}</span>
-            <button onClick={clearFilters} className="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              {T.clearFilters}
-            </button>
-          </div>
-        )}
 
         {loading ? (
           <div className="space-y-4">
@@ -163,16 +130,15 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             <p className="text-4xl mb-3">&#128269;</p><p className="text-lg">{T.error}</p>
             <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.reload}</button>
           </div>
-        ) : actualTotal === 0 ? (
+        ) : jobs.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-5xl mb-4">&#128269;</p>
             <p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p>
             <p className="text-sm mt-1">{T.tryAdjustFilters}</p>
-            {hasActiveFilters && (<button onClick={clearFilters} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.clearFilters}</button>)}
           </div>
         ) : (<>
-          <p className="text-sm text-gray-500 mb-4">{T.showing.replace("{0}", String((page - 1) * PER + 1)).replace("{1}", String(Math.min(page * PER, actualTotal))).replace("{2}", actualTotal.toLocaleString())}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{paged.map((job) => {
+          <p className="text-sm text-gray-500 mb-4">{T.showing.replace("{0}", String((currentPage - 1) * PER + 1)).replace("{1}", String(Math.min(currentPage * PER, totalJobs))).replace("{2}", totalJobs.toLocaleString())}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{filtered.map((job) => {
             const m = getSectorMeta(job.sector); const sn = sectorNames[lang]?.[job.sector] || job.sector; const tc = getTypeStyle(job.type);
             const pw = shouldHavePaywall(job);
             const isLocked = pw.paywall;
@@ -227,9 +193,9 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
               </Link>);
           })}</div>
           {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.prevPage}</button>
-            <span className="text-sm text-gray-600">{T.pageOf.replace("{0}", String(page)).replace("{1}", String(totalPages))}</span>
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.nextPage}</button>
+            <button onClick={() => fetchPage(currentPage - 1)} disabled={currentPage === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.prevPage}</button>
+            <span className="text-sm text-gray-600">{T.pageOf.replace("{0}", String(currentPage)).replace("{1}", String(totalPages))}</span>
+            <button onClick={() => fetchPage(currentPage + 1)} disabled={currentPage === totalPages} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.nextPage}</button>
           </div>)}
         </>)}
       </main>

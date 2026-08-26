@@ -104,3 +104,28 @@ Stage Summary:
 - Client code untouched - works as-is
 - User needs to: 1) Create account at open.bigmodel.cn, 2) Get API key, 3) Set GLM_API_KEY on Vercel
 
+---
+Task ID: 3
+Agent: Main Agent
+Task: Diagnóstico e correção crítica - rotas conflitantes, API quebrada, security, timeout
+
+Work Log:
+- Analisou print do Vercel: GEMINI_API_KEY configurada em todos os 3 ambientes (Dev/Prod/Preview)
+- Deletou src/app/[country]/ (legada W-W World of Work com rota conflitante na raiz)
+- Deletou src/app/[lang]/[slug]/[country]/ (legada que conflitava com [region], usava API quebrada)
+- Deletou src/app/api/jobs/ (API que lia de dir errado data/by_country/)
+- Deletou src/app/api/debug/ (expunha 8 chars da GEMINI_API_KEY + nomes de env vars)
+- Corrigiu timeout Gemini: 14s → 8s (dentro do limite de 10s do Vercel Hobby)
+- Otimizou cache in-memory: TTL 24h→5min, MAX 5000→500 (apenas para dev local)
+- Rebranding Work Versaly → NOSSY em 6 arquivos: JsonLd, HreflangTags, PaywallContact, currency.ts, sitemap-lang, sitemap-index
+- Transformou API país em paginada: aceita page/limit, traduz apenas a página atual
+- Atualizou página país para usar paginação server-side (18 jobs/página)
+- EUA tem 19.046 vagas (12MB) — sem paginação a tradução levaria 84 minutos
+
+Stage Summary:
+- 7 arquivos deletados, 8 arquivos modificados
+- Causa raiz dos EUA desaparecidos: conflito de rota [country] vs [region]
+- Causa raiz da tradução não funcionar: rota legada usava API quebrada sem tradução
+- Pacote: /home/z/my-project/download/nossy-fix-critical.zip
+- Próximo passo: deploy no Vercel e testar /en/jobs/eua/united-states
+
