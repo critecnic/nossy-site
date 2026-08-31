@@ -134,41 +134,24 @@ export function getPaywallText(lang: string) {
 
 export interface PaywallResult {
   paywall: boolean;
-  reason: '' | 'remote_10pct' | 'high_salary';
+  reason: '' | 'remote_1pct';
 }
 
 /**
- * Deterministic paywall: only 10% of remote jobs (job.id % 10 === 0)
- * PLUS any job with annualized salary >= $450,000.
+ * Deterministic paywall: only 1% of remote jobs (job.id % 100 === 0)
  * All other jobs are FREE (no paywall).
  */
 export function shouldHavePaywall(job: {
   id?: number;
   type?: string;
-  salaryMin?: number | null;
-  salaryPeriod?: string;
 }): PaywallResult {
   const id = job.id || 0;
   const workType = (job.type || '').toLowerCase();
   const isRemote = workType === 'remote' || workType === 'remoto';
 
-  // Annualize salary for comparison
-  let annualMin = job.salaryMin || 0;
-  if (job.salaryPeriod === 'hourly' && annualMin > 0) {
-    annualMin = annualMin * 2080;
-  } else if (job.salaryPeriod === 'month' && annualMin > 0) {
-    annualMin = annualMin * 12;
-  }
-  // salaryPeriod === 'year' or undefined: use as-is
-
-  // High salary threshold (any work type)
-  if (annualMin >= 450000) {
-    return { paywall: true, reason: 'high_salary' };
-  }
-
-  // 10% of remote jobs (deterministic)
-  if (isRemote && id % 10 === 0) {
-    return { paywall: true, reason: 'remote_10pct' };
+  // 1% of remote jobs (deterministic)
+  if (isRemote && id % 100 === 0) {
+    return { paywall: true, reason: 'remote_1pct' };
   }
 
   return { paywall: false, reason: '' };
