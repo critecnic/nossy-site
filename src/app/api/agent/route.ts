@@ -73,23 +73,27 @@ async function diagnose(req: NextRequest): Promise<NextResponse> {
   const start = Date.now();
   const baseUrl = getBaseUrl(req);
 
-  // 1. Gemini
+  // 1. Gemini - test multiple models
   const geminiKey = process.env.GEMINI_API_KEY;
   let geminiStatus = "NOT_SET";
   let geminiLatency = 0;
+  const MODEL_LIST = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
   if (geminiKey) {
-    try {
-      const t0 = Date.now();
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Say OK" }] }] }),
-        signal: AbortSignal.timeout(7000),
-      });
-      geminiLatency = Date.now() - t0;
-      geminiStatus = res.ok ? "WORKING" : `HTTP_${res.status}`;
-    } catch (e: any) { geminiStatus = `ERROR: ${e.message.slice(0, 80)}`; }
+    for (const model of MODEL_LIST) {
+      try {
+        const t0 = Date.now();
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Say OK' }] }] }),
+          signal: AbortSignal.timeout(5000),
+        });
+        geminiLatency = Date.now() - t0;
+        if (res.ok) { geminiStatus = `WORKING (${model})`; break; }
+        geminiStatus = `HTTP_${res.status} (${model})`;
+      } catch (e: any) { geminiStatus = `ERROR (${model}): ${e.message.slice(0, 60)}`; }
+    }
   }
-  results.gemini = { status: geminiStatus, keySet: !!geminiKey, latencyMs: geminiLatency };
+  results.gemini = { status: geminiStatus, keySet: !!geminiKey, latencyMs: geminiLatency, modelsTested: MODEL_LIST };
 
   // 2. Arquivos de dados
   try {

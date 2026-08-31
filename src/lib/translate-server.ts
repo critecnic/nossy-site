@@ -1,7 +1,6 @@
-// NOSSY Translation v3.2 — Google Gemini 2.0 Flash
-// Se Gemini falhar, retorna texto original.
-// Se traduziu, o CDN pode cachear.
-// Retorno: { map, ok } ou { title, description, company, location, ok }
+// NOSSY Translation v3.3 — Google Gemini (auto-fallback models)
+// Tenta modelos na ordem: gemini-2.5-flash, gemini-2.0-flash-lite, gemini-1.5-flash
+// Se todos falharem, retorna texto original em português.
 
 import type { Lang } from './i18n';
 
@@ -21,11 +20,8 @@ export function needsServerTranslation(lang: string): boolean {
 }
 
 // ---- Cache ----
-// NOTE: In-memory cache is ineffective on Vercel Hobby (serverless = new container per request).
-// CDN cache-control headers on API routes handle caching instead.
-// Kept as lightweight pass-through for local dev only.
 const cache = new Map<string, { data: any; ts: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 min (local dev only)
+const CACHE_TTL = 5 * 60 * 1000;
 const MAX_CACHE = 500;
 
 function getCached(key: string): any | null {
@@ -43,20 +39,23 @@ function setCache(key: string, data: any): void {
   cache.set(key, { data, ts: Date.now() });
 }
 
-// ---- Gemini API ----
-const GEMINI_MODEL = 'gemini-2.5-flash';
-const MAX_RETRIES = 2;
+// ---- Gemini API with model fallback ----
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+let workingModel: string | null = null;
 
 function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
 async function callGemini(systemPrompt: string, userContent: string, jsonMode = false): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error('[NOSSY] GEMINI_API_KEY is NOT set in environment variables');
+    console.error('[NOSSY] GEMINI_API_KEY is NOT set');
     return null;
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const modelsToTry = workingModel
+    ? [workingModel, ...GEMINI_MODELS.filter(m => m !== workingModel)]
+    : GEMINI_MODELS;
+
   const body: any = {
     systemInstruction: { parts: [{ text: systemPrompt }] },
     contents: [{ role: 'user', parts: [{ text: userContent }] }],
@@ -64,10 +63,11 @@ async function callGemini(systemPrompt: string, userContent: string, jsonMode = 
   };
   if (jsonMode) body.generationConfig.responseMimeType = 'application/json';
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (const model of modelsToTry) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000); // 8s < Vercel Hobby 10s limit
+      const timer = setTimeout(() => ctrl.abort(), 6000);
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,21 +78,26 @@ async function callGemini(systemPrompt: string, userContent: string, jsonMode = 
 
       if (!res.ok) {
         const errText = await res.text().catch(() => '');
-        console.error(`[NOSSY] Gemini HTTP ${res.status}: ${errText.slice(0, 200)}`);
-        if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; }
-        return null;
+        console.error(`[NOSSY] ${model} HTTP ${res.status}: ${errText.slice(0, 150)}`);
+        continue; // Try next model
       }
 
       const data = await res.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text?.trim()) { console.error('[NOSSY] Gemini returned empty'); return null; }
+      if (!text?.trim()) { console.error(`[NOSSY] ${model} returned empty`); continue; }
+
+      // Cache the working model for future requests
+      if (workingModel !== model) {
+        workingModel = model;
+        console.log(`[NOSSY] Working model set to: ${model}`);
+      }
       return text.trim();
     } catch (err: any) {
-      console.error(`[NOSSY] Gemini attempt ${attempt+1} error:`, err.message);
-      if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; }
-      return null;
+      console.error(`[NOSSY] ${model} error: ${err.message.slice(0, 100)}`);
+      continue; // Try next model
     }
   }
+
   return null;
 }
 
@@ -143,7 +148,7 @@ Rules:
     const response = await callGemini(sysPrompt, JSON.stringify(jobsData), true);
 
     if (!response) {
-      console.warn(`[NOSSY] Batch ${Math.floor(i/BATCH)+1} FAILED - returning original text`);
+      console.warn(`[NOSSY] Batch ${Math.floor(i/BATCH)+1} FAILED - returning original`);
       anyFailed = true;
       for (const j of batch) allResults.set(j.id, { title: j.title, company: j.company, location: j.location });
       continue;
