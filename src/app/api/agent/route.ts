@@ -80,7 +80,7 @@ async function diagnose(req: NextRequest): Promise<NextResponse> {
   if (geminiKey) {
     try {
       const t0 = Date.now();
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Say OK" }] }] }),
         signal: AbortSignal.timeout(7000),

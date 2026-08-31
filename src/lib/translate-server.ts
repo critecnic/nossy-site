@@ -44,7 +44,7 @@ function setCache(key: string, data: any): void {
 }
 
 // ---- Gemini API ----
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const MAX_RETRIES = 2;
 
 function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
