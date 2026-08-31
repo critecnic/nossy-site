@@ -5,6 +5,8 @@ import type { Lang } from "@/lib/i18n";
 import { promises as fsp } from "fs";
 import path from "path";
 
+const API_TIMEOUT = 8000; // 8s max for the whole request
+
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -24,6 +26,9 @@ export async function GET(req: NextRequest) {
   const langCode = req.nextUrl.searchParams.get("lang") || 'pt-br';
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || 'pt-br') as Lang;
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT);
+
   try {
     const filePath = path.join(process.cwd(), "public", "data", "latest_20.json");
     const raw = await fsp.readFile(filePath, "utf-8");
@@ -31,14 +36,16 @@ export async function GET(req: NextRequest) {
 
     // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
+      clearTimeout(timer);
       return new NextResponse(raw, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=1800" },
       });
     }
 
-    // Traduz via Gemini
+    // Translate via Google GTX + MyMemory
     console.log(`[NOSSY API] Latest ${jobs.length} jobs lang=${lang}`);
     const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
+    clearTimeout(timer);
 
     const translated = jobs.map((job: any) => {
       const t = translatedMap.get(job.id);
@@ -55,7 +62,17 @@ export async function GET(req: NextRequest) {
       headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {
+    clearTimeout(timer);
     console.error('[NOSSY API] Latest error:', err.message);
-    return NextResponse.json({ error: "Failed to load" }, { status: 500 });
+    // On timeout/error, return raw data without translation rather than failing
+    try {
+      const filePath = path.join(process.cwd(), "public", "data", "latest_20.json");
+      const raw = await fsp.readFile(filePath, "utf-8");
+      return new NextResponse(raw, {
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+      });
+    } catch {
+      return NextResponse.json({ error: "Failed to load" }, { status: 500 });
+    }
   }
 }

@@ -7,6 +7,7 @@ import path from "path";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 const CHUNK_SIZE = 1000;
+const API_TIMEOUT = 8000; // 8s max for the whole request
 
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
@@ -135,6 +136,9 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[NOSSY API] Country error:', err.message);
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    // On timeout/error, return empty rather than 500
+    return NextResponse.json({ jobs: [], total: 0, page: 1, totalPages: 1 }, {
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
   }
 }

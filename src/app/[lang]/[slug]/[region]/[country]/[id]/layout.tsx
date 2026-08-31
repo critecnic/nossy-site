@@ -5,7 +5,7 @@ import { getRegionName, shouldHavePaywall } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
 import type { Lang } from "@/lib/i18n";
 import countriesData from "@/data/countries.json";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 interface Job {
@@ -18,14 +18,39 @@ interface Job {
 }
 
 function findJob(region: string, country: string, jobId: string): Job | null {
-  try {
-    const filePath = join(process.cwd(), "public", "data", `${region}_${country}.json`);
-    const raw = readFileSync(filePath, "utf-8");
-    const jobs: Job[] = JSON.parse(raw);
-    return jobs.find(j => String(j.id) === String(jobId)) || null;
-  } catch {
-    return null;
+  const dataDir = join(process.cwd(), "public", "data");
+  const baseName = `${region}_${country}`;
+
+  // Try direct file first (small countries)
+  const directPath = join(dataDir, `${baseName}.json`);
+  if (existsSync(directPath)) {
+    try {
+      const raw = readFileSync(directPath, "utf-8");
+      const jobs: Job[] = JSON.parse(raw);
+      return jobs.find(j => String(j.id) === String(jobId)) || null;
+    } catch { /* continue to chunked */ }
   }
+
+  // Try split index + chunks (large countries like USA)
+  const indexPath = join(dataDir, `${baseName}_index.json`);
+  if (existsSync(indexPath)) {
+    try {
+      const idxRaw = readFileSync(indexPath, "utf-8");
+      const idx = JSON.parse(idxRaw);
+      for (const chunkFile of (idx.chunks || [])) {
+        const chunkPath = join(dataDir, chunkFile);
+        if (!existsSync(chunkPath)) continue;
+        try {
+          const chunkRaw = readFileSync(chunkPath, "utf-8");
+          const chunkJobs: Job[] = JSON.parse(chunkRaw);
+          const job = chunkJobs.find(j => String(j.id) === String(jobId));
+          if (job) return job;
+        } catch { /* continue */ }
+      }
+    } catch { /* ignore */ }
+  }
+
+  return null;
 }
 
 const JOB_META_DESC: Record<string, (title: string, company: string, location: string, type: string, salary: string) => string> = {

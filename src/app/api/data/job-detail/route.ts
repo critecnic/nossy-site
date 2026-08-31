@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Traduz via Gemini
+    // Traduz via Google GTX + MyMemory
     console.log(`[NOSSY API] Job detail id=${jobId} file=${file} lang=${lang}`);
     const translated = await translateJobFull(job, lang);
 
@@ -110,6 +110,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[NOSSY API] Job detail error:', err.message);
+    // On error, return job without translation rather than 404
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 }
