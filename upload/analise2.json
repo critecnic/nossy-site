@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Com base na imagem fornecida, aqui está a descrição detalhada focada nos aspectos solicitados:\n\n**1. Idioma dos Textos e Tradução:**\n*   **Idioma Principal:** A interface do site (UI) está totalmente em **Inglês**. Isso inclui o cabeçalho (\"Back to Home\", \"Asia\", \"taiwan\"), o título da página (\"Jobs in taiwan\"), a contagem de vagas (\"0 vacancies\"), a barra de busca (\"Search jobs or companies...\") e os filtros (\"FILTER BY TYPE\", \"All Work Types\").\n*   **Seletor de Idioma:** No canto superior direito, há um menu suspenso que indica **\"us English\"**, confirmando que o idioma ativo da interface é o inglês americano.\n*   **Tradução:** A interface **não está traduzida** para o idioma local da região (que seria o Chinês Tradicional em Taiwan) nem para o português (notável pelo fato de o sistema operacional estar em português, como visto na barra de favoritos \"Todos os favoritos\" e no botão \"Concluir atualização\").\n\n**2. Língua nas Vagas:**\n*   Não é possível determinar a língua das vagas porque **não há vagas visíveis**.\n*   O texto abaixo do título explicitamente diz **\"0 vacancies\"** (0 vagas).\n*   A área onde as vagas deveriam aparecer mostra apenas um estado de **carregamento (\"Loading...\")** com esqueletos de cards (linhas cinzas placeholder), indicando que o conteúdo ainda não foi carregado ou que não há dados para exibir.\n\n**3. Problemas Visíveis e Observações:**\n*   **Ausência de Conteúdo (Bug ou Estado Vazio):** O problema mais evidente é a discrepância entre as abas do navegador e o conteúdo da página. As abas indicam que existem vagas (**\"Tech Jobs in Taiwan | 292+ Vac...\"** e **\"Tech Jobs in Japan | 1,097+ Vac...\"**), mas a página atual exibe **\"0 vacancies\"** e fica eternamente em \"Loading...\". Isso sugere um erro de carregamento, um bug na filtragem ou uma falha na comunicação com o servidor.\n*   **Barra de Favoritos:** A barra de favoritos do navegador está em **Português** (ex: \"Rádio Sonho\", \"Rádio Nova FM\", \"Todos os favoritos\"), assim como o botão do Chrome (\"Concluir atualização\"). Isso cria um contraste visual com o site, que está em inglês.\n*   **Data/Hora:** O relógio do sistema mostra a data **26/08/2026**, o que pode ser um erro de configuração do sistema ou uma data futura proposital.\n\nEm resumo: Você está vendo um site de empregos (NOSSY) com interface em **inglês não traduzida**, tentando mostrar vagas em Taiwan, mas falhando em carregar qualquer conteúdo (mostrando 0 vagas e carregando indefinidamente), tudo isso visualizado em um computador cujo sistema operacional está configurado em **português**.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787794638,
+  "id": "202608270936520aaf84cb066248c7",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202608270936520aaf84cb066248c7",
+  "usage": {
+    "completion_tokens": 712,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2767,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 3479
+  }
+}

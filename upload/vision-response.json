@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Com base na imagem fornecida, esta **não é a tela de criação ou gerenciamento de tokens** (API Tokens). Trata-se da tela de **Overview (Visão Geral)** do projeto \"nossy-site\" no painel do Vercel, mostrando o status do deployment de produção atual.\n\nAqui está a descrição detalhada de todos os elementos visíveis:\n\n## 1. Contexto Geral\n- **URL**: `vercel.com/critecnics-projects/nossy-site`\n- **Projeto**: nossy-site (pertencente ao escopo \"critecnics-projects\")\n- **Página ativa**: Overview (aba superior central)\n- **Tema**: Modo escuro (Dark Mode)\n\n## 2. Barra Lateral Esquerda (Navegação)\nContém o menu principal do projeto com as seguintes opções:\n- **Find** (campo de busca) - com atalho \"F\"\n- **Environment Variables** (Variáveis de Ambiente)\n- **Domains** (Domínios)\n- **Connect** (Conectar repositório)\n- **Integrações** (com seta indicando submenu)\n- **Storage** (Armazenamento)\n- **Flags** (Feature Flags) - com seta\n- **Agent** - com seta\n- **AI Gateway** - com seta\n- **Sandboxes** - com seta\n- **Workflows**\n- **Images**\n- **Usage** (Uso)\n- **Support** (Suporte)\n- **Settings** (Configurações) - com seta\n\nNo rodapé: avatar do usuário **critecnic** e botões de ações rápidas.\n\n## 3. Área Principal - Production Deployment (Deploy de Produção)\n\n### Cabeçalho do Deployment\n- **Título**: \"Production Deployment\"\n- **Botões de ação à direita**:\n  - 🔄 Ícone de refresh/atualizar\n  - ↩️ **Instant Rollback** (Reversão instantânea)\n  - **Visit** (dropdown/visitar) - botão branco destacado\n  - ⋯ (três pontos - menu de mais opções)\n\n### Preview do Site\n- **Imagem**: Screenshot do site \"NOSSY\" ao vivo\n- **Visual**: Fundo azul com logo \"N\" grande e texto \"NOSSY\" + slogan \"Seek and you shall find\"\n- **Rodapé do preview**: \"Browse by Region\"\n\n### Informações de Deploy (coluna direita)\n- **Deployment**: `nossy-site-mnqd09a8c-critecnics-projects.vercel.app`\n- **Domains**: \n  - `nossy.pro` (com ícone de link externo)\n  - `nossy-site.vercel.app` (com ícone de link externo)\n  - Botão **⊕** para adicionar domínio\n- **Status**: 🟢 **Ready** (verde - pronto)\n- **Created**: **23h ago by critecnic** (há 23 horas, pelo usuário critecnic, com avatar rosa)\n- **Source**: \n  - Branch: **main** (com ícone de git)\n  - Commit: **a2d22fd** \n  - Mensagem: *fix: add Lingva fallback, fix Gemini multi-model, improve robustness*\n\n## 4. Seções Inferiores\n\n### Deployment Settings\n- Texto informativo: *\"To update your Production Deployment, push to the main branch.\"*\n- Badge azul: **2 Recommendations** (2 recomendações)\n- Botão direito: **Deployments** (lista de deploys)\n\n### Cards de Métricas (3 colunas)\n\n**1. Production Checklist (4/5)**\n- ✅ Add Custom Domain (concluído)\n- ✅ Preview Deployment (concluído)\n- (Itens adicionais ocultos, total 4 de 5 completos)\n\n**2. Observability (6h)**\n- **Edge Requests**: 224 (com gráfico de linha mostrando pico recente)\n- **Function Invocations**: 94 (com gráfico de linha)\n\n**3. Analytics (1w)**\n- **8 Visitors** (visitantes na última semana)\n- **0 online** (usuários online no momento - indicador cinza)\n\n## 5. Resposta à sua pergunta específica sobre Tokens:\n\n**Não há nenhum token visível nesta tela.** Esta é a página de **overview do projeto**, não a seção de Tokens.\n\nPara acessar tokens no Vercel, você precisaria:\n1. Ir em **Settings** (Configurações) no menu lateral\n2. Procurar por **Tokens** ou **API Tokens**\n3. Ou acessar diretamente via URL: `vercel.com/account/tokens`\n\nA tela atual mostra apenas o **deploy ativo em produção** do projeto \"nossy-site\", que está **Ready (Pronto)** há aproximadamente 23 horas, hospedado nos domínios `nossy.pro` e `nossy-site.vercel.app`.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787926318,
+  "id": "20260828221146c54817d92d9a4874",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260828221146c54817d92d9a4874",
+  "usage": {
+    "completion_tokens": 1106,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2794,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 3900
+  }
+}

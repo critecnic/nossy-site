@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Com base na imagem fornecida, aqui está a descrição detalhada:\n\n**A página está carregando?**\nSim, a página parece estar totalmente carregada. Não há indicadores visuais de carregamento (como ícones de rotação ou esqueletos de tela). O conteúdo principal, incluindo o cabeçalho, título, descrição e botões, está renderizado completamente.\n\n**Quantas vagas aparecem?**\nApenas **uma vaga** está sendo exibida em detalhes na tela. Trata-se da vaga intitulada \"Remote C++ Developer Jobs from Germany\". Não há uma lista de múltiplas vagas visível; o foco é apenas nesta posição específica.\n\n**Qual o idioma dos títulos?**\nHá uma **mistura de idiomas**:\n*   O **título principal da vaga** (\"Remote C++ Developer Jobs from Germany\") e as tags técnicas (\"Remote\", \"Software Engineering\", \"Premium\") estão em **inglês**.\n*   A **interface do site** (navegação, botões, rótulos) está em **português**, como se pode ver em: \"Voltar ao Início\", \"Nome da empresa e contato estão bloqueados\", \"Desbloquear Contato\", \"Descrição Completa\" e \"Informações de Contato da Empresa\".\n*   A **descrição da vaga** também está em **português** (\"Requer sólidos conhecimentos em estruturas de dados...\").\n\n**Está funcionando corretamente?**\nDo ponto de vista técnico de renderização, **sim, a página está funcionando corretamente**. Todos os elementos estão no lugar, o layout está organizado e não há mensagens de erro do sistema (como \"404 Not Found\" ou \"Erro de Servidor\"). \n\nNo entanto, do ponto de vista funcional para o usuário, a vaga apresenta uma **limitação**: as informações críticas (nome da empresa e dados de contato) estão **bloqueadas atrás de um paywall**, exigindo um pagamento de $7 USD para serem reveladas. Isso é um recurso intencional do site (modelo freemium/premium), não um defeito técnico.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787795779,
+  "id": "2026082709561115984a47b2d443b0",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026082709561115984a47b2d443b0",
+  "usage": {
+    "completion_tokens": 480,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2768,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 3248
+  }
+}
