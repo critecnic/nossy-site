@@ -127,7 +127,8 @@ async function diagnose(req: NextRequest): Promise<NextResponse> {
       }).catch(e => ({ status: 0, error: e.message })),
     ]);
     routeTests.usa = { status: usaRes.status, ok: usaRes.status === 200, problem: usaRes.status === 413 ? "FILE_TOO_LARGE" : null };
-    routeTests.latest = { status: latestRes.status, cache: latestRes.cache, translationWorking: latestRes.cache.includes("s-maxage"), firstTitle: latestRes.firstTitle };
+    const lCache = (latestRes as any).cache || "";
+    routeTests.latest = { status: latestRes.status, cache: lCache, translationWorking: lCache.includes("s-maxage"), firstTitle: (latestRes as any).firstTitle || null };
   } catch (e: any) { routeTests.error = e.message; }
   results.routeTests = routeTests;
 
@@ -223,7 +224,7 @@ function envInfo(): NextResponse {
 async function listFiles(): Promise<NextResponse> {
   try {
     const files = await fsp.readdir(DATA_DIR);
-    const infos = [];
+    const infos: Array<{file:string;sizeBytes:number;sizeKB:number;type:string}> = [];
     for (const f of files.sort()) {
       if (!f.endsWith(".json")) continue;
       const stat = await fsp.stat(path.join(DATA_DIR, f));
