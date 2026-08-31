@@ -40,7 +40,16 @@ function setCache(key: string, data: any): void {
 }
 
 // ---- Gemini API with model fallback ----
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash-lite', 
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+];
+const GEMINI_APIS = [
+  'https://generativelanguage.googleapis.com/v1beta/models/',
+  'https://generativelanguage.googleapis.com/v1/models/',
+];
 let workingModel: string | null = null;
 
 function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
@@ -64,37 +73,38 @@ async function callGemini(systemPrompt: string, userContent: string, jsonMode = 
   if (jsonMode) body.generationConfig.responseMimeType = 'application/json';
 
   for (const model of modelsToTry) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 6000);
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: ctrl.signal,
-      });
-      clearTimeout(timer);
+    for (const apiBase of GEMINI_APIS) {
+      const url = `${apiBase}${model}:generateContent?key=${apiKey}`;
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 6000);
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
 
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        console.error(`[NOSSY] ${model} HTTP ${res.status}: ${errText.slice(0, 150)}`);
-        continue; // Try next model
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '');
+          console.error(`[NOSSY] ${apiBase}${model} HTTP ${res.status}: ${errText.slice(0, 120)}`);
+          continue;
+        }
+
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text?.trim()) { console.error(`[NOSSY] ${model} returned empty`); continue; }
+
+        if (workingModel !== model) {
+          workingModel = model;
+          console.log(`[NOSSY] Working model: ${model}`);
+        }
+        return text.trim();
+      } catch (err: any) {
+        console.error(`[NOSSY] ${model} error: ${err.message.slice(0, 80)}`);
+        continue;
       }
-
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text?.trim()) { console.error(`[NOSSY] ${model} returned empty`); continue; }
-
-      // Cache the working model for future requests
-      if (workingModel !== model) {
-        workingModel = model;
-        console.log(`[NOSSY] Working model set to: ${model}`);
-      }
-      return text.trim();
-    } catch (err: any) {
-      console.error(`[NOSSY] ${model} error: ${err.message.slice(0, 100)}`);
-      continue; // Try next model
     }
   }
 

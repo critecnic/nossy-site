@@ -77,7 +77,7 @@ async function diagnose(req: NextRequest): Promise<NextResponse> {
   const geminiKey = process.env.GEMINI_API_KEY;
   let geminiStatus = "NOT_SET";
   let geminiLatency = 0;
-  const MODEL_LIST = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+  const MODEL_LIST = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'];
   if (geminiKey) {
     for (const model of MODEL_LIST) {
       try {
