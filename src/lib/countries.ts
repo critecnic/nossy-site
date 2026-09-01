@@ -1,5 +1,5 @@
 // NOSSY Global Region Configuration - Seek and you shall find.
-// 3 major regions: Europa, Asia, EUA
+// 5 major regions: Europa, Asia, EUA, Oceania, America do Norte
 
 export interface CountryCurrency {
   code: string;
@@ -93,6 +93,52 @@ export const REGIONS: RegionConfig[] = [
       'ur': 'یو ای', 'tl': 'eua', 'sw': 'marekani', 'zh': '美国', 'ja': 'アメリカ', 'de': 'usa',
     },
   },
+  {
+    code: 'oceania',
+    name: 'Oceania',
+    flag: '\uD83C\uDDE6\uD83C\uDDFA',
+    currency: { code: 'AUD', symbol: 'A$', locale: 'en-AU' },
+    hreflang: ['en-oceania', 'pt-oceania'],
+    direction: 'ltr',
+    jobCount: 10653,
+    seoKeywords: ['jobs in Oceania', 'Australian jobs 2025', 'tech jobs Australia', 'IT jobs Australia', 'jobs New Zealand', 'remote jobs Oceania', 'developer jobs Australia', 'careers Australia'],
+    seoTitle: 'Jobs in Oceania | Latest Job Vacancies & Careers 2025 - NOSSY',
+    seoDescription: 'Find the latest job vacancies in Oceania. 10,653+ open positions in Australia and New Zealand. Top companies hiring with real contact information. Free to browse on NOSSY!',
+    countries: {},
+    topCategories: [
+      { name: 'Software Engineering', count: 3200 },
+      { name: 'Cybersecurity', count: 2100 },
+      { name: 'Other', count: 1800 },
+    ],
+    regionSlugs: {
+      'en': 'oceania', 'pt-br': 'oceania', 'pt-pt': 'oceania', 'es': 'oceania',
+      'fr': 'oceanie', 'ar': '\u0623\u0648\u0642\u064a\u0627\u0646\u064a\u0627', 'hi': '\u0913\u0936\u093f\u092f\u093e\u0928\u093f\u092f\u093e', 'bn': '\u0993\u09b6\u09bf\u09af\u09bc\u09be\u09a8\u09bf\u09af\u09bc\u09be',
+      'ur': '\u0627\u0648\u0633\u06cc\u0627\u0646\u06cc\u0627', 'tl': 'oceania', 'sw': 'oseania', 'zh': '\u5927\u6d0b\u6d32', 'ja': '\u30aa\u30fc\u30b9\u30c8\u30e9\u30ea\u30a2', 'de': 'ozeanien',
+    },
+  },
+  {
+    code: 'america-do-norte',
+    name: 'America do Norte',
+    flag: '\uD83C\uDDF8\uD83C\uDDE6',
+    currency: { code: 'CAD', symbol: 'C$', locale: 'en-CA' },
+    hreflang: ['en-canada', 'fr-canada'],
+    direction: 'ltr',
+    jobCount: 6411,
+    seoKeywords: ['jobs in Canada', 'Canadian jobs 2025', 'tech jobs Canada', 'IT jobs Canada', 'software engineer Canada', 'remote jobs Canada', 'developer jobs Canada', 'careers Canada'],
+    seoTitle: 'Jobs in Canada | Latest Job Vacancies & Careers 2025 - NOSSY',
+    seoDescription: 'Find the latest job vacancies in Canada. 6,411+ open positions across all sectors. Top companies hiring with real contact information. Free to browse on NOSSY!',
+    countries: {},
+    topCategories: [
+      { name: 'Software Engineering', count: 1285 },
+      { name: 'Finance Technology', count: 590 },
+      { name: 'Consulting', count: 469 },
+    ],
+    regionSlugs: {
+      'en': 'north-america', 'pt-br': 'america-do-norte', 'pt-pt': 'america-do-norte', 'es': 'america-del-norte',
+      'fr': 'amerique-du-nord', 'ar': '\u0623\u0645\u0631\u064a\u0643\u0627 \u0627\u0644\u0634\u0645\u0627\u0644\u064a\u0629', 'hi': '\u0909\u0924\u094d\u0924\u0930 \u0905\u092e\u0947\u0930\u093f\u0915\u093e', 'bn': '\u0989\u09a4\u09cd\u09a4\u09b0 \u0986\u09ae\u09c7\u09b0\u09bf\u0995\u09be',
+      'ur': '\u0634\u0645\u0627\u0644\u06cc \u0627\u0645ر\u06cc\u06a9\u0627', 'tl': 'north-america', 'sw': 'amerika ya kaskazini', 'zh': '\u5317\u7f8e\u6d32', 'ja': '\u5317\u7c73\u6d32', 'de': 'nordamerika',
+    },
+  },
 ];
 
 // Backward compat aliases
@@ -112,6 +158,6 @@ export function getCountryName(code: string, lang?: string): string {
   return r.name;
 }
 
-export const TOTAL_JOBS = 45039;
-export const TOTAL_REGIONS = 3;
+export const TOTAL_JOBS = 62103;
+export const TOTAL_REGIONS = 5;
 export const TOTAL_CATEGORIES = 21;
