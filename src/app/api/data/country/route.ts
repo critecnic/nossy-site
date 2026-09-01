@@ -74,6 +74,7 @@ export async function GET(req: NextRequest) {
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || 'pt-br') as Lang;
   const page = Math.max(1, parseInt(req.nextUrl.searchParams.get("page") || '1', 10));
   const limit = Math.min(100, Math.max(1, parseInt(req.nextUrl.searchParams.get("limit") || '18', 10)));
+  const sector = req.nextUrl.searchParams.get("sector") || '';
 
   if (!file) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
@@ -88,19 +89,50 @@ export async function GET(req: NextRequest) {
     const baseName = file.replace('.json', '');
     let jobs: any[];
     let total: number;
+    const sectorFilter = sector.trim().toLowerCase();
 
-    // Try chunked files FIRST (avoids 413 on large files like USA 12MB+)
-    const chunkResult = await loadJobsFromChunks(baseName, page, limit);
-    if (chunkResult) {
-      jobs = chunkResult.jobs;
-      total = chunkResult.total;
+    if (sectorFilter) {
+      // Sector filter: must scan all chunks, filter, then paginate
+      const idx = await getIndex(baseName);
+      if (idx) {
+        let allFiltered: any[] = [];
+        for (let c = 0; c < idx.chunks.length; c++) {
+          const chunkPath = safeFilePath(idx.chunks[c]);
+          if (!chunkPath) continue;
+          try {
+            const raw = await fsp.readFile(chunkPath, 'utf-8');
+            const chunk = JSON.parse(raw);
+            for (const job of chunk) {
+              if ((job.sector || '').toLowerCase() === sectorFilter) {
+                allFiltered.push(job);
+              }
+            }
+          } catch {}
+        }
+        total = allFiltered.length;
+        const offset = (page - 1) * limit;
+        jobs = allFiltered.slice(offset, offset + limit);
+      } else {
+        const raw = await fsp.readFile(safePath, "utf-8");
+        const allJobs = JSON.parse(raw);
+        const filtered = allJobs.filter((j: any) => (j.sector || '').toLowerCase() === sectorFilter);
+        total = filtered.length;
+        const offset = (page - 1) * limit;
+        jobs = filtered.slice(offset, offset + limit);
+      }
     } else {
-      // Fallback: read direct file (only for small files)
-      const raw = await fsp.readFile(safePath, "utf-8");
-      const allJobs = JSON.parse(raw);
-      total = allJobs.length;
-      const offset = (page - 1) * limit;
-      jobs = allJobs.slice(offset, offset + limit);
+      // No sector filter: original chunked pagination
+      const chunkResult = await loadJobsFromChunks(baseName, page, limit);
+      if (chunkResult) {
+        jobs = chunkResult.jobs;
+        total = chunkResult.total;
+      } else {
+        const raw = await fsp.readFile(safePath, "utf-8");
+        const allJobs = JSON.parse(raw);
+        total = allJobs.length;
+        const offset = (page - 1) * limit;
+        jobs = allJobs.slice(offset, offset + limit);
+      }
     }
 
     const totalPagesCount = Math.max(1, Math.ceil(total / limit));
@@ -117,7 +149,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    console.log(`[NOSSY API] Country ${file} page ${page}: ${jobs.length}/${total} jobs lang=${lang}`);
+    console.log(`[NOSSY API] Country ${file} page ${page} sector=${sectorFilter || 'all'}: ${jobs.length}/${total} jobs lang=${lang}`);
     const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
 
     const translated = jobs.map((job: any) => {
