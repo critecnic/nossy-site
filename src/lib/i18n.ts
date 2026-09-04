@@ -1229,6 +1229,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "Try browsing the region",
+    "paymentSuccess": "Payment successful! Access unlocked.",
+    "contactDirectly": "Contact the company directly",
   },
   "pt-br": {
     "heroTitle": "Ache Aqui o Emprego dos Seus Sonhos",
@@ -1325,6 +1328,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefone",
     "companySite": "Site",
     "notAvailable": "Nao disponivel",
+    "tryBrowseRegion": "Tente navegar pela região",
+    "paymentSuccess": "Pagamento realizado! Acesso desbloqueado.",
+    "contactDirectly": "Contate a empresa diretamente",
   },
   "pt-pt": {
     "heroTitle": "Encontre o Emprego dos Seus Sonhos",
@@ -1421,6 +1427,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefone",
     "companySite": "Site",
     "notAvailable": "Nao disponivel",
+    "tryBrowseRegion": "Tente navegar pela região",
+    "paymentSuccess": "Pagamento realizado! Acesso desbloqueado.",
+    "contactDirectly": "Contacte a empresa diretamente",
   },
   "es": {
     "heroTitle": "Encuentra el Empleo de tus Sueños",
@@ -1517,6 +1526,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefono",
     "companySite": "Sitio web",
     "notAvailable": "No disponible",
+    "tryBrowseRegion": "Intenta navegar por la región",
+    "paymentSuccess": "¡Pago exitoso! Acceso desbloqueado.",
+    "contactDirectly": "Contacte la empresa directamente",
   },
   "fr": {
     "heroTitle": "Trouvez l\'Emploi de Vos Rêves",
@@ -1613,6 +1625,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telephone",
     "companySite": "Site web",
     "notAvailable": "Non disponible",
+    "tryBrowseRegion": "Essayez de parcourir la région",
+    "paymentSuccess": "Paiement réussi ! Accès débloqué.",
+    "contactDirectly": "Contactez l'entreprise directement",
   },
   "de": {
     "heroTitle": "Finden Sie Ihren Traumjob",
@@ -1709,6 +1724,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefon",
     "companySite": "Website",
     "notAvailable": "Nicht verfugbar",
+    "tryBrowseRegion": "Versuchen Sie die Region zu durchsuchen",
+    "paymentSuccess": "Zahlung erfolgreich! Zugang freigeschaltet.",
+    "contactDirectly": "Kontaktieren Sie das Unternehmen direkt",
   },
   "it": {
     "heroTitle": "Trova il Lavoro dei Tuoi Sogni",
@@ -1805,6 +1823,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefono",
     "companySite": "Sito web",
     "notAvailable": "Non disponibile",
+    "tryBrowseRegion": "Prova a navigare la regione",
+    "paymentSuccess": "Pagamento riuscito! Accesso sbloccato.",
+    "contactDirectly": "Contatta l'azienda direttamente",
   },
   "nl": {
     "heroTitle": "Vind Jouw Droombaan",
@@ -1901,6 +1922,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefoon",
     "companySite": "Website",
     "notAvailable": "Niet beschikbaar",
+    "tryBrowseRegion": "Probeer de regio te bekijken",
+    "paymentSuccess": "Betaling succesvol! Toegang ontgrendeld.",
+    "contactDirectly": "Neem direct contact op met het bedrijf",
   },
   "pl": {
     "heroTitle": "Znajdź Pracę Marzeń",
@@ -1997,6 +2021,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefon",
     "companySite": "Strona internetowa",
     "notAvailable": "Niedostepne",
+    "tryBrowseRegion": "Spróbuj przeglądać region",
+    "paymentSuccess": "Płatność udana! Dostęp odblokowany.",
+    "contactDirectly": "Skontaktuj się bezpośrednio z firmą",
   },
   "ru": {
     "heroTitle": "Найдите Работу Мечты",
@@ -2093,6 +2120,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefon",
     "companySite": "Veb-sayt",
     "notAvailable": "Nedostupno",
+    "tryBrowseRegion": "Попробуйте просмотреть регион",
+    "paymentSuccess": "Оплата успешна! Доступ разблокирован.",
+    "contactDirectly": "Свяжитесь с компанией напрямую",
   },
   "zh": {
     "heroTitle": "寻找您的梦想工作",
@@ -2189,6 +2219,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "试试浏览该地区",
+    "paymentSuccess": "支付成功！访问已解锁。",
+    "contactDirectly": "直接联系公司",
   },
   "ja": {
     "heroTitle": "理想の仕事を見つけよう",
@@ -2285,6 +2318,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "地域を閲覧してみてください",
+    "paymentSuccess": "支払い成功！アクセスがアンロックされました。",
+    "contactDirectly": "企業に直接連絡する",
   },
   "ko": {
     "heroTitle": "꿈의 일자리를 찾으세요",
@@ -2381,6 +2417,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "지역을 탐색해 보세요",
+    "paymentSuccess": "결제 성공! 접근이 잠금 해제되었습니다.",
+    "contactDirectly": "회사에 직접 연락하세요",
   },
   "hi": {
     "heroTitle": "अपनी सपने की नौकरी खोजें",
@@ -2477,6 +2516,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "क्षेत्र को ब्राउज़ करने का प्रयास करें",
+    "paymentSuccess": "भुगतान सफल! पहुंच अनलॉक की गई।",
+    "contactDirectly": "कंपनी से सीधे संपर्क करें",
   },
   "bn": {
     "heroTitle": "আপনার স্বপ্নের চাকরি খুঁজুন",
@@ -2573,6 +2615,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "অঞ্চল ব্রাউজ করার চেষ্টা করুন",
+    "paymentSuccess": "পেমেন্ট সফল! অ্যাক্সেস আনলক হয়েছে।",
+    "contactDirectly": "সরাসরি কোম্পানির সাথে যোগাযোগ করুন",
   },
   "ar": {
     "heroTitle": "ابحث عن وظيفة أحلامك",
@@ -2669,6 +2714,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "حاول تصفح المنطقة",
+    "paymentSuccess": "الدفع ناجح! تم فتح الوصول.",
+    "contactDirectly": "تواصل مع الشركة مباشرة",
   },
   "tr": {
     "heroTitle": "Hayalinizdeki Işi Bulun",
@@ -2765,6 +2813,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Telefon",
     "companySite": "Web sitesi",
     "notAvailable": "Mevcut degil",
+    "tryBrowseRegion": "Bölgeleri göz atmayı deneyin",
+    "paymentSuccess": "Ödeme başarılı! Erişim açıldı.",
+    "contactDirectly": "Şirketle doğrudan iletişime geçin",
   },
   "vi": {
     "heroTitle": "Tìm Việc Mơ Ước",
@@ -2861,6 +2912,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "Thử duyệt khu vực",
+    "paymentSuccess": "Thanh toán thành công! Đã mở khóa truy cập.",
+    "contactDirectly": "Liên hệ trực tiếp với công ty",
   },
   "th": {
     "heroTitle": "ค้นหางานในฝันของคุณ",
@@ -2957,6 +3011,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "ลองเรียกดูภูมิภาค",
+    "paymentSuccess": "ชำระเงินสำเร็จ! ปลดล็อกการเข้าถึงแล้ว",
+    "contactDirectly": "ติดต่อบริษัทโดยตรง",
   },
   "ur": {
     "heroTitle": "اپنی خوابوں کی نوکری تلاش کریں",
@@ -3053,6 +3110,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "خطے کو براؤز کرنے کی کوشش کریں",
+    "paymentSuccess": "ادائیگی کامیاب! رسائی کھول دی گئی۔",
+    "contactDirectly": "کمپنی سے براہ راست رابطہ کریں",
   },
   "tl": {
     "heroTitle": "Hanapin ang Pangarap mong Trabaho",
@@ -3149,6 +3209,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Phone",
     "companySite": "Website",
     "notAvailable": "Not available",
+    "tryBrowseRegion": "Subukan mag-browse ng rehiyon",
+    "paymentSuccess": "Matagumpay ang bayad! Na-unlock ang access.",
+    "contactDirectly": "Kontakin ang kumpanya nang direkta",
   },
   "sw": {
     "heroTitle": "Tafuta Kazi ya Ndoto Yako",
@@ -3245,5 +3308,8 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "companyPhone": "Simu",
     "companySite": "Tovuti",
     "notAvailable": "Haipatikani",
+    "tryBrowseRegion": "Jaribu kuvinjari eneo",
+    "paymentSuccess": "Malipo yamefanikiwa! Ufikiaji umefunguliwa.",
+    "contactDirectly": "Wasiliana na kampuni moja kwa moja",
   },
 };

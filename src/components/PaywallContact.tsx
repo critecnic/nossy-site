@@ -1,3 +1,6 @@
+// DISCLAIMER: This component is currently DISCONNECTED/UNUSED in the main app flow.
+// The payment/paywall is handled by PaddlePayment component and inline in job pages.
+// This PayPal-based component remains as a reference for future PayPal integration.
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";

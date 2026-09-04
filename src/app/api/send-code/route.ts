@@ -45,11 +45,19 @@ export async function POST(req: Request) {
             to: [email],
             subject: 'NOSSY - Verification Code',
             html: `
-              <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #0ea5e9;">NOSSY</h2>
-                <p>Your verification code is:</p>
-                <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1e293b; text-align: center; padding: 16px; background: #f1f5f9; border-radius: 12px; margin: 16px 0;">${code}</div>
-                <p style="color: #64748b; font-size: 14px;">This code expires in 10 minutes.</p>
+              <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #f8fafc; border-radius: 16px;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                  <h1 style="color: #0ea5e9; font-size: 32px; font-weight: 800; letter-spacing: 4px; margin: 0;">NOSSY</h1>
+                  <p style="color: #94a3b8; font-size: 13px; font-style: italic; margin: 4px 0 0;">Seek and you shall find.</p>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 24px; text-align: center;">
+                  <p style="color: #475569; font-size: 15px; margin: 0 0 16px;">Your verification code is:</p>
+                  <div style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #0f172a; text-align: center; padding: 20px; background: #f1f5f9; border-radius: 12px; margin: 0 0 16px;">${code}</div>
+                  <p style="color: #64748b; font-size: 13px; margin: 0;">This code expires in 10 minutes.</p>
+                </div>
+                <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                  <p style="color: #94a3b8; font-size: 12px; margin: 0;">© 2026 NOSSY · <a href="mailto:Cristecnic@outlook.com" style="color: #0ea5e9;">Cristecnic@outlook.com</a></p>
+                </div>
               </div>
             `,
           }),

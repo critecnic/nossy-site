@@ -1,3 +1,6 @@
+// DISCLAIMER: This component is currently DISCONNECTED/UNUSED in the main app flow.
+// The paywall is handled inline in job detail/country pages. This modal remains
+// as a reference for future paywall UI implementation.
 "use client";
 
 import React, { useState } from 'react';

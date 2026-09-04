@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -41,6 +42,22 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [search, setSearch] = useState("");
   const PER = 18;
   const [countries] = useState<any[]>(countriesData);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Payment success notification (P8)
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  useEffect(() => {
+    if (searchParams.get('payment') === 'success') {
+      setPaymentSuccess(true);
+      // Auto-clear the URL param
+      const url = new URL(window.location.href);
+      url.searchParams.delete('payment');
+      router.replace(url.pathname + url.search, { scroll: false });
+      const timer = setTimeout(() => setPaymentSuccess(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, router]);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
@@ -69,7 +86,11 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
       }).catch(() => { setDataError(true); setLoading(false); });
   }, [rc, cc, langCode, countries]);
 
-  useEffect(() => { fetchPage(1); }, [fetchPage]);
+  // Read ?page=N from URL on mount, then fetch that page
+  useEffect(() => {
+    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+    fetchPage(pageFromUrl > 0 ? pageFromUrl : 1);
+  }, [fetchPage, searchParams]);
 
   // Client-side search filter on current page
   const filtered = search
@@ -86,6 +107,11 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
+      {paymentSuccess && (
+        <div className="fixed top-4 right-4 z-[60] bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg text-sm font-medium animate-in fade-in slide-in-from-top-2">
+          ✓ {T.paymentSuccess || 'Payment successful! Access unlocked.'}
+        </div>
+      )}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -140,6 +166,12 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">&#128269;</p><p className="text-lg">{T.error}</p>
             <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">{T.reload}</button>
+          </div>
+        ) : totalJobs === 0 && !loading ? (
+          <div className="text-center py-16 text-gray-400">
+            <p className="text-5xl mb-4">&#128269;</p>
+            <p className="text-lg font-medium text-gray-600">{T.noJobsFound}</p>
+            <p className="text-sm mt-1">{T.tryBrowseRegion || 'Try browsing the region'} <Link href={regionHref} className="text-sky-600 hover:text-sky-700 font-medium">{rName}</Link></p>
           </div>
         ) : jobs.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
@@ -204,9 +236,9 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
               </Link>);
           })}</div>
           {totalPages > 1 && (<div className="flex items-center justify-center gap-3 mt-8">
-            <button onClick={() => fetchPage(currentPage - 1)} disabled={currentPage === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.prevPage}</button>
+            <button onClick={() => { fetchPage(currentPage - 1); router.push(countryHref + '?page=' + (currentPage - 1)); }} disabled={currentPage === 1} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.prevPage}</button>
             <span className="text-sm text-gray-600">{T.pageOf.replace("{0}", String(currentPage)).replace("{1}", String(totalPages))}</span>
-            <button onClick={() => fetchPage(currentPage + 1)} disabled={currentPage === totalPages} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.nextPage}</button>
+            <button onClick={() => { fetchPage(currentPage + 1); router.push(countryHref + '?page=' + (currentPage + 1)); }} disabled={currentPage === totalPages} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{T.nextPage}</button>
           </div>)}
         </>)}
       </main>
@@ -221,7 +253,10 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
             </Link>
-            <p className="text-gray-400 text-sm">{T.footerText}</p>
+            <div className="flex flex-col items-center gap-2 text-gray-400 text-sm">
+              <a href="mailto:Cristecnic@outlook.com" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: Cristecnic@outlook.com</a>
+              <span>{T.footerText}</span>
+            </div>
           </div>
         </div>
       </footer>

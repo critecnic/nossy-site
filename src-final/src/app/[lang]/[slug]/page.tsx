@@ -161,22 +161,17 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         </section>
       </main>
 
-      <footer className="bg-gray-900 text-white py-12 mt-8">
+      <footer className="bg-gray-900 text-white py-10 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col items-center gap-5">
-            <Link href={homeHref} className="flex items-center gap-4">
-              <SiteLogo size={48} />
-              <div>
-                <NossyBrand variant="white" size={36} className="h-9 w-auto" />
-                <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
-              </div>
+          <div className="flex flex-col items-center gap-3">
+            <Link href={homeHref} className="flex items-center gap-3">
+              <SiteLogo size={36} />
+              <NossyBrand variant="white" size={28} className="h-7 w-auto" />
             </Link>
-            <div className="flex items-center gap-6 text-gray-400 text-sm">
-              <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
-              <span className="text-gray-600">|</span>
-              <span>58 {T.countries}</span>
-              <span className="text-gray-600">|</span>
-              <span>{T.footerText}</span>
+            <p className="text-sky-400 text-sm italic">Seek and you shall find.</p>
+            <div className="flex flex-col items-center gap-1 text-gray-400 text-sm">
+              <a href="mailto:Cristecnic@outlook.com" className="hover:text-sky-400 transition-colors">Contact: Cristecnic@outlook.com</a>
+              <span>© 2026 NOSSY</span>
             </div>
           </div>
         </div>

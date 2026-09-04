@@ -1,3 +1,4 @@
+// TODO: Import in country page when fixing localized URL slugs (Padrao 0220 item 1)
 // Maps localized slugs to English slugs for data file lookup
 export const SLUG_TO_ENGLISH: Record<string, string> = {
   // Europa

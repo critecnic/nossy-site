@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  const langCode = req.nextUrl.searchParams.get("lang") || 'pt-br';
-  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || 'pt-br') as Lang;
+  const langCode = req.nextUrl.searchParams.get("lang") || 'en';
+  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || 'en') as Lang;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), API_TIMEOUT);

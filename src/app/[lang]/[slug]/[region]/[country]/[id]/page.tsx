@@ -232,6 +232,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                       <span className="text-xs text-sky-600 font-medium">{T.companyEmail}</span>
                       {job.contactEmail ? (
                         <a href={"mailto:" + job.contactEmail} className="block text-sm text-gray-900 font-medium hover:text-sky-600 transition-colors">{job.contactEmail}</a>
+                      ) : careerUrl ? (
+                        <a href={careerUrl} target="_blank" rel="noopener noreferrer" className="block text-sm text-sky-600 font-medium hover:text-sky-700 transition-colors">{T.contactDirectly || 'Contact the company directly'}</a>
                       ) : (
                         <span className="block text-sm text-gray-400">{T.notAvailable}</span>
                       )}
@@ -336,7 +338,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
             </Link>
-            <p className="text-gray-400 text-sm">{T.footerText}</p>
+            <div className="flex flex-col items-center gap-2 text-gray-400 text-sm">
+              <a href="mailto:Cristecnic@outlook.com" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: Cristecnic@outlook.com</a>
+              <span>{T.footerText}</span>
+            </div>
           </div>
         </div>
       </footer>

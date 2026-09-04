@@ -182,11 +182,13 @@ export default function RemoteWorkSalaryGuide2025({ params }: { params: Promise<
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
             </Link>
-            <div className="flex items-center gap-6 text-gray-400 text-sm">
-              <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
-              <span className="text-gray-600">|</span>
-              <span>58 {T.countries}</span>
-              <span className="text-gray-600">|</span>
+            <div className="flex flex-col items-center gap-2 text-gray-400 text-sm">
+              <div className="flex items-center gap-6">
+                <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
+                <span className="text-gray-600">|</span>
+                <span>58 {T.countries}</span>
+              </div>
+              <a href="mailto:Cristecnic@outlook.com" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: Cristecnic@outlook.com</a>
               <span>{T.footerText}</span>
             </div>
           </div>

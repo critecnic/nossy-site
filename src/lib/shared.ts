@@ -138,7 +138,7 @@ export interface PaywallResult {
 }
 
 /**
- * Deterministic paywall: only 1% of remote jobs (job.id % 100 === 0)
+ * Deterministic paywall: only 1% of remote jobs (id % 100 === 0)
  * All other jobs are FREE (no paywall).
  */
 export function shouldHavePaywall(job: {

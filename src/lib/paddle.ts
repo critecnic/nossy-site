@@ -4,8 +4,12 @@ const PADDLE_API_KEY = process.env.PADDLE_API_KEY || '';
 const PADDLE_PRICE_ID = process.env.PADDLE_PRICE_ID || 'pri_01m0bhvecckh078qxexjwest9x';
 
 const PADDLE_BASE = 'https://vendor-api.paddle.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nossy.pro';
 
 export async function createPaddleCheckout(email: string, jobId: number, jobTitle: string, lang: string): Promise<string> {
+  const baseUrl = BASE_URL.replace(/\/$/, '');
+  const redirectUrl = `${baseUrl}/${lang || 'en'}/jobs?payment=success`;
+
   const res = await fetch(PADDLE_BASE + '/transactions/create', {
     method: 'POST',
     headers: {
@@ -20,7 +24,7 @@ export async function createPaddleCheckout(email: string, jobId: number, jobTitl
         url: 'https://checkout.paddle.com/checkout/' + PADDLE_PRICE_ID,
         allowed_payment_methods: ['card'],
         mode: 'checkout',
-        redirect_url: '',
+        redirect_url: redirectUrl,
       },
     }),
   });

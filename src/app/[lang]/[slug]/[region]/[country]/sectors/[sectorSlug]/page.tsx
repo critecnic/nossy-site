@@ -254,7 +254,10 @@ export default function SectorJobsPage({ params }: { params: Promise<{ lang: str
                 <p className="text-sky-400 text-sm font-medium italic">Seek and you shall find.</p>
               </div>
             </Link>
-            <p className="text-gray-400 text-sm">{T.footerText}</p>
+            <div className="flex flex-col items-center gap-2 text-gray-400 text-sm">
+              <a href="mailto:Cristecnic@outlook.com" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: Cristecnic@outlook.com</a>
+              <span>{T.footerText}</span>
+            </div>
           </div>
         </div>
       </footer>
