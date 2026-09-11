@@ -93,9 +93,19 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     fetchPage(pageFromUrl > 0 ? pageFromUrl : 1);
   }, [fetchPage, searchParams]);
 
+  // Type filter aliases: PT and EN variants map to the same filter key
+  const TYPE_ALIASES: Record<string, string[]> = {
+    Remoto: ['Remoto', 'Remote'],
+    Hibrido: ['Hibrido', 'Hybrid'],
+    Presencial: ['Presencial', 'On-site'],
+  };
+
   // Client-side search + type filter on current page
   const filtered = jobs.filter(j => {
-    if (typeFilter !== 'all' && j.type !== typeFilter) return false;
+    if (typeFilter !== 'all') {
+      const aliases = TYPE_ALIASES[typeFilter] || [typeFilter];
+      if (!aliases.includes(j.type)) return false;
+    }
     if (search) {
       const s = search.toLowerCase();
       return j.title?.toLowerCase().includes(s) || j.company?.toLowerCase().includes(s) || j.sector?.toLowerCase().includes(s);
@@ -160,7 +170,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={T.searchPlaceholder} className="w-full ps-10 pe-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {["all", "Remoto", "Remote", "Hibrido", "Hybrid", "Presencial", "On-site"].filter((v, i, a) => a.indexOf(v) === i).map(type => (
+            {["all", "Remoto", "Hibrido", "Presencial"].map(type => (
               <button key={type} onClick={() => setTypeFilter(type)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${typeFilter === type ? "bg-sky-500 text-white border-sky-500" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300 hover:text-sky-600"}`}>
                 {getTypeLabel(lang, type)}
               </button>
