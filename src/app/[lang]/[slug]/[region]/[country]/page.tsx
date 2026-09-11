@@ -40,6 +40,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [dataError, setDataError] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const PER = 18;
   const [countries] = useState<any[]>(countriesData);
   const searchParams = useSearchParams();
@@ -92,13 +93,15 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
     fetchPage(pageFromUrl > 0 ? pageFromUrl : 1);
   }, [fetchPage, searchParams]);
 
-  // Client-side search filter on current page
-  const filtered = search
-    ? jobs.filter(j => {
-        const s = search.toLowerCase();
-        return j.title?.toLowerCase().includes(s) || j.company?.toLowerCase().includes(s) || j.sector?.toLowerCase().includes(s);
-      })
-    : jobs;
+  // Client-side search + type filter on current page
+  const filtered = jobs.filter(j => {
+    if (typeFilter !== 'all' && j.type !== typeFilter) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      return j.title?.toLowerCase().includes(s) || j.company?.toLowerCase().includes(s) || j.sector?.toLowerCase().includes(s);
+    }
+    return true;
+  });
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
@@ -151,9 +154,18 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
           </div>
         </div>
 
-        <div className="relative w-full sm:w-80 mb-5">
-          <svg className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={T.searchPlaceholder} className="w-full ps-10 pe-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+          <div className="relative w-full sm:w-80">
+            <svg className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={T.searchPlaceholder} className="w-full ps-10 pe-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white" />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {["all", "Remoto", "Remote", "Hibrido", "Hybrid", "Presencial", "On-site"].filter((v, i, a) => a.indexOf(v) === i).map(type => (
+              <button key={type} onClick={() => setTypeFilter(type)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${typeFilter === type ? "bg-sky-500 text-white border-sky-500" : "bg-white text-gray-600 border-gray-200 hover:border-sky-300 hover:text-sky-600"}`}>
+                {getTypeLabel(lang, type)}
+              </button>
+            ))}
+          </div>
         </div>
 
         {loading ? (
@@ -254,7 +266,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
               </div>
             </Link>
             <div className="flex flex-col items-center gap-2 text-gray-400 text-sm">
-              <a href="mailto:Cristecnic@outlook.com" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: Cristecnic@outlook.com</a>
+              <a href="mailto:CRITECNIC@OUTLOOK.COM" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: CRITECNIC@OUTLOOK.COM</a>
               <span>{T.footerText}</span>
             </div>
           </div>

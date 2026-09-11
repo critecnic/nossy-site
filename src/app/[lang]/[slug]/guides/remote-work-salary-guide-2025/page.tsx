@@ -188,7 +188,7 @@ export default function RemoteWorkSalaryGuide2025({ params }: { params: Promise<
                 <span className="text-gray-600">|</span>
                 <span>58 {T.countries}</span>
               </div>
-              <a href="mailto:Cristecnic@outlook.com" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: Cristecnic@outlook.com</a>
+              <a href="mailto:CRITECNIC@OUTLOOK.COM" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: CRITECNIC@OUTLOOK.COM</a>
               <span>{T.footerText}</span>
             </div>
           </div>

@@ -155,7 +155,7 @@ export async function GET(req: NextRequest) {
     const translated = jobs.map((job: any) => {
       const t = translatedMap.get(job.id);
       return t
-        ? { ...job, title: t.title, company: t.company, location: t.location }
+        ? { ...job, title: t.title, company: t.company, location: t.location, ...(t.description ? { description: t.description } : {}) }
         : job;
     });
 

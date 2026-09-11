@@ -339,7 +339,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               </div>
             </Link>
             <div className="flex flex-col items-center gap-2 text-gray-400 text-sm">
-              <a href="mailto:Cristecnic@outlook.com" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: Cristecnic@outlook.com</a>
+              <a href="mailto:CRITECNIC@OUTLOOK.COM" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: CRITECNIC@OUTLOOK.COM</a>
               <span>{T.footerText}</span>
             </div>
           </div>

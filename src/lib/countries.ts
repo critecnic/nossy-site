@@ -104,7 +104,7 @@ export const REGIONS: RegionConfig[] = [
     seoKeywords: ['jobs in Oceania', 'Australian jobs 2025', 'tech jobs Australia', 'IT jobs Australia', 'jobs New Zealand', 'remote jobs Oceania', 'developer jobs Australia', 'careers Australia'],
     seoTitle: 'Jobs in Oceania | Latest Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest job vacancies in Oceania. 10,653+ open positions in Australia and New Zealand. Software Engineering, Cybersecurity, Cloud & more. Free to browse on NOSSY!',
-    countries: {},
+    countries: { 'australia': 8597, 'nova-zelandia': 2056 },
     topCategories: [
       { name: 'Software Engineering', count: 3200 },
       { name: 'Cybersecurity', count: 2100 },
@@ -121,7 +121,7 @@ export const REGIONS: RegionConfig[] = [
   {
     code: 'america-do-norte',
     name: 'America do Norte',
-    flag: '\uD83C\uDDF8\uD83C\uDDE6',
+    flag: '\uD83C\uDDE8\uD83C\uDDE6',
     currency: { code: 'CAD', symbol: 'C$', locale: 'en-CA' },
     hreflang: ['en-canada', 'fr-canada'],
     direction: 'ltr',
@@ -129,7 +129,7 @@ export const REGIONS: RegionConfig[] = [
     seoKeywords: ['jobs in Canada', 'Canadian jobs 2025', 'tech jobs Canada', 'IT jobs Canada', 'software engineer Canada', 'remote jobs Canada', 'developer jobs Canada', 'careers Canada'],
     seoTitle: 'Jobs in Canada | Latest Job Vacancies & Careers 2025 - NOSSY',
     seoDescription: 'Find the latest job vacancies in Canada. 6,411+ open positions across all sectors. Software Engineering, Finance Technology, Consulting & more. Free to browse on NOSSY!',
-    countries: {},
+    countries: { 'canada': 6411 },
     topCategories: [
       { name: 'Software Engineering', count: 1285 },
       { name: 'Finance Technology', count: 590 },

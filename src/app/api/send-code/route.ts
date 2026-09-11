@@ -56,7 +56,7 @@ export async function POST(req: Request) {
                   <p style="color: #64748b; font-size: 13px; margin: 0;">This code expires in 10 minutes.</p>
                 </div>
                 <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-                  <p style="color: #94a3b8; font-size: 12px; margin: 0;">© 2026 NOSSY · <a href="mailto:Cristecnic@outlook.com" style="color: #0ea5e9;">Cristecnic@outlook.com</a></p>
+                  <p style="color: #94a3b8; font-size: 12px; margin: 0;">© 2026 NOSSY · <a href="mailto:CRITECNIC@OUTLOOK.COM" style="color: #0ea5e9;">CRITECNIC@OUTLOOK.COM</a></p>
                 </div>
               </div>
             `,

@@ -147,16 +147,16 @@ async function translateText(text: string, targetLang: Lang): Promise<string> {
 // ---- Public API ----
 
 export async function translateJobListFields(
-  jobs: Array<{ id: number; title: string; company: string; location: string }>,
+  jobs: Array<{ id: number; title: string; company: string; location: string; description?: string }>,
   targetLang: Lang
-): Promise<{ map: Map<number, { title: string; company: string; location: string }>; ok: boolean }> {
-  const empty = { map: new Map<number, { title: string; company: string; location: string }>(), ok: true };
+): Promise<{ map: Map<number, { title: string; company: string; location: string; description?: string }>; ok: boolean }> {
+  const empty = { map: new Map<number, { title: string; company: string; location: string; description?: string }>(), ok: true };
   if (!needsServerTranslation(targetLang) || jobs.length === 0) return empty;
 
-  const allResults = new Map<number, { title: string; company: string; location: string }>();
+  const allResults = new Map<number, { title: string; company: string; location: string; description?: string }>();
   let anyFailed = false;
 
-  // Translate all 3 fields for each job in parallel (with concurrency limit)
+  // Translate all 4 fields for each job in parallel (with concurrency limit)
   const CONCURRENCY = 6;
   const queue = [...jobs];
   const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
@@ -170,19 +170,24 @@ export async function translateJobListFields(
       }
 
       try {
-        // Translate all 3 fields in parallel for this job
-        const [title, company, location] = await Promise.all([
+        // Translate title, company, location in parallel; description separately (shortened)
+        const descSnippet = job.description ? job.description.slice(0, 300) : undefined;
+        const [title, company, location, description] = await Promise.all([
           translateText(job.title, targetLang),
           translateText(job.company, targetLang),
           translateText(job.location, targetLang),
+          descSnippet ? translateText(descSnippet, targetLang) : Promise.resolve(undefined),
         ]);
 
-        const entry = { title, company, location };
+        const entry: { title: string; company: string; location: string; description?: string } = { title, company, location };
+        if (description) entry.description = description;
         allResults.set(job.id, entry);
         setCache(cacheKey, entry);
       } catch (e: any) {
         anyFailed = true;
-        allResults.set(job.id, { title: job.title, company: job.company, location: job.location });
+        const fallback: { title: string; company: string; location: string; description?: string } = { title: job.title, company: job.company, location: job.location };
+        if (job.description) fallback.description = job.description;
+        allResults.set(job.id, fallback);
       }
     }
   });

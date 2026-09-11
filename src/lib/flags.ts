@@ -22,8 +22,10 @@ export const FLAGS: Record<string, string> = {
   "nepal": "🇳🇵", "paquistao": "🇵🇰", "singapura": "🇸🇬",
   "sri-lanka": "🇱🇰", "tailandia": "🇹🇭", "taiwan": "🇹🇼",
   "vietna": "🇻🇳",
-  // EUA
-  "united-states": "🇺🇸",
+  // Oceania
+  "australia": "🇦🇺", "nova-zelandia": "🇳🇿",
+  // América do Norte
+  "canada": "🇨🇦", "united-states": "🇺🇸",
 };
 
 export function getFlag(slug: string): string {
