@@ -1,5 +1,6 @@
-// NOSSY Translation v4.0 — Google GTX (primary) + MyMemory (fallback)
-// Free, no API key needed. Reliable for all languages.
+// NOSSY Translation v4.0 — Gemini (primary) → Google GTX (fallback) → MyMemory (last resort)
+// Free GTX+MyMemory work without API key. Gemini enhances batch quality when available.
+// Chunking prevents truncation on long descriptions.
 
 import type { Lang } from './i18n';
 
@@ -28,8 +29,8 @@ export function needsServerTranslation(lang: string): boolean {
 
 // ---- Cache ----
 const cache = new Map<string, { data: any; ts: number }>();
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
-const MAX_CACHE = 2000;
+const CACHE_TTL = 5 * 60 * 1000;
+const MAX_CACHE = 500;
 
 function getCached(key: string): any | null {
   const e = cache.get(key);
@@ -40,55 +41,39 @@ function getCached(key: string): any | null {
 
 function setCache(key: string, data: any): void {
   if (cache.size >= MAX_CACHE) {
-    // Delete oldest 10% of entries
-    const keys = [...cache.keys()];
-    for (let i = 0; i < Math.ceil(keys.length * 0.1); i++) cache.delete(keys[i]);
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
   }
   cache.set(key, { data, ts: Date.now() });
 }
 
-// ---- Provider 1: Google Translate GTX (free, fast, no key) ----
-async function googleTranslate(text: string, targetLang: string): Promise<string | null> {
+// ---- Provider 1: Google Translate GTX (free, fast, no key needed) ----
+async function googleGTX(text: string, targetLang: string): Promise<string | null> {
   const gtLang = LANG_TO_GT[targetLang] || targetLang;
   const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=pt&tl='
     + encodeURIComponent(gtLang)
     + '&dt=t&q=' + encodeURIComponent(text);
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4000);
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 6000);
 
   try {
     const res = await fetch(url, {
-      signal: controller.signal,
+      signal: ctrl.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
       },
     });
     clearTimeout(timer);
-
-    if (!res.ok) {
-      console.error('[NOSSY T] Google GTX HTTP', res.status);
-      return null;
-    }
-
+    if (!res.ok) return null;
     const data = await res.json();
-    if (!Array.isArray(data) || !Array.isArray(data[0])) {
-      console.error('[NOSSY T] Google GTX invalid format');
-      return null;
-    }
-
+    if (!Array.isArray(data) || !Array.isArray(data[0])) return null;
     let translated = '';
     for (const segment of data[0]) {
-      if (Array.isArray(segment) && typeof segment[0] === 'string') {
-        translated += segment[0];
-      }
+      if (Array.isArray(segment) && typeof segment[0] === 'string') translated += segment[0];
     }
     return translated || null;
-  } catch (err: any) {
-    clearTimeout(timer);
-    console.error('[NOSSY T] Google GTX error:', err.message.slice(0, 80));
-    return null;
-  }
+  } catch { clearTimeout(timer); return null; }
 }
 
 // ---- Provider 2: MyMemory API (free fallback) ----
@@ -98,53 +83,107 @@ async function myMemoryTranslate(text: string, targetLang: string): Promise<stri
     + encodeURIComponent(text.slice(0, 2000))
     + '&langpair=pt|' + encodeURIComponent(gtLang);
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 3000);
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
 
   try {
     const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
+      signal: ctrl.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
     });
     clearTimeout(timer);
-
     if (!res.ok) return null;
     const data = await res.json();
     if (data.responseStatus === 200 && data.responseData?.translatedText) {
       let result = data.responseData.translatedText;
-      // MyMemory sometimes returns uppercase when confidence is low
       if (result === text.toUpperCase()) return null;
       return result;
     }
     return null;
-  } catch (err: any) {
-    clearTimeout(timer);
-    console.error('[NOSSY T] MyMemory error:', err.message.slice(0, 80));
-    return null;
-  }
+  } catch { clearTimeout(timer); return null; }
 }
 
-// ---- Combined translation with fallback ----
-async function translateText(text: string, targetLang: Lang): Promise<string> {
-  if (!text || !needsServerTranslation(targetLang)) return text;
+// ---- Chunking for long text ----
+function splitText(text: string, maxLen = 4000): string[] {
+  if (text.length <= maxLen) return [text];
+  const chunks: string[] = [];
+  let remaining = text;
+  while (remaining.length > 0) {
+    if (remaining.length <= maxLen) { chunks.push(remaining); break; }
+    let idx = remaining.lastIndexOf('\n\n', maxLen);
+    if (idx < maxLen * 0.3) idx = remaining.lastIndexOf('\n', maxLen);
+    if (idx < maxLen * 0.3) idx = remaining.lastIndexOf('. ', maxLen);
+    if (idx < maxLen * 0.3) idx = remaining.lastIndexOf(' ', maxLen);
+    if (idx < maxLen * 0.3) idx = maxLen;
+    else idx += 1;
+    chunks.push(remaining.slice(0, idx));
+    remaining = remaining.slice(idx);
+  }
+  return chunks;
+}
 
-  // Try Google GTX first (fast, reliable)
-  let result = await googleTranslate(text, targetLang);
+// ---- Translate single text with GTX → MyMemory fallback ----
+async function translateTextFree(text: string, targetLang: string): Promise<string> {
+  if (!text) return text;
+  let result = await googleGTX(text, targetLang);
   if (result) return result;
-
-  // Fallback to MyMemory
-  console.warn('[NOSSY T] Google GTX failed, trying MyMemory for', targetLang);
   result = await myMemoryTranslate(text, targetLang);
   if (result) return result;
-
-  // Ultimate fallback: return original
-  console.warn('[NOSSY T] Both providers failed for', targetLang, '- returning original');
   return text;
 }
 
-// ---- Public API ----
+// ---- Translate long text with chunking ----
+async function translateTextChunked(text: string, targetLang: string): Promise<string> {
+  if (!text) return text;
+  const chunks = splitText(text);
+  if (chunks.length === 1) return translateTextFree(text, targetLang);
+  const results: string[] = [];
+  for (const chunk of chunks) results.push(await translateTextFree(chunk, targetLang));
+  return results.join('');
+}
+
+// ---- Gemini API (optional, for batch quality) ----
+const GEMINI_MODEL = 'gemini-2.0-flash';
+const MAX_RETRIES = 2;
+function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+
+async function callGemini(systemPrompt: string, userContent: string, jsonMode = false): Promise<string | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const body: any = {
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents: [{ role: 'user', parts: [{ text: userContent }] }],
+    generationConfig: { temperature: 0.1 },
+  };
+  if (jsonMode) body.generationConfig.responseMimeType = 'application/json';
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!res.ok) { if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; } return null; }
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text?.trim()) return null;
+      return text.trim();
+    } catch { if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; } return null; }
+  }
+  return null;
+}
+
+function extractJSON(text: string): string {
+  const m1 = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (m1) return m1[1].trim();
+  const m2 = text.match(/(\[[\s\S]*\])/);
+  if (m2) return m2[1].trim();
+  const m3 = text.match(/(\{[\s\S]*\})/);
+  if (m3) return m3[1].trim();
+  return text.trim();
+}
+
+// ---- Public API: Job List (title, company, location, description snippet) ----
 
 export async function translateJobListFields(
   jobs: Array<{ id: number; title: string; company: string; location: string; description?: string }>,
@@ -153,37 +192,90 @@ export async function translateJobListFields(
   const empty = { map: new Map<number, { title: string; company: string; location: string; description?: string }>(), ok: true };
   if (!needsServerTranslation(targetLang) || jobs.length === 0) return empty;
 
+  const gtLang = LANG_TO_GT[targetLang] || targetLang;
   const allResults = new Map<number, { title: string; company: string; location: string; description?: string }>();
   let anyFailed = false;
 
-  // Translate all 4 fields for each job in parallel (with concurrency limit)
+  // Try Gemini batch first
+  const BATCH = 30;
+  let geminiOk = false;
+  for (let i = 0; i < jobs.length; i += BATCH) {
+    const batch = jobs.slice(i, i + BATCH);
+    const cacheKey = `list:${targetLang}:${batch.map(j => j.id).join(',')}`;
+    const cached = getCached(cacheKey);
+    if (cached) { for (const [k, v] of Object.entries(cached as Record<string, any>)) allResults.set(Number(k), v); geminiOk = true; continue; }
+
+    const langName = LANG_NAMES[targetLang] || targetLang;
+    const jobsData = batch.map(j => ({ id: j.id, title: j.title, company: j.company, location: j.location }));
+    const sysPrompt = `You are a professional translator. Translate job listings from Portuguese to ${langName}.
+Rules:
+- Translate ONLY the values of "title", "company", and "location" fields
+- NEVER change the "id" field
+- Return ONLY a valid JSON array with the same structure, nothing else
+- Keep brand/company names in original language if they are international brands
+- Use standard native names for cities and countries`;
+
+    const response = await callGemini(sysPrompt, JSON.stringify(jobsData), true);
+    if (response) {
+      try {
+        const parsed = JSON.parse(extractJSON(response));
+        const batchCache: Record<string, any> = {};
+        for (const item of parsed) {
+          if (item.id !== undefined) {
+            const orig = batch.find(j => j.id === item.id);
+            const entry = { title: item.title || orig?.title || '', company: item.company || orig?.company || '', location: item.location || orig?.location || '' };
+            allResults.set(Number(item.id), entry);
+            batchCache[String(item.id)] = entry;
+          }
+        }
+        setCache(cacheKey, batchCache);
+        geminiOk = true;
+      } catch { anyFailed = true; for (const j of batch) allResults.set(j.id, { title: j.title, company: j.company, location: j.location }); }
+    } else { break; }
+  }
+
+  // If Gemini translated all, also translate description snippets with GTX
+  if (geminiOk && allResults.size === jobs.length) {
+    const CONCURRENCY = 6;
+    const descQueue = [...jobs];
+    const descWorkers = Array.from({ length: Math.min(CONCURRENCY, descQueue.length) }, async () => {
+      while (descQueue.length > 0) {
+        const job = descQueue.shift()!;
+        if (!job.description) continue;
+        try {
+          const snippet = job.description.slice(0, 300);
+          const translated = await translateTextFree(snippet, gtLang);
+          const existing = allResults.get(job.id);
+          if (existing) existing.description = translated;
+        } catch { const existing = allResults.get(job.id); if (existing && job.description) existing.description = job.description.slice(0, 300); }
+      }
+    });
+    await Promise.all(descWorkers);
+    return { map: allResults, ok: !anyFailed };
+  }
+
+  // Gemini not available — use Google GTX + MyMemory
   const CONCURRENCY = 6;
   const queue = [...jobs];
   const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
     while (queue.length > 0) {
       const job = queue.shift()!;
-      const cacheKey = `list:${targetLang}:${job.id}`;
+      const cacheKey = `list-gtx:${targetLang}:${job.id}`;
       const cached = getCached(cacheKey);
-      if (cached) {
-        allResults.set(job.id, cached);
-        continue;
-      }
-
+      if (cached) { allResults.set(job.id, cached); continue; }
       try {
-        // Translate title, company, location in parallel; description separately (shortened)
         const descSnippet = job.description ? job.description.slice(0, 300) : undefined;
         const [title, company, location, description] = await Promise.all([
-          translateText(job.title, targetLang),
-          translateText(job.company, targetLang),
-          translateText(job.location, targetLang),
-          descSnippet ? translateText(descSnippet, targetLang) : Promise.resolve(undefined),
+          translateTextFree(job.title, gtLang),
+          translateTextFree(job.company, gtLang),
+          translateTextFree(job.location, gtLang),
+          descSnippet ? translateTextFree(descSnippet, gtLang) : Promise.resolve(undefined),
         ]);
-
         const entry: { title: string; company: string; location: string; description?: string } = { title, company, location };
         if (description) entry.description = description;
         allResults.set(job.id, entry);
         setCache(cacheKey, entry);
-      } catch (e: any) {
+      } catch {
         anyFailed = true;
         const fallback: { title: string; company: string; location: string; description?: string } = { title: job.title, company: job.company, location: job.location };
         if (job.description) fallback.description = job.description;
@@ -191,11 +283,11 @@ export async function translateJobListFields(
       }
     }
   });
-
   await Promise.all(workers);
-
   return { map: allResults, ok: !anyFailed };
 }
+
+// ---- Public API: Job Detail (full description with chunking) ----
 
 export async function translateJobFull(
   job: { title: string; description: string; company: string; location: string },
@@ -208,25 +300,44 @@ export async function translateJobFull(
   const cached = getCached(cacheKey);
   if (cached) return { ...cached, ok: true };
 
-  console.log(`[NOSSY T] Detail: ${job.description.length} chars -> ${targetLang}`);
+  const gtLang = LANG_TO_GT[targetLang] || targetLang;
+  const langName = LANG_NAMES[targetLang] || targetLang;
 
+  // Try Gemini first
+  const sysPrompt = `You are a professional translator. Translate this job listing from Portuguese to ${langName}.
+Rules:
+- Translate "title", "description", "company", and "location"
+- Return ONLY a valid JSON object with the same 4 keys, nothing else
+- Keep the description formatting (paragraphs, lists)
+- Keep company name in original language if it is a brand
+- Use natural, professional language
+- IMPORTANT: Translate the ENTIRE description, do not truncate or abbreviate`;
+
+  const geminiResponse = await callGemini(sysPrompt, JSON.stringify(job), true);
+  if (geminiResponse) {
+    try {
+      const parsed = JSON.parse(extractJSON(geminiResponse));
+      const descRatio = parsed.description ? parsed.description.length / job.description.length : 0;
+      if (parsed.description && descRatio >= 0.5) {
+        const result = { title: parsed.title || job.title, description: parsed.description, company: parsed.company || job.company, location: parsed.location || job.location, ok: true };
+        setCache(cacheKey, result);
+        return result;
+      }
+    } catch {}
+  }
+
+  // Fallback: Google GTX + MyMemory with chunking
   try {
-    // Translate all 4 fields in parallel
     const [title, description, company, location] = await Promise.all([
-      translateText(job.title, targetLang),
-      translateText(job.description, targetLang),
-      translateText(job.company, targetLang),
-      translateText(job.location, targetLang),
+      translateTextFree(job.title, gtLang),
+      translateTextChunked(job.description, gtLang),
+      translateTextFree(job.company, gtLang),
+      translateTextFree(job.location, gtLang),
     ]);
-
     const result = { title, description, company, location, ok: true };
     setCache(cacheKey, result);
-    console.log(`[NOSSY T] Detail OK: ${title.slice(0, 50)}`);
     return result;
-  } catch (e: any) {
-    console.error('[NOSSY T] Detail error:', e.message);
-    return { ...passThrough, ok: false };
-  }
+  } catch { return { ...passThrough, ok: false }; }
 }
 
 export function getMyMemoryLang(lang: string): string { return lang; }
