@@ -129,34 +129,65 @@ sistema Premium a um anúncio/vaga específica, basta citar este número
 ### Configuração automática (GitHub Actions → Vercel)
 
 - Os segredos do padrão (PADDLE_API_KEY, PADDLE_PRICE_ID, PADDLE_ENV,
-  NEXT_PUBLIC_BASE_URL, UNLOCK_SECRET, VERIFICATION_SECRET) ficam
-  **criptografados nos Secrets do GitHub Actions** — nunca no código
-  (o Push Protection do GitHub bloqueia chaves commitadas).
-- O workflow `.github/workflows/sync-vercel-env.yml` copia esses segredos
-  para as variáveis da Vercel e dispara redeploy de produção — basta que
-  o secret `VERCEL_TOKEN` exista no repo (criado uma única vez pelo dono).
-- Sem `VERCEL_TOKEN`, o workflow avisa e sai sem falhar.
-- Para migrar de sandbox → live: trocar o valor de PADDLE_API_KEY /
-  PADDLE_ENV nos Secrets do GitHub e rodar o workflow.
+  NEXT_PUBLIC_BASE_URL, UNLOCK_SECRET, VERIFICATION_SECRET,
+  RESEND_FROM_EMAIL) já estão **criptografados nos Secrets do GitHub
+  Actions** (criados via API de secrets — nunca no código; o Push
+  Protection do GitHub bloqueia chaves commitadas).
+- O workflow está pronto em `ops/github-workflows/sync-vercel-env.yml`:
+  copia esses segredos para as variáveis da Vercel, dispara redeploy de
+  produção e deixa a instrução de validação no log. Para ativá-lo é
+  preciso mover para `.github/workflows/` com um token de escopo
+  `workflow` (o PAT atual tem só `repo`). Enquanto o workflow não está
+  ativo, a mesma operação pode ser feita pela API da Vercel
+  (POST /v10/projects/{id}/env?upsert=true) com o VERCEL_TOKEN.
+- Para migrar de sandbox → live: trocar PADDLE_API_KEY / PADDLE_ENV nos
+  Secrets do GitHub e rodar o workflow (ou o mesmo upsert via API).
+
+### Webhook (auditoria de pagamento)
+
+- Handler: `POST /api/webhook` — valida assinatura HMAC `ts=...;h1=...`
+  (timingSafeEqual) + anti-replay de ±5 min; sem secret responde 503.
+  É stateless: apenas registra; o desbloqueio real ocorre em
+  `/api/payment/verify` (consulta direta à API Paddle) quando o
+  comprador volta pelo success_url.
+- Alias `/api/webhook-0220` (rewrite no next.config.ts): destino
+  distinto para o webhook gerido via API — a Paddle recusa criar um
+  segundo webhook com o MESMO destino do webhook manual
+  (`notification_setting_cannot_be_duplicate`) e o secret do manual não
+  é legível via API (GET /notification-settings → 403 com a chave atual).
+- Tentativa de criação do webhook via API com a chave atual → 403
+  forbidden (a chave não tem permissão de notification-settings, apenas
+  leitura de catálogo/transações). Dois caminhos: (a) colar o secret do
+  webhook manual existente (`pdl_ntfset_...`); (b) criar nova chave API
+  com permissões completas → aí a criação do webhook em
+  /api/webhook-0220 e a captura do secret ficam 100% automatizadas.
 
 ### Itens manuais remanescentes (não automatizáveis)
 
-1. **Paddle dashboard (sandbox)**: definir o *default payment link*
-   (Checkout → General settings) → `https://nossy.pro`. Sem isso a API do
-   Paddle recusa criar a transação
-   (`transaction_default_checkout_url_not_set`). É configuração da CONTA
-   Paddle — não existe endpoint de API nem via GitHub.
-2. **VERCEL_TOKEN no GitHub (Secrets → Actions, uma única vez)**: token
-   gerado em vercel.com/account/tokens. Com ele, o workflow sincroniza
-   TODAS as variáveis (incluindo UNLOCK_SECRET já armazenado) e faz
-   redeploy sozinho. Sem ele, seria preciso colar as variáveis à mão na
-   Vercel — e o desbloqueio Premium não fica funcional sem UNLOCK_SECRET.
-3. **Opcional — PADDLE_WEBHOOK_SECRET**: copiar o segredo do webhook criado
-   no dashboard (pdl_ntfset_...) e adicionar como secret `PADDLE_WEBHOOK_SECRET`
-   no GitHub (o workflow o leva para a Vercel). Sem ele o endpoint de
-   webhook responde 503 (apenas o log de auditoria fica inativo; o
-   desbloqueio por pagamento NÃO depende do webhook). Conferir também se
-   o webhook está inscrito em `transaction.completed`.
+Confirmados por sondagem na API em 16/09/2026 (spec oficial tem 70
+endpoints; NÃO existe endpoint para default payment link nem para
+criar tokens Vercel — ambos são dashboard-only):
+
+1. **VERCEL_TOKEN (uma única vez)**: gerar em vercel.com/account/tokens
+   e enviar (ou adicionar como secret `VERCEL_TOKEN` no GitHub). Com ele
+   as env vars de produção são aplicadas via API + redeploy, sem tocar
+   no dashboard da Vercel.
+2. **Paddle dashboard (sandbox)**: definir o *default payment link*
+   (Checkout → General settings) → `https://nossy.pro`. Sem isso a API
+   recusa criar transações (`transaction_default_checkout_url_not_set`,
+   inclusive com override `checkout.url`). Configuração de CONTA —
+   sem endpoint de API.
+3. **Secret do webhook `pdl_ntfset_...`**: OU colar o secret do webhook
+   manual existente (Paddle → Notifications), OU fornecer nova chave API
+   com permissões completas (aí eu crio o webhook em /api/webhook-0220
+   e capturo o secret sozinho). Sem isso o webhook responde 503, mas o
+   desbloqueio por pagamento NÃO depende do webhook (verify via API).
+4. **RESEND_API_KEY (login mágico)**: conta grátis em resend.com →
+   criar API key → verificar domínio nossy.pro (registros DNS no
+   painel dns-parking/Hostinger: SPF + DKIM). Sem isso o envio do
+   código/link mágico responde 503 em produção. Enquanto não houver,
+   o login por e-mail fica indisponível (fluxo de pagamento completo
+   requer autenticação prévia).
 
 ---
 
