@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+import { verifyCode, verifySignedCode, VERIFICATION_COOKIE } from '@/lib/email-verification';
 
 const verifyAttempts: Record<string, number[]> = {};
 const MAX_VERIFY_PER_MINUTE = 10;
@@ -11,8 +13,14 @@ function isVerifyRateLimited(email: string): boolean {
   return false;
 }
 
-import { NextResponse } from 'next/server';
-import { verifyCode } from '@/lib/email-verification';
+function readCookie(req: Request, name: string): string | undefined {
+  const cookieHeader = req.headers.get('cookie') || '';
+  for (const part of cookieHeader.split(';')) {
+    const [k, ...rest] = part.trim().split('=');
+    if (k === name) return rest.join('=');
+  }
+  return undefined;
+}
 
 export async function POST(req: Request) {
   try {
@@ -21,14 +29,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ valid: false, error: 'Missing fields' }, { status: 400 });
     }
 
-    if (isVerifyRateLimited(email)) {
+    if (isVerifyRateLimited(String(email))) {
       return NextResponse.json({ valid: false, error: 'Too many attempts. Try again later.' }, { status: 429 });
     }
 
-    const result = verifyCode(email, code);
+    const cookieValue = readCookie(req, VERIFICATION_COOKIE);
+    const result = cookieValue
+      ? verifySignedCode(String(email), String(code), cookieValue)
+      : verifyCode(String(email), String(code));
 
     if (result === 'valid') {
-      return NextResponse.json({ valid: true });
+      const res = NextResponse.json({ valid: true });
+      if (cookieValue) {
+        // Consume the signed verification (single-use)
+        res.cookies.set(VERIFICATION_COOKIE, '', { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 0, path: '/' });
+      }
+      return res;
     } else if (result === 'expired') {
       return NextResponse.json({ valid: 'expired' });
     } else {

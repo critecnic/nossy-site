@@ -134,11 +134,11 @@ export function getPaywallText(lang: string) {
 
 export interface PaywallResult {
   paywall: boolean;
-  reason: '' | 'remote_1pct';
+  reason: '' | 'remote_10pct';
 }
 
 /**
- * Deterministic paywall: only 1% of remote jobs (id % 100 === 0)
+ * Deterministic paywall: only 10% of remote jobs (id % 10 === 0)
  * All other jobs are FREE (no paywall).
  */
 export function shouldHavePaywall(job: {
@@ -149,9 +149,9 @@ export function shouldHavePaywall(job: {
   const workType = (job.type || '').toLowerCase();
   const isRemote = workType === 'remote' || workType === 'remoto';
 
-  // 1% of remote jobs (deterministic)
-  if (isRemote && id % 100 === 0) {
-    return { paywall: true, reason: 'remote_1pct' };
+  // 10% of remote jobs (deterministic)
+  if (isRemote && id % 10 === 0) {
+    return { paywall: true, reason: 'remote_10pct' };
   }
 
   return { paywall: false, reason: '' };

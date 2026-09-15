@@ -16,14 +16,16 @@ restauração (rollback) para deploy na Vercel.
 | Padrão        | Data       | Commit     | Conteúdo resumido                                                      |
 |---------------|------------|------------|------------------------------------------------------------------------|
 | padrao-0220   | 20/02      | `31c42df`  | Baseline original do site (design e funcionalidades base preservados)  |
-| padrao-0916   | 16/09/2026 | ver tag    | Segurança (8 correções) + exclusão de concorrentes + pagamentos Paddle |
+| padrao-0916   | 16/09/2026 | ver tag    | Segurança + exclusão de concorrentes + sistema de pagamento Paddle completo + paywall 10% + cadastro verificado |
 
 ---
 
 ## padrao-0916 — Detalhamento
 
-Definido em 16/09/2026 sobre o commit `56e0e95`
-("security: fix 8 vulnerabilities found in audit — padrao-0220 preserved").
+Definido em 16/09/2026 (tag movida para incluir o sistema de pagamento
+completo). Inclui os commits de segurança `56e0e95`, o registro `74ac58a`,
+o sistema de pagamento `a848700` e as correções de paywall/cadastro
+seguintes.
 
 ### 1. Segurança — 8 correções aplicadas (commit `56e0e95`)
 
@@ -57,10 +59,32 @@ listagem de vagas (home, país, setor e página de detalhe da vaga):
   scripts de publicidade externos) — nenhuma vaga/anúncio referencia
   páginas concorrentes de ofertas de emprego.
 
-### 3. Sistema de pagamento
+### 3. Sistema de pagamento — completo e testado (commit `a848700`+)
 
-- Paddle integrado (US$ 7 por vaga) com melhoria de segurança no webhook
-  (validação HMAC) e fluxo de publicação de vaga testado.
+- Paddle Billing API integrada (US$ 7 por vaga; `PADDLE_ENV=sandbox|live`).
+- Desbloqueio real da vaga após pagamento: `/api/payment/verify` confirma
+  o pagamento com a API do Paddle (por `txn_` ou por e-mail + jobId) e
+  emite cookie assinado HMAC válido por 1 ano (`/api/payment/status`).
+- Sem banco de dados: o cookie é a prova de compra.
+- Webhook Paddle com HMAC + anti-replay (ts ±5 min) como canal de auditoria.
+- 15/15 testes automatizados aprovados (`scripts/test-payment.mjs`).
+
+### 4. Paywall em 10% das vagas remotas
+
+- Regra determinística: vaga remota com `id % 10 === 0` (era 1%).
+- 90% das vagas remotas permanecem gratuitas; visual inalterado.
+
+### 5. Cadastro (e-mail + código) verificado e corrigido
+
+- BUG corrigido: o código ficava em memória dentro da função serverless
+  de `send-code`; `verify-code` roda em outra função isolada na Vercel e
+  nunca o via — o cadastro nunca concluía em produção.
+- Modo assinado stateless: validade via cookie HMAC (`nossy_vcode`),
+  uso único, ligado ao e-mail, expira em 10 minutos.
+- Produção sem `RESEND_API_KEY` agora retorna erro 503 honesto (antes
+  fingia sucesso). Envio com falha no Resend retorna 502.
+- Testes aprovados: código correto, errado, reuso, e-mail trocado,
+  rate limit (3/min), fallback em memória em dev.
 
 ---
 

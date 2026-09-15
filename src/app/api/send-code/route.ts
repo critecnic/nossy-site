@@ -1,5 +1,7 @@
+import { NextResponse } from 'next/server';
+import { createSignedCode, createVerificationCode, hasVerificationSecret } from '@/lib/email-verification';
 
-// Simple in-memory rate limiting
+// Simple in-memory rate limiting (per function instance)
 const sendCodeAttempts: Record<string, number[]> = {};
 const MAX_ATTEMPTS_PER_MINUTE = 3;
 
@@ -12,9 +14,6 @@ function isRateLimited(email: string): boolean {
   return false;
 }
 
-import { NextResponse } from 'next/server';
-import { createVerificationCode } from '@/lib/email-verification';
-
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
@@ -22,19 +21,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Invalid email' }, { status: 400 });
     }
 
-    if (isRateLimited(email)) {
+    if (isRateLimited(String(email))) {
       return NextResponse.json({ success: false, error: 'Too many requests. Try again later.' }, { status: 429 });
     }
 
-    const code = createVerificationCode(email);
-
-    // Send email via Resend
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nossy.pro';
 
+    // In production the code MUST be deliverable, otherwise the flow can
+    // never complete — fail honestly instead of pretending success.
+    if (process.env.NODE_ENV === 'production' && !resendApiKey) {
+      console.error('send-code: RESEND_API_KEY not configured');
+      return NextResponse.json({ success: false, error: 'Email service is being configured. Please try again later.' }, { status: 503 });
+    }
+
+    let code: string;
+    let res: NextResponse;
+
+    if (hasVerificationSecret()) {
+      // SIGNED MODE (stateless): validity travels in an HMAC-signed
+      // HttpOnly cookie — works across isolated serverless functions.
+      const signed = createSignedCode(String(email));
+      code = signed.code;
+      res = NextResponse.json({ success: true });
+      res.cookies.set('nossy_vcode', signed.cookieValue, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: signed.maxAge,
+        path: '/',
+      });
+    } else {
+      // Dev fallback: in-memory store (single process only)
+      code = createVerificationCode(String(email));
+      res = NextResponse.json({ success: true });
+    }
+
+    // Send email via Resend
     if (resendApiKey) {
       try {
-        const res = await fetch('https://api.resend.com/emails', {
+        const sendRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + resendApiKey,
@@ -62,11 +88,13 @@ export async function POST(req: Request) {
             `,
           }),
         });
-        if (!res.ok) {
-          console.error('Resend API error:', await res.text());
+        if (!sendRes.ok) {
+          console.error('Resend API error:', await sendRes.text());
+          return NextResponse.json({ success: false, error: 'Could not send the verification email. Please try again.' }, { status: 502 });
         }
       } catch (e) {
         console.error('Failed to send email:', e);
+        return NextResponse.json({ success: false, error: 'Could not send the verification email. Please try again.' }, { status: 502 });
       }
     } else {
       // Dev mode only: never log verification codes in production
@@ -75,7 +103,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true });
+    return res;
   } catch {
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
   }
