@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+import { createPaddleCheckout } from '@/lib/paddle';
 
 const checkoutAttempts: Record<string, number[]> = {};
 
@@ -10,17 +12,10 @@ function isCheckoutRateLimited(email: string): boolean {
   return false;
 }
 
-import { NextResponse } from 'next/server';
-import { createPaddleCheckout } from '@/lib/paddle';
-
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { email, jobId, jobTitle, lang } = body;
-
-    if (isCheckoutRateLimited(email)) {
-      return NextResponse.json({ error: 'Too many checkout attempts. Try again later.' }, { status: 429 });
-    }
+    const { email, jobId, jobTitle, lang, jobUrl } = body || {};
 
     if (!process.env.PADDLE_API_KEY) {
       return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
@@ -30,13 +25,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    const langCode = lang || 'en';
+    const jobIdNum = Number(jobId);
+    if (!Number.isInteger(jobIdNum) || jobIdNum <= 0 || jobIdNum > 1e9) {
+      return NextResponse.json({ error: 'Invalid job' }, { status: 400 });
+    }
+
+    if (isCheckoutRateLimited(String(email))) {
+      return NextResponse.json({ error: 'Too many checkout attempts. Try again later.' }, { status: 429 });
+    }
+
+    const langCode = typeof lang === 'string' ? lang.slice(0, 10) : 'en';
+    const jobTitleSafe = typeof jobTitle === 'string' ? jobTitle.slice(0, 200) : '';
+    const jobUrlSafe = typeof jobUrl === 'string' && jobUrl.startsWith('/') && !jobUrl.startsWith('//')
+      ? jobUrl.slice(0, 300)
+      : undefined;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
     try {
-      const checkoutUrl = await createPaddleCheckout(email, jobId || 0, jobTitle || '', langCode);
+      const { checkoutUrl } = await createPaddleCheckout(
+        String(email),
+        jobIdNum,
+        jobTitleSafe,
+        langCode,
+        jobUrlSafe,
+        controller.signal
+      );
       clearTimeout(timeout);
 
       if (checkoutUrl) return NextResponse.json({ url: checkoutUrl });

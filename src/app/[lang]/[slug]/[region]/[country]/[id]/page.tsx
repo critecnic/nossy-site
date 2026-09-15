@@ -28,6 +28,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
@@ -68,14 +69,45 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
       });
   }, [rc, cc, jobId, langCode]);
 
+  // After a Paddle payment redirect (?payment=success), verify the payment
+  // against the Paddle API and unlock the contact info via a signed cookie.
+  useEffect(() => {
+    if (!jobId) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'success') {
+        const email = sessionStorage.getItem('nossy_checkout_email') || '';
+        if (email) {
+          fetch('/api/payment/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, jobId: Number(jobId) }),
+          })
+            .then(r => r.json())
+            .then(d => { if (d.unlocked) setUnlocked(true); })
+            .catch(() => { /* stay locked; user can retry */ });
+        }
+        // Clean the query string so refresh does not re-verify
+        window.history.replaceState({}, '', window.location.pathname);
+      } else {
+        // Returning visitor: check for a valid unlock cookie
+        fetch('/api/payment/status?jobId=' + encodeURIComponent(jobId))
+          .then(r => (r.ok ? r.json() : { unlocked: false }))
+          .then(d => { if (d.unlocked) setUnlocked(true); })
+          .catch(() => { /* ignore */ });
+      }
+    } catch { /* ignore */ }
+  }, [jobId]);
+
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
   const cName = job ? getCountryNameTranslated(cc, lang, job.countryName || cc) : cc;
   const pw = shouldHavePaywall(job || {});
-  const isLocked = pw.paywall && !showPayment;
+  const isLocked = pw.paywall && !showPayment && !unlocked;
   const pwText = getPaywallText(lang);
   const careerUrl = job ? getCompanyCareerUrl(job) : '';
+  const jobUrlPath = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + jobId;
 
   if (loading) {
     return (
@@ -206,9 +238,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               </div>
             )}
 
-            {showPayment && pw.paywall && (
+            {showPayment && pw.paywall && !unlocked && (
               <div className="mb-6">
-                <PaddlePayment jobId={job.id} jobTitle={job.title} lang={lang} />
+                <PaddlePayment jobId={job.id} jobTitle={job.title} lang={lang} jobUrl={jobUrlPath} />
               </div>
             )}
 

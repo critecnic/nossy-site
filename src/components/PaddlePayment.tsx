@@ -8,11 +8,12 @@ interface PaddlePaymentProps {
   jobId: number;
   jobTitle: string;
   lang: Lang;
+  jobUrl?: string;
   onSuccess?: () => void;
   compact?: boolean;
 }
 
-export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compact = false }: PaddlePaymentProps) {
+export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess, compact = false }: PaddlePaymentProps) {
   const [step, setStep] = useState<'email' | 'code' | 'checkout'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -88,10 +89,14 @@ export default function PaddlePayment({ jobId, jobTitle, lang, onSuccess, compac
           jobId,
           jobTitle,
           lang,
+          jobUrl,
         }),
       });
       const data = await res.json();
       if (data.url) {
+        // Remember the buyer email so the job page can verify the
+        // payment with the Paddle API right after the redirect.
+        try { sessionStorage.setItem('nossy_checkout_email', verifiedEmail || email); } catch { /* ignore */ }
         window.location.href = data.url;
       } else {
         setError(data.error || T.paymentError);

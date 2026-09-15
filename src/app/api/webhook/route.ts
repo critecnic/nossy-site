@@ -56,12 +56,10 @@ export async function POST(request: Request) {
     if (eventType === 'transaction.completed' || eventType === 'transaction.paid') {
       const tx = event.data;
       const customData = tx?.custom_data || {};
+      // Audit log: the actual unlock is stateless — the job page calls
+      // POST /api/payment/verify, which confirms the payment with the
+      // Paddle Billing API and issues a signed unlock cookie.
       console.log('Payment success:', tx?.id, customData);
-      // TODO: Store unlocked jobs in database
-      // customData.jobId = '12345'
-      // customData.jobTitle = 'Senior Engineer'
-      // customData.lang = 'en'
-      // tx.customer_email = 'user@example.com'
     }
 
     return NextResponse.json({ received: true });
