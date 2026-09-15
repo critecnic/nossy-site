@@ -70,14 +70,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   }, [rc, cc, jobId, langCode]);
 
   // After a Paddle payment redirect (?payment=success), verify the payment
-  // against the Paddle API and unlock the contact info via a signed cookie.
+  // against the Paddle API and unlock the contact info (user -> Premium).
+  // After a magic-link login (?auth=success), open the payment panel.
   useEffect(() => {
     if (!jobId) return;
     try {
       const params = new URLSearchParams(window.location.search);
       if (params.get('payment') === 'success') {
-        const email = sessionStorage.getItem('nossy_checkout_email') || '';
-        if (email) {
+        const verify = (email: string) => {
           fetch('/api/payment/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -86,11 +86,29 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
             .then(r => r.json())
             .then(d => { if (d.unlocked) setUnlocked(true); })
             .catch(() => { /* stay locked; user can retry */ });
+        };
+        const stored = sessionStorage.getItem('nossy_checkout_email') || '';
+        if (stored) {
+          verify(stored);
+        } else {
+          // Cross-device fallback: authenticated via magic link on this
+          // device -> verify with the session email instead.
+          fetch('/api/auth/session')
+            .then(r => (r.ok ? r.json() : { authenticated: false }))
+            .then(d => { if (d.authenticated && d.email) verify(d.email); })
+            .catch(() => { /* ignore */ });
         }
         // Clean the query string so refresh does not re-verify
         window.history.replaceState({}, '', window.location.pathname);
+      } else if (params.get('auth') === 'success') {
+        // Returned from the magic link: authenticated -> show payment step
+        fetch('/api/auth/session')
+          .then(r => (r.ok ? r.json() : { authenticated: false }))
+          .then(d => { if (d.authenticated) setShowPayment(true); })
+          .catch(() => { /* ignore */ });
+        window.history.replaceState({}, '', window.location.pathname);
       } else {
-        // Returning visitor: check for a valid unlock cookie
+        // Returning visitor: check for a valid unlock / premium cookie
         fetch('/api/payment/status?jobId=' + encodeURIComponent(jobId))
           .then(r => (r.ok ? r.json() : { unlocked: false }))
           .then(d => { if (d.unlocked) setUnlocked(true); })

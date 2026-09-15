@@ -56,10 +56,14 @@ export async function POST(request: Request) {
     if (eventType === 'transaction.completed' || eventType === 'transaction.paid') {
       const tx = event.data;
       const customData = tx?.custom_data || {};
-      // Audit log: the actual unlock is stateless — the job page calls
-      // POST /api/payment/verify, which confirms the payment with the
-      // Paddle Billing API and issues a signed unlock cookie.
-      console.log('Payment success:', tx?.id, customData);
+      const email = tx?.customer?.email || customData?.email || 'unknown';
+      // SERVER-SIDE PAYMENT CONFIRMATION ("Webhook Seguro").
+      // The unlock itself is stateless: when the buyer returns to the site
+      // (success_url redirect), POST /api/payment/verify confirms the
+      // payment against the Paddle Billing API and upgrades the user to
+      // "Premium" via an HMAC-signed cookie. Authenticated users are also
+      // upgraded automatically by /api/payment/status (Paddle lookup).
+      console.log('Payment approved:', tx?.id, 'buyer:', email, 'job:', customData?.jobId, '-> user eligible for Premium status');
     }
 
     return NextResponse.json({ received: true });

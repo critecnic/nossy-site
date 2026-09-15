@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyCode, verifySignedCode, VERIFICATION_COOKIE } from '@/lib/email-verification';
+import { createAuthToken, hasAuthSecret, SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/auth';
 
 const verifyAttempts: Record<string, number[]> = {};
 const MAX_VERIFY_PER_MINUTE = 10;
@@ -43,6 +44,20 @@ export async function POST(req: Request) {
       if (cookieValue) {
         // Consume the signed verification (single-use)
         res.cookies.set(VERIFICATION_COOKIE, '', { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 0, path: '/' });
+      }
+      // Authenticated on the site: the verified email becomes a signed
+      // 30-day session (same result as clicking the magic link).
+      if (hasAuthSecret()) {
+        const session = createAuthToken(String(email), SESSION_MAX_AGE);
+        if (session) {
+          res.cookies.set(SESSION_COOKIE, session, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: SESSION_MAX_AGE,
+            path: '/',
+          });
+        }
       }
       return res;
     } else if (result === 'expired') {

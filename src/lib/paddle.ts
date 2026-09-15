@@ -111,6 +111,19 @@ export async function isTransactionPaidForJob(
 }
 
 /**
+ * Resolves the Paddle customer id for an email (or null when unknown).
+ */
+async function findCustomerId(email: string, signal?: AbortSignal): Promise<string | null> {
+  const cRes = await fetch(
+    PADDLE_BASE + '/customers?email=' + encodeURIComponent(email),
+    { headers: paddleHeaders(), signal }
+  );
+  if (!cRes.ok) return null;
+  const cData = await cRes.json() as any;
+  return cData?.data?.[0]?.id || null;
+}
+
+/**
  * Looks for a completed transaction matching a customer email + jobId.
  * Used when no transaction id is available after the redirect.
  */
@@ -121,17 +134,9 @@ export async function findPaidTransaction(
 ): Promise<{ paid: boolean; transactionId?: string }> {
   if (!PADDLE_API_KEY) return { paid: false };
 
-  // 1. Resolve customer by email
-  const cRes = await fetch(
-    PADDLE_BASE + '/customers?email=' + encodeURIComponent(email),
-    { headers: paddleHeaders(), signal }
-  );
-  if (!cRes.ok) return { paid: false };
-  const cData = await cRes.json() as any;
-  const customerId: string | undefined = cData?.data?.[0]?.id;
+  const customerId = await findCustomerId(email, signal);
   if (!customerId) return { paid: false };
 
-  // 2. List recent completed transactions for this customer
   const tRes = await fetch(
     PADDLE_BASE + '/transactions?customer_id=' + encodeURIComponent(customerId) +
     '&status=completed&per_page=25',
@@ -144,6 +149,35 @@ export async function findPaidTransaction(
     if (String(tx?.custom_data?.jobId) === String(jobId)) {
       return { paid: true, transactionId: tx.id };
     }
+  }
+  return { paid: false };
+}
+
+/**
+ * Looks for ANY completed transaction from a customer email.
+ * Used to restore "Premium" status for authenticated users on a new
+ * device: login with the same email -> Paddle confirms a past payment
+ * -> premium cookie is re-issued. Paddle is the source of truth.
+ */
+export async function findAnyPaidTransaction(
+  email: string,
+  signal?: AbortSignal
+): Promise<{ paid: boolean; transactionId?: string }> {
+  if (!PADDLE_API_KEY) return { paid: false };
+
+  const customerId = await findCustomerId(email, signal);
+  if (!customerId) return { paid: false };
+
+  const tRes = await fetch(
+    PADDLE_BASE + '/transactions?customer_id=' + encodeURIComponent(customerId) +
+    '&status=completed&per_page=5',
+    { headers: paddleHeaders(), signal }
+  );
+  if (!tRes.ok) return { paid: false };
+  const tData = await tRes.json() as any;
+  const transactions: any[] = tData?.data || [];
+  if (transactions.length > 0) {
+    return { paid: true, transactionId: transactions[0].id };
   }
   return { paid: false };
 }

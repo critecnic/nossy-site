@@ -13,6 +13,13 @@ const SECRET =
 export const UNLOCK_COOKIE_PREFIX = 'wv_unlock_';
 export const UNLOCK_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
+/**
+ * Premium cookie: proof of payment bound to the buyer. A valid premium
+ * cookie unlocks ALL paywalled content (user status = "Premium"), not just
+ * a single job. Issued by /api/payment/verify after Paddle confirms payment.
+ */
+export const PREMIUM_COOKIE = 'nossy_premium';
+
 export function unlockCookieName(jobId: number): string {
   return UNLOCK_COOKIE_PREFIX + jobId;
 }
@@ -31,6 +38,37 @@ export function signUnlock(jobId: number): string | null {
   const payload = jobId + '.' + exp;
   const sig = createHmac('sha256', SECRET).update(payload).digest('hex');
   return payload + '.' + sig;
+}
+
+/**
+ * Returns the signed premium cookie value "premium.expiry.signature",
+ * or null if no secret is configured.
+ */
+export function signPremium(): string | null {
+  if (!SECRET) return null;
+  const exp = Math.floor(Date.now() / 1000) + UNLOCK_MAX_AGE;
+  const payload = 'premium.' + exp;
+  const sig = createHmac('sha256', SECRET).update(payload).digest('hex');
+  return payload + '.' + sig;
+}
+
+/**
+ * Constant-time verification of a premium cookie.
+ */
+export function verifyPremium(value: string | undefined | null): boolean {
+  if (!SECRET || !value) return false;
+  const parts = value.split('.');
+  if (parts.length !== 3) return false;
+  const [tag, exp, sig] = parts;
+  if (tag !== 'premium' || !/^\d+$/.test(exp) || !/^[0-9a-f]{64}$/.test(sig)) return false;
+  const expSec = parseInt(exp, 10);
+  if (!Number.isFinite(expSec) || expSec * 1000 < Date.now()) return false;
+  const expected = createHmac('sha256', SECRET).update(tag + '.' + exp).digest('hex');
+  try {
+    return timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'));
+  } catch {
+    return false;
+  }
 }
 
 /**
