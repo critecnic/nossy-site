@@ -89,6 +89,43 @@ export async function createPaddleCheckout(
 }
 
 /**
+ * Read-only integration check (Premium 0220 diagnostic): verifies that the
+ * API key works and that the configured price exists/active. Never returns
+ * secret values. Used by /api/payment/health.
+ */
+export async function checkPaddleIntegration(): Promise<{
+  ok: boolean;
+  status?: number;
+  code?: string;
+  priceStatus?: string;
+  amount?: string;
+  currency?: string;
+}> {
+  if (!PADDLE_API_KEY) return { ok: false, code: 'no_api_key' };
+  try {
+    const res = await fetch(
+      PADDLE_BASE + '/prices/' + encodeURIComponent(PADDLE_PRICE_ID),
+      { headers: paddleHeaders(), signal: AbortSignal.timeout(6000) }
+    );
+    if (res.ok) {
+      const data = await res.json() as any;
+      const price = data?.data;
+      const cents = Number(price?.unit_price?.amount || 0);
+      return {
+        ok: true,
+        priceStatus: price?.status,
+        amount: cents ? String(cents / 100) : undefined,
+        currency: price?.unit_price?.currency_code,
+      };
+    }
+    const body = await res.json().catch(() => ({}) as any);
+    return { ok: false, status: res.status, code: body?.error?.code };
+  } catch (err: any) {
+    return { ok: false, code: err?.name === 'AbortError' ? 'timeout' : 'network_error' };
+  }
+}
+
+/**
  * Checks whether a transaction id is a completed payment for the given job.
  */
 export async function isTransactionPaidForJob(

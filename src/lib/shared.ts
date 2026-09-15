@@ -130,22 +130,42 @@ export function getPaywallText(lang: string) {
   return PAYWALL_TEXT[lang] || PAYWALL_TEXT['en'];
 }
 
-// ─── Dynamic Paywall Logic ─────────────────────────────────────────
+// ─── Dynamic Paywall Logic (padrão Premium 0220) ───────────────────
 
 export interface PaywallResult {
   paywall: boolean;
-  reason: '' | 'remote_10pct';
+  reason: '' | 'remote_10pct' | 'premium_0220';
 }
 
 /**
- * Deterministic paywall: only 10% of remote jobs (id % 10 === 0)
- * All other jobs are FREE (no paywall).
+ * Premium 0220 — lista manual de anúncios designados.
+ * Qualquer vaga cujo id esteja nesta lista fica SEMPRE com paywall de
+ * $7 (nome da empresa, e-mail e contato bloqueados), independente de
+ * ser remota ou da regra dos 10%.
+ * Como aplicar o padrão a um anúncio: adicione o id da vaga aqui e faça
+ * commit + deploy. Este é o mecanismo reutilizável do padrão Premium 0220.
+ */
+export const PREMIUM_0220_FORCE_JOB_IDS: readonly number[] = [
+  // Ex.: 123456,
+];
+
+/**
+ * Deterministic paywall (Premium 0220):
+ *  1. Lista Premium 0220 (anúncio designado) -> sempre bloqueado;
+ *  2. 10% das vagas remotas (id % 10 === 0)  -> bloqueado;
+ *  3. Todo o resto                           -> GRATUITO.
  */
 export function shouldHavePaywall(job: {
   id?: number;
   type?: string;
 }): PaywallResult {
   const id = job.id || 0;
+
+  // Premium 0220: anúncios designados explicitamente ficam sempre bloqueados
+  if (id > 0 && PREMIUM_0220_FORCE_JOB_IDS.includes(id)) {
+    return { paywall: true, reason: 'premium_0220' };
+  }
+
   const workType = (job.type || '').toLowerCase();
   const isRemote = workType === 'remote' || workType === 'remoto';
 

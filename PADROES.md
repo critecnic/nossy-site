@@ -17,6 +17,7 @@ restauração (rollback) para deploy na Vercel.
 |---------------|------------|------------|------------------------------------------------------------------------|
 | padrao-0220   | 20/02      | `31c42df`  | Baseline original do site (design e funcionalidades base preservados)  |
 | padrao-0916   | 16/09/2026 | ver tag    | Segurança + exclusão de concorrentes + sistema de pagamento Paddle completo + paywall 10% + cadastro verificado |
+| premium-0220  | 16/09/2026 | ver tag    | Padrão Premium: pagamento de US$ 7 via Paddle — 10% das vagas remotas com cadeado + anúncios designados manualmente |
 
 ---
 
@@ -85,6 +86,56 @@ listagem de vagas (home, país, setor e página de detalhe da vaga):
   fingia sucesso). Envio com falha no Resend retorna 502.
 - Testes aprovados: código correto, errado, reuso, e-mail trocado,
   rate limit (3/min), fallback em memória em dev.
+
+---
+
+## premium-0220 — Padrão Premium (sistema de pagamento US$ 7)
+
+Número de padrão **exclusivo do sistema de pagamento**. Para aplicar o
+sistema Premium a um anúncio/vaga específica, basta citar este número
+("**Premium 0220**") — o mecanismo de aplicação está definido abaixo.
+
+### O que este padrão entrega
+
+- Pagamento único de **US$ 7,00** (Paddle Billing, price
+  `pri_01m0bhvecckh078qxexjwest9x` — "Desbloqueio único de contato") para
+  liberar, na página da vaga: **nome da empresa, e-mail de contato,
+  telefone e site** (botão "Desbloquear Contato - $7 USD").
+- Bloqueio automático em **10% das vagas remotas**, com regra
+  determinística (`id % 10 === 0`): a mesma vaga é sempre Premium, a
+  mesma é sempre gratuita — sem aleatoriedade entre carregamentos.
+- Anúncios designados manualmente (de qualquer tipo, remoto ou não)
+  ficam SEMPRE Premium — ver mecanismo abaixo.
+- Fluxo: e-mail → código de 6 dígitos/link mágico → autenticado →
+  checkout Paddle → pagamento aprovado → webhook seguro (HMAC) →
+  status Premium (cookie assinado, 1 ano, sem banco de dados) →
+  empresa/e-mail/contato liberados em todas as visitas.
+
+### Como aplicar o Premium 0220 a um anúncio específico
+
+1. Informe o **id da vaga** + o número do padrão ("Premium 0220").
+2. O id é adicionado à lista `PREMIUM_0220_FORCE_JOB_IDS` em
+   `src/lib/shared.ts` (sempre Premium, mesmo sem ser remota).
+3. Commit + deploy (Vercel): a vaga passa a exibir o cadeado imediatamente.
+
+### Diagnóstico e testes
+
+- `GET /api/payment/health`: booleans de configuração + **checagem viva**
+  da API do Paddle (valida chave + preço ativo US$ 7,00 USD), sem expor segredos.
+- Suíte: `scripts/test-premium-0220.mjs` (12/12 PASS em 16/09/2026).
+- Integração confirmada com chave sandbox real: preço `pri_01m0bhvecckh078qxexjwest9x`
+  ativo na conta (produto `pro_01m0bh3pnhx1sazz47rhjxsmdh`).
+
+### Configuração (Vercel env vars)
+
+- `PADDLE_API_KEY`, `PADDLE_PRICE_ID`, `PADDLE_ENV=sandbox|live`,
+  `UNLOCK_SECRET`, `PADDLE_WEBHOOK_SECRET`, `NEXT_PUBLIC_BASE_URL`.
+- Para e-mail/cadastro: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `VERIFICATION_SECRET`.
+- Pendências no dashboard do Paddle (conta sandbox): (1) definir o
+  **default payment link** (Checkout → General settings) para que a API
+  gere a URL de checkout (`transaction_default_checkout_url_not_set`);
+  (2) criar o webhook apontando para `https://nossy.pro/api/webhook` e
+  copiar o segredo para `PADDLE_WEBHOOK_SECRET` na Vercel.
 
 ---
 
