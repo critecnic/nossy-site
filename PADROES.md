@@ -126,16 +126,37 @@ sistema Premium a um anúncio/vaga específica, basta citar este número
 - Integração confirmada com chave sandbox real: preço `pri_01m0bhvecckh078qxexjwest9x`
   ativo na conta (produto `pro_01m0bh3pnhx1sazz47rhjxsmdh`).
 
-### Configuração (Vercel env vars)
+### Configuração automática (GitHub Actions → Vercel)
 
-- `PADDLE_API_KEY`, `PADDLE_PRICE_ID`, `PADDLE_ENV=sandbox|live`,
-  `UNLOCK_SECRET`, `PADDLE_WEBHOOK_SECRET`, `NEXT_PUBLIC_BASE_URL`.
-- Para e-mail/cadastro: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `VERIFICATION_SECRET`.
-- Pendências no dashboard do Paddle (conta sandbox): (1) definir o
-  **default payment link** (Checkout → General settings) para que a API
-  gere a URL de checkout (`transaction_default_checkout_url_not_set`);
-  (2) criar o webhook apontando para `https://nossy.pro/api/webhook` e
-  copiar o segredo para `PADDLE_WEBHOOK_SECRET` na Vercel.
+- Os segredos do padrão (PADDLE_API_KEY, PADDLE_PRICE_ID, PADDLE_ENV,
+  NEXT_PUBLIC_BASE_URL, UNLOCK_SECRET, VERIFICATION_SECRET) ficam
+  **criptografados nos Secrets do GitHub Actions** — nunca no código
+  (o Push Protection do GitHub bloqueia chaves commitadas).
+- O workflow `.github/workflows/sync-vercel-env.yml` copia esses segredos
+  para as variáveis da Vercel e dispara redeploy de produção — basta que
+  o secret `VERCEL_TOKEN` exista no repo (criado uma única vez pelo dono).
+- Sem `VERCEL_TOKEN`, o workflow avisa e sai sem falhar.
+- Para migrar de sandbox → live: trocar o valor de PADDLE_API_KEY /
+  PADDLE_ENV nos Secrets do GitHub e rodar o workflow.
+
+### Itens manuais remanescentes (não automatizáveis)
+
+1. **Paddle dashboard (sandbox)**: definir o *default payment link*
+   (Checkout → General settings) → `https://nossy.pro`. Sem isso a API do
+   Paddle recusa criar a transação
+   (`transaction_default_checkout_url_not_set`). É configuração da CONTA
+   Paddle — não existe endpoint de API nem via GitHub.
+2. **VERCEL_TOKEN no GitHub (Secrets → Actions, uma única vez)**: token
+   gerado em vercel.com/account/tokens. Com ele, o workflow sincroniza
+   TODAS as variáveis (incluindo UNLOCK_SECRET já armazenado) e faz
+   redeploy sozinho. Sem ele, seria preciso colar as variáveis à mão na
+   Vercel — e o desbloqueio Premium não fica funcional sem UNLOCK_SECRET.
+3. **Opcional — PADDLE_WEBHOOK_SECRET**: copiar o segredo do webhook criado
+   no dashboard (pdl_ntfset_...) e adicionar como secret `PADDLE_WEBHOOK_SECRET`
+   no GitHub (o workflow o leva para a Vercel). Sem ele o endpoint de
+   webhook responde 503 (apenas o log de auditoria fica inativo; o
+   desbloqueio por pagamento NÃO depende do webhook). Conferir também se
+   o webhook está inscrito em `transaction.completed`.
 
 ---
 

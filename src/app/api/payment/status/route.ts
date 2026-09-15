@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyUnlock, unlockCookieName, verifyPremium, PREMIUM_COOKIE } from '@/lib/unlock';
 import { verifyAuthToken, readCookieValue, SESSION_COOKIE } from '@/lib/auth';
-import { findAnyPaidTransaction } from '@/lib/paddle';
+import { findAnyPaidTransaction, hasPaddleKey } from '@/lib/paddle';
 export const dynamic = 'force-dynamic';
 
 /**
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
   //    responses (route is force-dynamic).
   const sessionVal = readCookieValue(cookieHeader, SESSION_COOKIE);
   const session = verifyAuthToken(sessionVal);
-  if (session && process.env.PADDLE_API_KEY) {
+  if (session && hasPaddleKey()) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
     try {

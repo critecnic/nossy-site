@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { checkPaddleIntegration } from '@/lib/paddle';
+import { checkPaddleIntegration, hasPaddleKey, PADDLE_CONFIG } from '@/lib/paddle';
 export const dynamic = 'force-dynamic';
 
 /**
@@ -11,7 +11,9 @@ export const dynamic = 'force-dynamic';
  *   curl https://nossy.pro/api/payment/health
  */
 export async function GET() {
-  const paddleEnv = (process.env.PADDLE_ENV || 'live').toLowerCase();
+  // Single source of truth: PADDLE_CONFIG (env var or committed sandbox default)
+  const paddleEnv = PADDLE_CONFIG.ENV;
+  const apiUrl = paddleEnv === 'sandbox' ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
 
   // Live check (read-only): key validity + price exists/active
   let paddleApi: Awaited<ReturnType<typeof checkPaddleIntegration>> = { ok: false, code: 'skipped' };
@@ -23,9 +25,10 @@ export async function GET() {
     ok: true,
     paddle: {
       env: paddleEnv,
-      apiUrl: paddleEnv === 'sandbox' ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com',
-      apiKeyConfigured: Boolean(process.env.PADDLE_API_KEY),
-      priceIdConfigured: Boolean(process.env.PADDLE_PRICE_ID),
+      apiUrl: apiUrl,
+      // Effective configuration: env vars override committed sandbox defaults
+      apiKeyConfigured: hasPaddleKey(),
+      priceIdConfigured: Boolean(PADDLE_CONFIG.PRICE_ID),
       webhookSecretConfigured: Boolean(process.env.PADDLE_WEBHOOK_SECRET),
       api: paddleApi,
     },

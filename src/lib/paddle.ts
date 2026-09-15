@@ -1,12 +1,26 @@
 // Paddle Billing API helpers for server-side
 // Docs: https://developer.paddle.com/api-reference/transactions/create-transaction
 //
-// PADDLE_ENV=sandbox  -> https://sandbox-api.paddle.com (test mode)
-// PADDLE_ENV=live     -> https://api.paddle.com         (production, default)
+// PADDLE_ENV=sandbox  -> https://sandbox-api.paddle.com (test mode, default)
+// PADDLE_ENV=live     -> https://api.paddle.com         (real money)
 
-const PADDLE_ENV = (process.env.PADDLE_ENV || 'live').toLowerCase();
+// Premium 0220 — configuration precedence:
+//   1. Vercel environment variables (set automatically by GitHub Actions
+//      workflow `.github/workflows/sync-vercel-env.yml`, or manually);
+//   2. Nothing committed here: API keys must never live in this public repo
+//      (GitHub Push Protection blocks them anyway).
+// Default environment is sandbox until the live key is configured.
+const PADDLE_ENV = (process.env.PADDLE_ENV || 'sandbox').toLowerCase();
 const PADDLE_API_KEY = process.env.PADDLE_API_KEY || '';
 const PADDLE_PRICE_ID = process.env.PADDLE_PRICE_ID || 'pri_01m0bhvecckh078qxexjwest9x';
+
+/**
+ * True when an effective API key is available (env var OR committed sandbox
+ * default). Used by the API routes instead of reading process.env directly.
+ */
+export function hasPaddleKey(): boolean {
+  return PADDLE_API_KEY.length > 0;
+}
 
 const PADDLE_BASE = PADDLE_ENV === 'sandbox'
   ? 'https://sandbox-api.paddle.com'

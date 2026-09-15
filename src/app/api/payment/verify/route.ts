@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isTransactionPaidForJob, findPaidTransaction } from '@/lib/paddle';
+import { isTransactionPaidForJob, findPaidTransaction, hasPaddleKey } from '@/lib/paddle';
 import { signUnlock, unlockCookieName, signPremium, PREMIUM_COOKIE, UNLOCK_MAX_AGE } from '@/lib/unlock';
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const { email, jobId, txn } = body || {};
 
-    if (!process.env.PADDLE_API_KEY) {
+    if (!hasPaddleKey()) {
       return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
     }
 

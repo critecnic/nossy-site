@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createPaddleCheckout } from '@/lib/paddle';
+import { createPaddleCheckout, hasPaddleKey } from '@/lib/paddle';
 
 const checkoutAttempts: Record<string, number[]> = {};
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const { email, jobId, jobTitle, lang, jobUrl } = body || {};
 
-    if (!process.env.PADDLE_API_KEY) {
+    if (!hasPaddleKey()) {
       return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
     }
 

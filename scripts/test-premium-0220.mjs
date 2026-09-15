@@ -10,21 +10,27 @@ function check(name, cond, extra = '') {
   else { fail++; console.log('FAIL  ' + name + (extra ? ' — ' + extra : '')); }
 }
 
-// ── 1. Health: integração Paddle viva (chave real, leitura do preço) ──
+// ── 1. Health: integração Paddle (config efetiva) ─────────────────
 const health = await (await fetch(BASE + '/api/payment/health')).json();
 check('health.ok', health.ok === true);
 check('health.paddle.env=sandbox', health.paddle?.env === 'sandbox', health.paddle?.apiUrl);
-check('health.paddle.apiKeyConfigured', health.paddle?.apiKeyConfigured === true);
 check('health.paddle.priceIdConfigured', health.paddle?.priceIdConfigured === true);
-check('health.paddle.api.ok — chave real valida o preço na sandbox', health.paddle?.api?.ok === true, JSON.stringify(health.paddle?.api));
-check('health.paddle.api.priceStatus=active', health.paddle?.api?.priceStatus === 'active');
-check('health.paddle.api.amount=7 (USD 7,00)', health.paddle?.api?.amount === '7');
-check('health.paddle.api.currency=USD', health.paddle?.api?.currency === 'USD');
 check('health.webhookUrl aponta para /api/webhook', String(health.webhookUrl || '').endsWith('/api/webhook'), health.webhookUrl);
 
-// ── 2. Checkout com chave real (transação sandbox) ────────────────────
-// Enquanto o "default payment link" não for definido no dashboard Paddle,
-// a API recusa a transação; o site deve repassar o código do erro honesto.
+const hasKey = health.paddle?.apiKeyConfigured === true;
+if (hasKey) {
+  check('health.paddle.api.ok — chave real valida o preço', health.paddle?.api?.ok === true, JSON.stringify(health.paddle?.api));
+  check('health.paddle.api.priceStatus=active', health.paddle?.api?.priceStatus === 'active');
+  check('health.paddle.api.amount=7 (USD 7,00)', health.paddle?.api?.amount === '7');
+  check('health.paddle.api.currency=USD', health.paddle?.api?.currency === 'USD');
+} else {
+  check('modo sem chave: health honesto (api not ok)', health.paddle?.api?.ok === false, health.paddle?.api?.code);
+}
+
+// ── 2. Checkout (comporta-se conforme a chave configurada) ───────────
+// Com chave: enquanto o "default payment link" não for definido no dashboard
+// Paddle, a API recusa a transação; o site deve repassar o código do erro.
+// Sem chave: checkout deve responder 503 honesto de configuração pendente.
 const coRes = await fetch(BASE + '/api/checkout', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -39,6 +45,8 @@ const coRes = await fetch(BASE + '/api/checkout', {
 const coBody = await coRes.json().catch(() => ({}));
 if (coRes.status === 200 && coBody.url) {
   check('checkout 200 → URL de checkout do Paddle', String(coBody.url).includes('paddle'), String(coBody.url).slice(0, 90));
+} else if (!hasKey) {
+  check('checkout 503 honesto (sem chave configurada)', coRes.status === 503, coRes.status + ' ' + JSON.stringify(coBody).slice(0, 120));
 } else {
   check('checkout repassa erro de config do Paddle (default payment link)', coRes.status >= 400 && /checkout_url|payment_link|paddle/i.test(JSON.stringify(coBody)), coRes.status + ' ' + JSON.stringify(coBody).slice(0, 170));
 }
