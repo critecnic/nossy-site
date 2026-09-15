@@ -1,6 +1,7 @@
 "use client";
 
 import { REGIONS, type RegionConfig } from "@/lib/countries";
+import { safeJsonLd } from "@/lib/jsonld";
 
 // Organization + WebSite schema for homepage
 export function OrganizationJsonLd() {
@@ -21,7 +22,7 @@ export function OrganizationJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }
@@ -69,7 +70,7 @@ export function JobJsonLd({ title, description, company, companyUrl, location, s
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }
@@ -115,7 +116,7 @@ export function CountryListingJsonLd({ countryCode, countryName, jobCount, jobs 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 }

@@ -3,6 +3,7 @@ import { LANGUAGES, LANG_SLUGS } from "@/lib/i18n";
 import { REGIONS } from "@/lib/countries";
 import { getRegionName, shouldHavePaywall } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
+import { safeJsonLd } from "@/lib/jsonld";
 import type { Lang } from "@/lib/i18n";
 import countriesData from "@/data/countries.json";
 import { readFileSync, existsSync } from "fs";
@@ -175,7 +176,7 @@ function JobPostingSchema({ job, url }: { job: Job; url: string }) {
     (schema as Record<string, unknown>).industry = job.sector;
   }
 
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }} />;
 }
 
 export default async function JobDetailLayout({

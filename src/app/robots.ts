@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/data/'],
+        disallow: ['/api/', '/data/', '/admin', '/api/admin', '/api/agent'],
       },
     ],
     sitemap: 'https://nossy.pro/sitemap.xml',

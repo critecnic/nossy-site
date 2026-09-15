@@ -41,6 +41,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Signature mismatch' }, { status: 400 });
     }
 
+    // SECURITY: anti-replay — reject events older than 5 minutes
+    // (signature is valid, but the timestamp must be fresh)
+    const tsMs = parseInt(ts, 10) * 1000;
+    if (!Number.isFinite(tsMs) || Math.abs(Date.now() - tsMs) > 5 * 60 * 1000) {
+      console.error('Paddle webhook: stale or invalid timestamp (possible replay)');
+      return NextResponse.json({ error: 'Stale timestamp' }, { status: 400 });
+    }
+
     const event = JSON.parse(body);
     const eventType = event.event_type || event.eventType || '';
     console.log('Paddle event:', eventType);

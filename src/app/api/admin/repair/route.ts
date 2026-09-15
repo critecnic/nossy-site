@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fsp } from "fs";
 import path from "path";
+import { checkAdminAuth } from "@/lib/security";
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "nossy-admin-2024";
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 
-function auth(req: NextRequest): boolean {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  return token === ADMIN_TOKEN;
-}
-
 export async function POST(req: NextRequest) {
-  if (!auth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = checkAdminAuth(req);
+  if (!authResult.ok) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
   }
 
   try {

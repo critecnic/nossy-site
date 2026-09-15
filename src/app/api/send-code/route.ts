@@ -69,8 +69,10 @@ export async function POST(req: Request) {
         console.error('Failed to send email:', e);
       }
     } else {
-      // Dev mode: log code to console
-      console.log('[DEV] Verification code for ' + email + ': ' + code);
+      // Dev mode only: never log verification codes in production
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[DEV] Verification code for ' + email + ': ' + code);
+      }
     }
 
     return NextResponse.json({ success: true });

@@ -13,20 +13,39 @@ interface HealthResult {
   summary: { score: number; problems: string[]; ok: string[]; totalProblems: number; totalOk: number; diagnosticTimeMs: number };
 }
 
-const TOKEN = "nossy-admin-2024";
+// SECURITY: the admin token is NEVER hardcoded — it is entered once by the
+// administrator and kept only in sessionStorage for this browser session.
+const TOKEN_STORAGE_KEY = "nossy-admin-token";
 
 export default function AdminDashboard() {
   const [data, setData] = useState<HealthResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [repairLog, setRepairLog] = useState<string[]>([]);
   const [repairing, setRepairing] = useState(false);
+  const [token, setToken] = useState<string>("");
+  const [tokenInput, setTokenInput] = useState<string>("");
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  const runDiagnostics = useCallback(async () => {
+  const runDiagnostics = useCallback(async (currentToken: string) => {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/health", {
-        headers: { Authorization: `Bearer ${TOKEN}` },
+        headers: { Authorization: `Bearer ${currentToken}` },
       });
+      if (res.status === 401) {
+        setAuthError("Invalid admin token. Try again.");
+        sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+        setToken("");
+        setLoading(false);
+        return;
+      }
+      if (res.status === 503) {
+        const json = await res.json().catch(() => ({ error: "Server not configured" }));
+        setAuthError(json.error || "ADMIN_TOKEN is not configured on the server.");
+        setLoading(false);
+        return;
+      }
+      setAuthError(null);
       const json = await res.json();
       setData(json);
     } catch (e: any) {
@@ -35,6 +54,15 @@ export default function AdminDashboard() {
     setLoading(false);
   }, []);
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const t = tokenInput.trim();
+    if (!t) return;
+    sessionStorage.setItem(TOKEN_STORAGE_KEY, t);
+    setToken(t);
+    runDiagnostics(t);
+  };
+
   const runRepair = async (action: string) => {
     setRepairing(true);
     setRepairLog((prev) => [...prev, `Executing: ${action}...`]);
@@ -42,7 +70,7 @@ export default function AdminDashboard() {
       const res = await fetch("/api/admin/repair", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${TOKEN}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ action }),
@@ -59,8 +87,49 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    runDiagnostics();
+    const stored = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+    if (stored) {
+      setToken(stored);
+      runDiagnostics(stored);
+    } else {
+      setLoading(false);
+    }
   }, [runDiagnostics]);
+
+  // ─── Login gate: no dashboard renders until a valid token is provided ───
+  if (!token) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center p-4">
+        <form
+          onSubmit={handleLogin}
+          className="w-full max-w-sm bg-gray-900 rounded-2xl p-8 border border-gray-800"
+        >
+          <h1 className="text-xl font-black mb-1">NOSSY Admin</h1>
+          <p className="text-gray-500 text-xs mb-6">
+            Restricted area. Enter the ADMIN_TOKEN configured on the server.
+          </p>
+          <input
+            type="password"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            autoComplete="off"
+            placeholder="Admin token"
+            className="w-full px-4 py-3 rounded-lg bg-gray-950 border border-gray-800 text-sm mb-4 focus:outline-none focus:border-sky-600"
+          />
+          {authError && (
+            <p className="text-red-400 text-xs mb-4">{authError}</p>
+          )}
+          <button
+            type="submit"
+            disabled={loading || !tokenInput.trim()}
+            className="w-full px-4 py-3 rounded-lg bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50 transition"
+          >
+            {loading ? "Checking..." : "Access dashboard"}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   const scoreColor = data
     ? data.summary.score >= 75
@@ -80,7 +149,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={runDiagnostics}
+              onClick={() => runDiagnostics(token)}
               disabled={loading}
               className="px-4 py-2 rounded-lg bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50 transition"
             >
@@ -152,7 +221,7 @@ export default function AdminDashboard() {
                   )}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {data.gemini.keySet ? `Key: ${data.gemini.keyPreview}` : "GEMINI_API_KEY not set"}
+                  {data.gemini.keySet ? "Key configured" : "GEMINI_API_KEY not set"}
                 </div>
                 {data.gemini.latencyMs > 0 && (
                   <div className="text-xs text-gray-600 mt-1">Latency: {data.gemini.latencyMs}ms</div>

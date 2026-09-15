@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fsp } from "fs";
 import path from "path";
+import { checkAdminAuth, getSelfBaseUrl } from "@/lib/security";
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "nossy-admin-2024";
 const DATA_DIR = path.join(process.cwd(), "public", "data");
-
-function auth(req: NextRequest): boolean {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  return token === ADMIN_TOKEN;
-}
 
 // ═══════════════════════════════════════════════════════════════════════
 // NOSSY AGENT — Comunicação direta para diagnóstico e reparo em tempo real
@@ -34,12 +29,14 @@ function auth(req: NextRequest): boolean {
 // ═══════════════════════════════════════════════════════════════════════
 
 export async function GET(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = checkAdminAuth(req);
+  if (!authResult.ok) return NextResponse.json({ error: authResult.error }, { status: authResult.status });
   return diagnose(req);
 }
 
 export async function POST(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = checkAdminAuth(req);
+  if (!authResult.ok) return NextResponse.json({ error: authResult.error }, { status: authResult.status });
   try {
     const body = await req.json();
     const { action } = body;
@@ -58,13 +55,14 @@ export async function POST(req: NextRequest) {
       default: return NextResponse.json({ error: `Ação desconhecida: ${action}`, validActions: ["ping","diagnose","test-gemini","test-translation","test-usa","test-route","env-info","list-files","split-files","file-info","i18n-check"] }, { status: 400 });
     }
   } catch (e: any) {
-    return NextResponse.json({ error: e.message, stack: e.stack?.slice(0, 300) }, { status: 500 });
+    // SECURITY: no stack traces or internal error details to clients
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
+// SECURITY: SSRF-safe — Host allowlist instead of raw Host header
 function getBaseUrl(req: NextRequest): string {
-  const host = req.headers.get("host") || "nossy.pro";
-  return `https://${host}`;
+  return getSelfBaseUrl(req);
 }
 
 // ─── DIAGNOSE COMPLETO ────────────────────────────────────────────────
@@ -93,6 +91,7 @@ async function diagnose(req: NextRequest): Promise<NextResponse> {
       } catch (e: any) { geminiStatus = `ERROR (${model}): ${e.message.slice(0, 60)}`; }
     }
   }
+  // SECURITY: never expose key material — only presence/size metadata
   results.gemini = { status: geminiStatus, keySet: !!geminiKey, latencyMs: geminiLatency, modelsTested: MODEL_LIST };
 
   // 2. Arquivos de dados
@@ -221,7 +220,8 @@ async function testRoute(body: any, req: NextRequest): Promise<NextResponse> {
 
 // ─── ENV INFO ──────────────────────────────────────────────────────────
 function envInfo(): NextResponse {
-  return NextResponse.json({ environment: { GEMINI_API_KEY: process.env.GEMINI_API_KEY ? `SET (${process.env.GEMINI_API_KEY.length} chars, starts: ${process.env.GEMINI_API_KEY.slice(0, 4)}...)` : "NOT SET", ADMIN_TOKEN: process.env.ADMIN_TOKEN ? "SET (custom)" : "NOT SET (using default)", DATABASE_URL: process.env.DATABASE_URL ? "SET" : "NOT SET", NODE_ENV: process.env.NODE_ENV || "unknown", VERCEL: process.env.VERCEL ? "YES" : "NO", VERCEL_REGION: process.env.VERCEL_REGION || "N/A", } });
+  // SECURITY: only boolean presence flags — no key prefixes, no lengths, no defaults
+  return NextResponse.json({ environment: { GEMINI_API_KEY: process.env.GEMINI_API_KEY ? "SET" : "NOT SET", ADMIN_TOKEN: process.env.ADMIN_TOKEN ? "SET" : "NOT SET", DATABASE_URL: process.env.DATABASE_URL ? "SET" : "NOT SET", NODE_ENV: process.env.NODE_ENV || "unknown", VERCEL: process.env.VERCEL ? "YES" : "NO", VERCEL_REGION: process.env.VERCEL_REGION || "N/A", } });
 }
 
 // ─── LIST FILES ────────────────────────────────────────────────────────

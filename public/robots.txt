@@ -1,8 +1,10 @@
 # NOSSY - Seek and you shall find.
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /data/
+Disallow: /admin
+Disallow: /api/admin
+Disallow: /api/agent
 
 Sitemap: https://nossy.pro/sitemap.xml
-
-# Block API and data endpoints from indexing
-Disallow: /api/

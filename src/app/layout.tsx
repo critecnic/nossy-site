@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { TOTAL_JOBS } from "@/lib/countries";
+import { safeJsonLd } from "@/lib/jsonld";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
@@ -68,7 +69,7 @@ function JsonLd() {
     },
     "inLanguage": ["en", "pt-br", "pt-pt", "es", "fr", "de", "it", "nl", "pl", "ru", "zh", "ja", "ko", "hi", "bn", "ar", "tr", "vi", "th", "ur", "tl", "sw"],
   };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }} />;
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
