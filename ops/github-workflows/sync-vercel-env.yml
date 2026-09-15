@@ -1,0 +1,102 @@
+# Premium 0220 — Sincroniza segredos do GitHub Actions para a Vercel.
+#
+# O que faz:
+#   1. Lê os secrets do repositório (PADDLE_API_KEY, UNLOCK_SECRET, etc.);
+#   2. Cria/atualiza as variáveis de ambiente do projeto na Vercel;
+#   3. Dispara redeploy de produção para aplicar.
+#
+# Requisito (uma única vez, feito pelo dono do repo):
+#   - Secret VERCEL_TOKEN (token em https://vercel.com/account/tokens)
+#   - Opcional: secret VERCEL_PROJECT_ID para fixar o projeto
+#
+# Sem VERCEL_TOKEN o workflow apenas avisa e termina OK (não falha).
+
+name: sync-vercel-env
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sync-vercel-env.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-env-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync GitHub secrets -> Vercel env vars
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PADDLE_API_KEY: ${{ secrets.PADDLE_API_KEY }}
+          PADDLE_PRICE_ID: ${{ secrets.PADDLE_PRICE_ID }}
+          PADDLE_ENV: ${{ secrets.PADDLE_ENV }}
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+          UNLOCK_SECRET: ${{ secrets.UNLOCK_SECRET }}
+          VERIFICATION_SECRET: ${{ secrets.VERIFICATION_SECRET }}
+          PADDLE_WEBHOOK_SECRET: ${{ secrets.PADDLE_WEBHOOK_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::notice::VERCEL_TOKEN nao configurado. Crie um token em https://vercel.com/account/tokens e adicione em Settings > Secrets and variables > Actions. Depois rode este workflow novamente (Run workflow)."
+            exit 0
+          fi
+
+          set -e
+
+          # ── Localizar o projeto Vercel ──────────────────────────────
+          PROJECT="${VERCEL_PROJECT_ID}"
+          if [ -z "$PROJECT" ]; then
+            PROJECT=$(curl -s "https://api.vercel.com/v9/projects" \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const j=JSON.parse(d);const ps=j.projects||[];const p=ps.find(x=>/nossy/i.test(x.name||''))||ps[0];console.log(p?(p.id||p.name):'')}catch(e){console.log('')}})")
+          fi
+          if [ -z "$PROJECT" ]; then
+            echo "::error::Projeto Vercel nao encontrado. Confira o token ou defina o secret VERCEL_PROJECT_ID."
+            exit 1
+          fi
+          echo "Projeto Vercel: $PROJECT"
+
+          # ── Criar/atualizar variaveis (upsert) ──────────────────────
+          upsert() {
+            local KEY="$1" VALUE="$2"
+            if [ -z "$VALUE" ]; then
+              echo "skip   $KEY (secret vazio)"
+              return 0
+            fi
+            CODE=$(curl -s -o /tmp/vercel-env-resp.json -w "%{http_code}" \
+              -X POST "https://api.vercel.com/v10/projects/$PROJECT/env?upsert=true" \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"key\":\"$KEY\",\"value\":\"$VALUE\",\"type\":\"encrypted\",\"target\":[\"production\",\"preview\",\"development\"]}")
+            echo "set    $KEY -> HTTP $CODE"
+            if [ "$CODE" != "200" ]; then cat /tmp/vercel-env-resp.json; echo ""; return 1; fi
+          }
+
+          upsert PADDLE_API_KEY "$PADDLE_API_KEY"
+          upsert PADDLE_PRICE_ID "$PADDLE_PRICE_ID"
+          upsert PADDLE_ENV "$PADDLE_ENV"
+          upsert NEXT_PUBLIC_BASE_URL "$NEXT_PUBLIC_BASE_URL"
+          upsert UNLOCK_SECRET "$UNLOCK_SECRET"
+          upsert VERIFICATION_SECRET "$VERIFICATION_SECRET"
+          upsert PADDLE_WEBHOOK_SECRET "$PADDLE_WEBHOOK_SECRET"
+          upsert RESEND_API_KEY "$RESEND_API_KEY"
+          upsert RESEND_FROM_EMAIL "$RESEND_FROM_EMAIL"
+
+          # ── Redeploy de producao para aplicar as variaveis ─────────
+          echo ""
+          echo "Disparando redeploy de producao..."
+          curl -s -X POST "https://api.vercel.com/v13/deployments" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"name\":\"$PROJECT\",\"target\":\"production\",\"gitSource\":{\"type\":\"branch\",\"org\":\"critecnic\",\"repo\":\"nossy-site\",\"ref\":\"main\"}}" \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const j=JSON.parse(d);console.log('Deploy:',j.url||j.error||j.message||'ok')}catch(e){console.log(d.slice(0,200))}})"
+
+          echo ""
+          echo "OK: variaveis sincronizadas + redeploy disparado."
+          echo "Validacao: curl https://nossy.pro/api/payment/health"

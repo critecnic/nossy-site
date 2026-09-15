@@ -8,6 +8,20 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  async rewrites() {
+    return [
+      // Premium 0220 — alias gerido via API para o webhook da Paddle.
+      // A Paddle recusa criar um segundo webhook com o MESMO destino
+      // (notification_setting_cannot_be_duplicate), e o webhook criado
+      // manualmente no dashboard não permite recuperar o secret via API
+      // (GET /notification-settings -> 403 com a chave atual). Este alias
+      // dá um destino distinto (https://nossy.pro/api/webhook-0220) para o
+      // webhook criado 100% via API, cujo secret é capturado automaticamente
+      // e sincronizado à Vercel pelo workflow sync-vercel-env.yml. O rewrite
+      // preserva body e headers, então a validação HMAC é idêntica.
+      { source: "/api/webhook-0220", destination: "/api/webhook" },
+    ];
+  },
   async headers() {
     return [
       {
