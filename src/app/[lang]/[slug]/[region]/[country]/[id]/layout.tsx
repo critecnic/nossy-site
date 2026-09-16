@@ -97,12 +97,20 @@ export async function generateMetadata({
   const countryName = job?.countryName || countryInfo?.name || cc;
   const countryNameTranslated = getCountryNameTranslated(cc, lang, countryName);
   const regionName = getRegionName(lang, rc);
-  const title = job ? `${job.title} - ${job.company} | NOSSY` : `${countryNameTranslated} Jobs | NOSSY`;
+
+  // Premium 0220: o nome da empresa NÃO pode aparecer em <title>, meta
+  // description ou Open Graph de vaga bloqueada — o Google indexaria e a
+  // pessoa encontraria a empresa no buscador sem pagar. Crawlers nunca
+  // têm cookie de desbloqueio, então a máscara aqui é incondicional.
+  const jobLocked = job ? shouldHavePaywall(job).paywall : false;
+  const metaCompany = job && jobLocked ? "Confidential" : (job?.company || "");
+
+  const title = job ? `${job.title} - ${metaCompany} | NOSSY` : `${countryNameTranslated} Jobs | NOSSY`;
 
   const descFn = JOB_META_DESC[lang] || JOB_META_DESC["en"];
   const fallbackFn = FALLBACK_JOB_DESC[lang] || FALLBACK_JOB_DESC["en"];
   const description = job
-    ? descFn(job.title, job.company, job.location, job.type || '', job.salary || '')
+    ? descFn(job.title, metaCompany, job.location, job.type || '', job.salary || '')
     : fallbackFn(countryNameTranslated, regionName);
 
   const url = `https://nossy.pro/${langCode}/${slug}/${rc}/${cc}/${jobId}`;
@@ -122,7 +130,7 @@ export async function generateMetadata({
   if (job) {
     metadata.openGraph = {
       type: "article",
-      title: `${job.title} - ${job.company}`,
+      title: `${job.title} - ${metaCompany}`,
       description,
       url,
       siteName: "NOSSY",
@@ -138,7 +146,7 @@ function JobPostingSchema({ job, url }: { job: Job; url: string }) {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title,
-    description: job.description || `Tech job: ${job.title} at ${job.company}`,
+    description: job.description || `Tech job: ${job.title}${shouldHavePaywall(job).paywall ? "" : ` at ${job.company}`}`,
     identifier: { "@type": "PropertyValue", name: "NOSSY", value: String(job.id) },
     datePosted: job.posted,
     url,

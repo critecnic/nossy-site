@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { needsServerTranslation, translateJobListFields } from "@/lib/translate-server";
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
+import { maskJobAlways } from "@/lib/paywall-mask";
 import { promises as fsp } from "fs";
 import path from "path";
 
@@ -34,20 +35,23 @@ export async function GET(req: NextRequest) {
     const raw = await fsp.readFile(filePath, "utf-8");
     const jobs = JSON.parse(raw);
 
+    // Premium 0220: resposta pública — máscara sempre nas vagas com paywall
+    const masked = jobs.map((j: any) => maskJobAlways(j));
+
     // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
       clearTimeout(timer);
-      return new NextResponse(raw, {
+      return new NextResponse(JSON.stringify(masked), {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=1800" },
       });
     }
 
     // Translate via Google GTX + MyMemory
     console.log(`[NOSSY API] Latest ${jobs.length} jobs lang=${lang}`);
-    const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
+    const { map: translatedMap, ok: translateOk } = await translateJobListFields(masked, lang);
     clearTimeout(timer);
 
-    const translated = jobs.map((job: any) => {
+    const translated = masked.map((job: any) => {
       const t = translatedMap.get(job.id);
       return t
         ? { ...job, title: t.title, company: t.company, location: t.location }

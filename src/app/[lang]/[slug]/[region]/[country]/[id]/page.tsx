@@ -6,6 +6,7 @@ import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
+import { formatJobLocation } from "@/lib/location-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -29,15 +30,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const [dataError, setDataError] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+  // Recarrega os dados quando o desbloqueio acontece (a máscara é aplicada
+  // no SERVIDOR: sem cookie válido a API devolve "***" — após o pagamento,
+  // o cookie é emitido e a busca é refeita para trazer os dados reais).
+  const [dataVersion, setDataVersion] = useState(0);
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
   const regionHref = homeHref + "/" + rc;
   const countryHref = regionHref + "/" + cc;
 
-  // Load job data WITH server-side translation
+  // Load job data WITH server-side translation. O servidor aplica a máscara
+  // Premium 0220 (company/contact) enquanto não houver cookie de desbloqueio.
   useEffect(() => {
     if (!rc || !cc || !jobId) return;
-    setLoading(true); setDataError(false);
+    if (!job) setLoading(true);
+    setDataError(false);
     const baseFile = rc + "_" + cc + ".json";
 
     // Try loading from job-detail API (has translation)
@@ -67,7 +74,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
         };
         loadFromCountry();
       });
-  }, [rc, cc, jobId, langCode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rc, cc, jobId, langCode, dataVersion]);
 
   // After a Paddle payment redirect (?payment=success), verify the payment
   // against the Paddle API and unlock the contact info (user -> Premium).
@@ -84,7 +92,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
             body: JSON.stringify({ email, jobId: Number(jobId) }),
           })
             .then(r => r.json())
-            .then(d => { if (d.unlocked) setUnlocked(true); })
+            .then(d => {
+              if (d.unlocked) {
+                setUnlocked(true);
+                // Cookie emitido -> recarrega a vaga para receber os dados
+                // reais (antes mascarados pelo servidor)
+                setDataVersion(v => v + 1);
+              }
+            })
             .catch(() => { /* stay locked; user can retry */ });
         };
         const stored = sessionStorage.getItem('nossy_checkout_email') || '';
@@ -122,10 +137,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const rName = getRegionName(lang, rc);
   const cName = job ? getCountryNameTranslated(cc, lang, job.countryName || cc) : cc;
   const pw = shouldHavePaywall(job || {});
-  const isLocked = pw.paywall && !showPayment && !unlocked;
+  // Premium 0220: só o desbloqueio VERIFICADO (cookie assinado + dados
+  // reais vindos do servidor) revela o conteúdo. Abrir o painel de
+  // pagamento NÃO libera nada — antes, clicar em "Desbloquear" exibia
+  // empresa, e-mail, telefone e site antes do pagamento (bug corrigido).
+  const isLocked = pw.paywall && !unlocked;
   const pwText = getPaywallText(lang);
   const careerUrl = job ? getCompanyCareerUrl(job) : '';
   const jobUrlPath = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + jobId;
+  const locationFull = job ? formatJobLocation(job.location, { countrySlug: job.country, countryName: job.countryName, lang }) : '';
 
   if (loading) {
     return (
@@ -228,7 +248,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span className="text-sm text-gray-600">{job.location}</span>
+                <span className="text-sm text-gray-600">{locationFull}</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { needsServerTranslation, translateJobFull } from "@/lib/translate-server";
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
+import { shouldHavePaywall } from "@/lib/shared";
+import { maskJobIfLocked } from "@/lib/paywall-mask";
 import { promises as fsp } from "fs";
 import path from "path";
 
@@ -82,10 +84,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
+    // Premium 0220: vagas com paywall têm resposta POR-USUÁRIO (máscara
+    // server-side + cache privado) — nunca público/CDN, senão a resposta
+    // mascarada ou desbloqueada vazaría para outros visitantes.
+    const paywalled = shouldHavePaywall(job).paywall;
+    const cacheForJob = (paywalled: boolean) =>
+      paywalled ? "private, no-store" : "public, s-maxage=3600, stale-while-revalidate=600";
+
     // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
-      return new NextResponse(JSON.stringify(job), {
-        headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
+      const safe = maskJobIfLocked(job, (n) => req.cookies.get(n)?.value);
+      return new NextResponse(JSON.stringify(safe), {
+        headers: { "Content-Type": "application/json", "Cache-Control": cacheForJob(paywalled) },
       });
     }
 
@@ -101,11 +111,14 @@ export async function GET(req: NextRequest) {
       location: translated.location,
     };
 
-    const cacheHeader = translated.ok
+    // Máscara DEPOIS da tradução (o campo company traduzido não pode vazar)
+    const safe = maskJobIfLocked(result, (n) => req.cookies.get(n)?.value);
+
+    const cacheHeader = translated.ok && !paywalled
       ? "public, s-maxage=3600, stale-while-revalidate=600"
       : "no-store";
 
-    return new NextResponse(JSON.stringify(result), {
+    return new NextResponse(JSON.stringify(safe), {
       headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {

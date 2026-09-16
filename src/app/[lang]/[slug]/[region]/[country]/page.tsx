@@ -8,6 +8,7 @@ import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, formatSalary, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
+import { formatJobLocation } from "@/lib/location-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -223,7 +224,7 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
                   </div>
                   <h2 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-sky-600 transition-colors">{job.title}</h2>
                   <p className="text-xs font-medium text-gray-600 mb-1">{isLocked ? '***' : job.company}</p>
-                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{job.location}</p>
+                  <p className="text-xs text-gray-400 mb-2 line-clamp-1">{formatJobLocation(job.location, { countrySlug: job.country, countryName: job.countryName, lang })}</p>
                   <div className="flex items-center gap-2 text-xs mb-2"><span className="font-bold text-sky-600">{formatSalary(job, lang)}</span></div>
                   <div className="mb-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sn}</span></div>
                   {job.description && <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description.slice(0, 200)}</p>}

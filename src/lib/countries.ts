@@ -1,5 +1,5 @@
 // NOSSY Global Region Configuration - Seek and you shall find.
-// 5 major regions: Europa, Asia, EUA, Oceania, America do Norte
+// 5 major regions: Europa, Asia, United States (eua), Oceania, North America
 
 export interface CountryCurrency {
   code: string;
@@ -72,7 +72,7 @@ export const REGIONS: RegionConfig[] = [
   },
   {
     code: 'eua',
-    name: 'EUA',
+    name: 'United States',
     flag: '🇺🇸',
     currency: { code: 'USD', symbol: '$', locale: 'en-US' },
     hreflang: ['en-us', 'es-us'],
@@ -120,7 +120,7 @@ export const REGIONS: RegionConfig[] = [
   },
   {
     code: 'america-do-norte',
-    name: 'America do Norte',
+    name: 'North America',
     flag: '\uD83C\uDDE8\uD83C\uDDE6',
     currency: { code: 'CAD', symbol: 'C$', locale: 'en-CA' },
     hreflang: ['en-canada', 'fr-canada'],

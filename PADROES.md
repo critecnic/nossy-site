@@ -162,6 +162,29 @@ sistema Premium a um anúncio/vaga específica, basta citar este número
   com permissões completas → aí a criação do webhook em
   /api/webhook-0220 e a captura do secret ficam 100% automatizadas.
 
+
+### Máscara server-side (reforço 16/09/2026 — vazamento corrigido)
+
+- Antes: a máscara "***" era só visual (React); as APIs devolviam a vaga
+  COMPLETA (DevTools revelava empresa/e-mail/telefone) e as meta tags
+  publicavam o nome da empresa para o Google. Além disso, clicar em
+  "Desbloquear" revelava tudo antes do pagamento.
+- Agora: `src/lib/paywall-mask.ts` aplica a máscara NO SERVIDOR:
+  * `job-detail` (por-usuário): bloqueado sem cookie válido
+    (`nossy_premium`/`wv_unlock_{id}`, HMAC timingSafeEqual); cache
+    `private, no-store` em vagas com paywall.
+  * `country`/`latest` (listas públicas): máscara sempre — respostas
+    idênticas para todos, cache CDN seguro.
+  * `layout.tsx` (title/meta/OG): "Confidential" para vagas bloqueadas.
+  * Clicar em "Desbloquear" só abre o painel e-mail → 6 dígitos →
+    pagamento; o conteúdo real aparece SOMENTE após o verify da API
+    Paddle (cookie emitido + re-busca dos dados).
+- Nomes COMPLETOS: `src/lib/location-names.ts` expande siglas de estados
+  ("Austin, TX" -> "Austin, Texas"), traduz país do local
+  ("Krakow, Poland" -> "Cracóvia, Polônia"), normaliza regiões
+  ("EUA"/"America do Norte") e REGION_NAMES/TYPE_LABELS sem abreviações
+  (ru em cirílico, acentos fr/pl/nl/vi/tr).
+
 ### Itens manuais remanescentes (não automatizáveis)
 
 Confirmados por sondagem na API em 16/09/2026 (spec oficial tem 70

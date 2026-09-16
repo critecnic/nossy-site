@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { needsServerTranslation, translateJobListFields } from "@/lib/translate-server";
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
+import { maskJobAlways } from "@/lib/paywall-mask";
 import { promises as fsp } from "fs";
 import path from "path";
 
@@ -137,6 +138,11 @@ export async function GET(req: NextRequest) {
 
     const totalPagesCount = Math.max(1, Math.ceil(total / limit));
 
+    // Premium 0220: listas são respostas PÚBLICAS (cache CDN) — a máscara
+    // é aplicada SEMPRE às vagas com paywall, para todos os visitantes.
+    // O conteúdo real só é servido na rota de detalhe, por cookie válido.
+    const masked = jobs.map((j: any) => maskJobAlways(j));
+
     if (!Array.isArray(jobs) || jobs.length === 0) {
       return NextResponse.json({ jobs: [], total, page: 1, totalPages: totalPagesCount }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
@@ -144,15 +150,15 @@ export async function GET(req: NextRequest) {
     }
 
     if (!needsServerTranslation(lang)) {
-      return NextResponse.json({ jobs, total, page, totalPages: totalPagesCount }, {
+      return NextResponse.json({ jobs: masked, total, page, totalPages: totalPagesCount }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
     console.log(`[NOSSY API] Country ${file} page ${page} sector=${sectorFilter || 'all'}: ${jobs.length}/${total} jobs lang=${lang}`);
-    const { map: translatedMap, ok: translateOk } = await translateJobListFields(jobs, lang);
+    const { map: translatedMap, ok: translateOk } = await translateJobListFields(masked, lang);
 
-    const translated = jobs.map((job: any) => {
+    const translated = masked.map((job: any) => {
       const t = translatedMap.get(job.id);
       return t
         ? { ...job, title: t.title, company: t.company, location: t.location, ...(t.description ? { description: t.description } : {}) }
