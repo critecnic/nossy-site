@@ -52,3 +52,9 @@ prompt
 server.log
 # Skills directory
 /skills/src/.next/
+
+# sitemaps gerados no build (scripts/gen-sitemaps.mjs)
+/public/sitemap.xml
+/public/sitemap-*.xml
+# índices id->chunk gerados no build (scripts/gen-idmaps.mjs)
+/data/site/*_idmap.json

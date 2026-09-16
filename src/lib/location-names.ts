@@ -230,3 +230,108 @@ export function formatJobLocation(
 
   return raw;
 }
+
+/**
+ * Localização + PAÍS COMPLETO, sempre visível (requisito SEO do dono:
+ * país por extenso no <h1> e no texto da vaga — abreviação só na URL).
+ * Ex.: "Austin, Texas" + united-states -> "Austin, Texas, Estados Unidos".
+ * Se a localização já contém o país (ex.: "Remoto - Estados Unidos",
+ * "Krakow, Polônia"), não duplica. Vagas "Remote - Worldwide" mantêm o
+ * rótulo global (não faz sentido anexar um país).
+ */
+export function formatJobLocationWithCountry(
+  location: string | undefined | null,
+  opts: { countrySlug?: string; countryName?: string; lang?: string }
+): string {
+  const base = formatJobLocation(location, opts);
+  if (!base) return base;
+  const lang = opts.lang || 'en';
+  const slug = (opts.countrySlug || '').toLowerCase();
+
+  // Remoto global/mundial: não anexa país específico
+  const asciiBase = base.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  if (/\bworldwide\b|\bglobal\b|\bmundial\b/.test(asciiBase)) return base;
+
+  // País completo no idioma da página
+  let countryFull = COUNTRY_NAMES[lang]?.[slug] || opts.countryName || '';
+  if (!countryFull) return base;
+
+  // Já presente? (ex.: "Remoto - Estados Unidos", "Berlin, Alemanha")
+  const asciiCountry = countryFull.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  if (asciiBase.includes(asciiCountry)) return base;
+
+  // Sigla presente no lugar do nome completo? ("Remote - USA") -> o
+  // formatJobLocation já teria expandido; se restou sigla solta, troca.
+  const abbrevEntries: Record<string, string> = { usa: 'united-states', us: 'united-states', uk: 'united-kingdom' };
+  for (const [abbr, abbrSlug] of Object.entries(abbrevEntries)) {
+    if (abbrSlug === slug && new RegExp(`(^|[,\\-\\s])${abbr}($|[,\\s])`, 'i').test(base)) {
+      return base.replace(new RegExp(`\\b${abbr}\\b`, 'i'), countryFull);
+    }
+  }
+
+  return `${base}, ${countryFull}`;
+}
+
+/**
+ * Expande abreviações de LOCAL em texto livre (descrição da vaga), no
+ * idioma da página. Conservador: só tokens isolados e maiúsculos —
+ * nunca palavras comuns minúsculas ("us" pronome, "de" artigo).
+ * Ex.: "Office in Austin, TX, USA" -> "Office in Austin, Texas, United States".
+ */
+export function expandLocationNames(
+  text: string | undefined | null,
+  opts: { countrySlug?: string; countryName?: string; lang?: string }
+): string {
+  // Defesa: tradutores automáticos podem devolver location/description
+  // não-string (objeto, número). Normaliza ou descarta.
+  const raw = text == null ? '' : (typeof text === 'string' ? text : String(text));
+  if (!raw) return raw;
+  const lang = opts.lang || 'en';
+  const slug = (opts.countrySlug || '').toLowerCase();
+
+  let out = raw;
+
+  // 1) Sufixo ", SIGLA" de estado/província após vírgula ("Austin, TX").
+  //    Só nos países com tabela conhecida (EUA/Canadá).
+  const states = slug === 'united-states' ? usStatesFor(lang) : slug === 'canada' ? caProvincesFor(lang) : null;
+  if (states) {
+    out = out.replace(/,\s*([A-Z]{2})(?=[,.;)\s]|$)/g, (m, ab: string) => {
+      const full = states[ab];
+      return full ? `, ${full}` : m;
+    });
+  }
+
+  // 2) Siglas de PAÍS isoladas (\b, maiúsculas exatas) -> nome completo.
+  //    (?:...) = não-capturante: o callback do replace recebe
+  //    (match, offset, string) — com grupo de captura os argumentos
+  //    deslocam e o code quebra (bug "s.slice is not a function").
+  const countryAbbrs: Array<[RegExp, string]> = [
+    [/(?:\bU\.S\.A\.|\bUSA\b|\bU\.S\.|\bUS\b)(?=[\s,.;:)\]]|$)/g, 'united-states'],
+    [/(?:\bU\.K\.|\bUK\b)(?=[\s,.;:)\]]|$)/g, 'united-kingdom'],
+  ];
+  for (const [re, abbrSlug] of countryAbbrs) {
+    const full = COUNTRY_NAMES[lang]?.[abbrSlug];
+    if (!full) continue;
+    // por-ocorrência: o replace passa (match, offset, string) — não
+    // expande se o nome completo já está colado (evita duplicar)
+    out = out.replace(re, (m: string, offset: number, s: string) => {
+      const before = s.slice(Math.max(0, offset - full.length - 2), offset);
+      const after = s.slice(offset + m.length, offset + m.length + full.length + 2);
+      if (before.includes(full) || after.includes(full)) return m;
+      return full;
+    });
+  }
+
+  // 3) Sufixo ", {País em inglês}" no idioma da página ("Krakow, Poland" em pt).
+  if (lang !== 'en') {
+    out = out.replace(/,\s*([A-Z][a-zA-Z.]+(?:\s[A-Z][a-zA-Z.]+)*)(?=[,.;)\s]|$)/g, (m, tail: string) => {
+      const asciiTail = tail.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const tailSlug = COUNTRY_ABBREV_SLUG[asciiTail] || COUNTRY_SLUG_BY_EN_NAME[asciiTail] || null;
+      if (!tailSlug) return m;
+      const translated = COUNTRY_NAMES[lang]?.[tailSlug];
+      return translated ? `, ${translated}` : m;
+    });
+  }
+
+  return out;
+}

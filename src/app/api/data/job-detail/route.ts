@@ -4,9 +4,8 @@ import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { shouldHavePaywall } from "@/lib/shared";
 import { maskJobIfLocked } from "@/lib/paywall-mask";
-import { DATA_DIR } from "@/lib/data-dir";
-import { promises as fsp } from "fs";
-import path from "path";
+import { findJobFastAsync } from "@/lib/job-lookup";
+import { expandLocationNames } from "@/lib/location-names";
 
 
 const apiRateLimits: Record<string, number[]> = {};
@@ -19,40 +18,10 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
-function safeFilePath(file: string): string | null {
-  if (!/^[a-z0-9][a-z0-9\-_]*\.json$/.test(file)) return null;
-  const resolved = path.resolve(DATA_DIR, file);
-  if (!resolved.startsWith(DATA_DIR + path.sep) && resolved !== DATA_DIR) return null;
-  return resolved;
-}
-
 async function findJob(baseName: string, jobId: string): Promise<any | null> {
-  // Try direct file first
-  const directPath = safeFilePath(`${baseName}.json`);
-  if (directPath) {
-    try {
-      const raw = await fsp.readFile(directPath, 'utf-8');
-      const jobs = JSON.parse(raw);
-      return jobs.find((j: any) => String(j.id) === String(jobId)) || null;
-    } catch {}
-  }
-
-  // Try split index + chunks
-  const indexPath = path.join(DATA_DIR, `${baseName}_index.json`);
-  try {
-    const idxRaw = await fsp.readFile(indexPath, 'utf-8');
-    const idx = JSON.parse(idxRaw);
-    for (const chunkFile of idx.chunks) {
-      const chunkPath = safeFilePath(chunkFile);
-      if (!chunkPath) continue;
-      const chunkRaw = await fsp.readFile(chunkPath, 'utf-8');
-      const chunkJobs = JSON.parse(chunkRaw);
-      const job = chunkJobs.find((j: any) => String(j.id) === String(jobId));
-      if (job) return job;
-    }
-  } catch {}
-
-  return null;
+  // Busca rápida: índice id->chunk gerado no build + cache em memória
+  // (sem isso, países fatiados como os EUA exigiam até 19 leituras JSON)
+  return findJobFastAsync<any>(baseName, jobId);
 }
 
 export async function GET(req: NextRequest) {
@@ -93,7 +62,22 @@ export async function GET(req: NextRequest) {
 
     // Portuguese - retorna sem traduzir
     if (!needsServerTranslation(lang)) {
-      const safe = maskJobIfLocked(job, (n) => req.cookies.get(n)?.value);
+      // Nomes COMPLETOS no texto da vaga (requisito do dono): expande
+      // abreviações de estado/país na descrição e na localização
+      const expanded = {
+        ...job,
+        description: expandLocationNames(job.description, {
+          countrySlug: job.country,
+          countryName: job.countryName,
+          lang,
+        }),
+        location: expandLocationNames(job.location, {
+          countrySlug: job.country,
+          countryName: job.countryName,
+          lang,
+        }),
+      };
+      const safe = maskJobIfLocked(expanded, (n) => req.cookies.get(n)?.value);
       return new NextResponse(JSON.stringify(safe), {
         headers: { "Content-Type": "application/json", "Cache-Control": cacheForJob(paywalled) },
       });
@@ -106,9 +90,17 @@ export async function GET(req: NextRequest) {
     const result = {
       ...job,
       title: translated.title,
-      description: translated.description,
+      description: expandLocationNames(translated.description, {
+        countrySlug: job.country,
+        countryName: job.countryName,
+        lang,
+      }),
       company: translated.company,
-      location: translated.location,
+      location: expandLocationNames(translated.location, {
+        countrySlug: job.country,
+        countryName: job.countryName,
+        lang,
+      }),
     };
 
     // Máscara DEPOIS da tradução (o campo company traduzido não pode vazar)

@@ -10,7 +10,8 @@
     "db:generate": "echo 'skip'",
     "db:migrate": "echo 'skip'",
     "db:reset": "echo 'skip'",
-    "lint": "echo 'skip'"
+    "lint": "echo 'skip'",
+    "prebuild": "node scripts/gen-idmaps.mjs && node scripts/gen-sitemaps.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -7,4 +7,5 @@ Disallow: /admin
 Disallow: /api/admin
 Disallow: /api/agent
 
+# Sitemap INDEX (vagas divididas por pais: sitemap-usa.xml, sitemap-germany.xml...)
 Sitemap: https://nossy.pro/sitemap.xml

@@ -4,11 +4,14 @@ import { REGIONS } from "@/lib/countries";
 import { getRegionName, shouldHavePaywall } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
 import { safeJsonLd } from "@/lib/jsonld";
+import { findJobFast } from "@/lib/job-lookup";
+import {
+  formatJobLocationWithCountry,
+  expandLocationNames,
+} from "@/lib/location-names";
 import type { Lang } from "@/lib/i18n";
 import countriesData from "@/data/countries.json";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
-import { DATA_DIR } from "@/lib/data-dir";
+import { US_STATES_EN, CA_PROVINCES_EN } from "@/lib/location-names";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -19,40 +22,10 @@ interface Job {
   paywall: boolean; contactEmail: string;
 }
 
+// A busca da vaga usa o índice id->chunk gerado no build (gen-idmaps.mjs):
+// em vez de varrer até 19 chunks sequencialmente, lê 1 mapa + 1 chunk.
 function findJob(region: string, country: string, jobId: string): Job | null {
-  const dataDir = DATA_DIR;
-  const baseName = `${region}_${country}`;
-
-  // Try direct file first (small countries)
-  const directPath = join(dataDir, `${baseName}.json`);
-  if (existsSync(directPath)) {
-    try {
-      const raw = readFileSync(directPath, "utf-8");
-      const jobs: Job[] = JSON.parse(raw);
-      return jobs.find(j => String(j.id) === String(jobId)) || null;
-    } catch { /* continue to chunked */ }
-  }
-
-  // Try split index + chunks (large countries like USA)
-  const indexPath = join(dataDir, `${baseName}_index.json`);
-  if (existsSync(indexPath)) {
-    try {
-      const idxRaw = readFileSync(indexPath, "utf-8");
-      const idx = JSON.parse(idxRaw);
-      for (const chunkFile of (idx.chunks || [])) {
-        const chunkPath = join(dataDir, chunkFile);
-        if (!existsSync(chunkPath)) continue;
-        try {
-          const chunkRaw = readFileSync(chunkPath, "utf-8");
-          const chunkJobs: Job[] = JSON.parse(chunkRaw);
-          const job = chunkJobs.find(j => String(j.id) === String(jobId));
-          if (job) return job;
-        } catch { /* continue */ }
-      }
-    } catch { /* ignore */ }
-  }
-
-  return null;
+  return findJobFast<Job>(`${region}_${country}`, jobId);
 }
 
 const JOB_META_DESC: Record<string, (title: string, company: string, location: string, type: string, salary: string) => string> = {
@@ -106,7 +79,13 @@ export async function generateMetadata({
   const jobLocked = job ? shouldHavePaywall(job).paywall : false;
   const metaCompany = job && jobLocked ? "Confidential" : (job?.company || "");
 
-  const title = job ? `${job.title} - ${metaCompany} | NOSSY` : `${countryNameTranslated} Jobs | NOSSY`;
+  // Requisito SEO do dono: o nome COMPLETO do país entra no <title>
+  // (abreviação só na URL — ex. /eua/united-states — nunca no título).
+  // Formato clássico de job boards: "Vaga - Empresa - País | NOSSY"
+  // (sem preposição — gramática correta nos 22 idiomas).
+  const title = job
+    ? `${job.title} - ${metaCompany} - ${countryNameTranslated} | NOSSY`
+    : `${countryNameTranslated} Jobs | NOSSY`;
 
   const descFn = JOB_META_DESC[lang] || JOB_META_DESC["en"];
   const fallbackFn = FALLBACK_JOB_DESC[lang] || FALLBACK_JOB_DESC["en"];
@@ -143,29 +122,85 @@ export async function generateMetadata({
 }
 
 function JobPostingSchema({ job, url }: { job: Job; url: string }) {
+  const paywalled = shouldHavePaywall(job).paywall;
+  const countryFull = job.countryName || job.country;
+
+  // Endereço estruturado com nomes COMPLETos (cidade / estado / país).
+  // "Austin, TX" -> locality "Austin", region "Texas"; "Krakow, Poland"
+  // -> locality "Krakow", country "Poland"; "USA" (sem cidade) -> só país.
+  const locRaw = (job.location || "").trim();
+  const remoteJob = (job.type || "").toLowerCase() === "remote" || (job.type || "").toLowerCase() === "remoto";
+  const worldMatch = locRaw.match(/^(remote|remoto|remota)\s*[-–]\s*(worldwide|global|mundial)$/i);
+  let address: Record<string, unknown>;
+  if (worldMatch) {
+    // Remoto mundial: sem endereço físico — apenas requisito de país aberto
+    address = { "@type": "PostalAddress", addressCountry: countryFull };
+  } else {
+    const cityState = locRaw.match(/^(.*?),\s*([A-Z]{2})$/);
+    const cityCountry = locRaw.match(/^(.*?),\s*([^,]+)$/);
+    if (cityState && job.country === "united-states" && US_STATES_EN[cityState[2]]) {
+      address = {
+        "@type": "PostalAddress",
+        addressLocality: cityState[1].trim(),
+        addressRegion: US_STATES_EN[cityState[2]],
+        addressCountry: countryFull,
+      };
+    } else if (cityState && job.country === "canada" && CA_PROVINCES_EN[cityState[2]]) {
+      address = {
+        "@type": "PostalAddress",
+        addressLocality: cityState[1].trim(),
+        addressRegion: CA_PROVINCES_EN[cityState[2]],
+        addressCountry: countryFull,
+      };
+    } else if (cityCountry && cityCountry[2] && cityCountry[2].length > 3) {
+      address = {
+        "@type": "PostalAddress",
+        addressLocality: cityCountry[1].trim(),
+        addressCountry: countryFull,
+      };
+    } else {
+      address = {
+        "@type": "PostalAddress",
+        addressLocality: locRaw || undefined,
+        addressCountry: countryFull,
+      };
+    }
+  }
+
+  // Descrição com abreviações expandidas ("Austin, TX, USA" ->
+  // "Austin, Texas, United States") e limpa para o Google Jobs.
+  const rawDesc = job.description || `Tech job: ${job.title}${paywalled ? "" : ` at ${job.company}`}`;
+  const desc = expandLocationNames(rawDesc, {
+    countrySlug: job.country,
+    countryName: job.countryName,
+  });
+
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title,
-    description: job.description || `Tech job: ${job.title}${shouldHavePaywall(job).paywall ? "" : ` at ${job.company}`}`,
+    description: desc,
     identifier: { "@type": "PropertyValue", name: "NOSSY", value: String(job.id) },
     datePosted: job.posted,
+    // Google recomenda validThrough — janela rolante de 90 dias a partir
+    // de HOJE (se calculasse de job.posted, vagas antigas ficariam com
+    // validThrough no passado e o Google as descartaria do índice).
+    validThrough: new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10),
     url,
+    directApply: true,
     hiringOrganization: {
       "@type": "Organization",
-      name: shouldHavePaywall(job).paywall ? "Confidential" : job.company,
-      sameAs: !shouldHavePaywall(job).paywall ? (job.companyUrl || undefined) : undefined,
+      name: paywalled ? "Confidential" : job.company,
+      sameAs: !paywalled ? (job.companyUrl || undefined) : undefined,
     },
-    jobLocation: {
-      "@type": "Place",
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: job.location,
-        addressCountry: job.country,
-      },
-    },
+    jobLocation: remoteJob
+      ? undefined
+      : { "@type": "Place", address },
+    jobLocationType: remoteJob ? "TELECOMMUTE" : undefined,
     employmentType: { "Remote": "FULL_TIME", "Contract": "CONTRACTOR", "Part-time": "PART_TIME", "Internship": "INTERN" }[job.type] || "FULL_TIME",
-    applicantLocationRequirements: { "@type": "Country", name: job.countryName || job.country },
+    applicantLocationRequirements: remoteJob
+      ? { "@type": "Country", name: countryFull }
+      : undefined,
   };
 
   if (job.salaryMin || job.salaryMax) {
@@ -185,7 +220,13 @@ function JobPostingSchema({ job, url }: { job: Job; url: string }) {
     (schema as Record<string, unknown>).industry = job.sector;
   }
 
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }} />;
+  // Remove chaves com valor undefined para JSON limpo
+  const cleaned = JSON.parse(safeJsonLd(schema)) as Record<string, unknown>;
+  for (const k of Object.keys(cleaned)) {
+    if (cleaned[k] === undefined) delete cleaned[k];
+  }
+
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(cleaned) }} />;
 }
 
 export default async function JobDetailLayout({

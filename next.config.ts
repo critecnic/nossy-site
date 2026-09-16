@@ -87,6 +87,14 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=86400, s-maxage=86400" },
         ],
       },
+      // Sitemaps estáticos gerados no build (index + sitemap-{pais}.xml):
+      // servidos pela CDN com cache longo — revalidação diária.
+      {
+        source: "/sitemap-:file(.*)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800" },
+        ],
+      },
     ];
   },
 };

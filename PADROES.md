@@ -269,3 +269,64 @@ commit (ou em commit imediatamente posterior).
 - Suíte: scripts/test-premium-0220.mjs (11 PASS) + scripts/test-paywall-final.mjs
   (8 PASS) — vazamento estático 404, máscara por-usuário, cookie premium HMAC,
   listas públicas mascaradas, HTML sem empresa real.
+
+---
+
+## SEO + Performance 16/09/2026 — JSON-LD, sitemaps por país, <2s (aditivo ao Premium 0220)
+
+Requisito do dono: fortalecer SEO (Google Jobs) SEM alterar o padrão
+Premium 0220 (paywall de 10% das remotas + lista forçada + máscara
+server-side permanecem intocados — a suíte 11/11 + 8/8 segue passando).
+
+### JSON-LD JobPosting (página de cada vaga)
+- Script `application/ld+json` tipo `JobPosting` embutido no HTML da página
+  da vaga (src/app/[lang]/[slug]/[region]/[country]/[id]/layout.tsx).
+- Campos Google Jobs: title, description, identifier, datePosted,
+  validThrough (janela ROLANTE de 90 dias a partir de hoje — calcular a
+  partir de job.posted deixaria vagas antigas "expiradas" no índice),
+  directApply, hiringOrganization (empresa real; "Confidential" no paywall
+  0220), jobLocation com endereço completo (cidade + estado por extenso +
+  país completo), jobLocationType "TELECOMMUTE" + applicantLocationRequirements
+  para vagas remotas, baseSalary quando há faixa.
+- A empresa NUNCA aparece no JSON-LD de vaga bloqueada (máscara incondicional).
+
+### Nome COMPLETO do país (abreviação só na URL)
+- <title>: formato "Vaga - Empresa - País | NOSSY" (sem preposição —
+  gramática correta nos 22 idiomas); paywall usa "Confidential - País".
+- <h1>: título + sublinha com localização e país completos
+  (formatJobLocationWithCountry: "Austin, Texas, Estados Unidos").
+- Texto da vaga: API job-detail aplica expandLocationNames() na descrição e
+  localização ("USA" -> "United States"/"Estados Unidos", ", TX" -> ", Texas",
+  "Remote - US East" -> nome completo). Conservador: só tokens maiúsculos
+  isolados (nunca "us"/"de" minúsculos); regex de país SEM grupo de captura
+  (grupo de captura desloca (match, offset, string) do callback do replace —
+  bug "s.slice is not a function" corrigido).
+
+### Sitemaps (index divide as vagas por PAÍS)
+- public/sitemap.xml = SITEMAP INDEX estático (gerado no build), com 83
+  filhos: 61 sitemap-{pais}.xml (sitemap-usa.xml, sitemap-germany.xml,
+  sitemap-uk.xml, sitemap-canada.xml... 61.401 URLs de vagas) + 22
+  sitemap-{idioma}.xml (páginas: home, 5 regiões, 61 países, 3 guias).
+- Geradores (npm "prebuild", roda automaticamente antes do next build):
+  scripts/gen-sitemaps.mjs + scripts/gen-idmaps.mjs. Saídas em public/ e
+  data/site/*_idmap.json são GERADAS (gitignore).
+- Sitemaps estáticos = CDN sem custo de runtime, cache 1 dia + SWR 7 dias
+  (next.config headers). Vagas listadas na URL canônica EN; demais idiomas
+  via hreflang das páginas.
+- A rota DINÂMICA antiga sitemap-[lang].xml (e sitemap-index.xml/sitemap.ts)
+  foi REMOVIDA: nunca funcionou em produção (404 verificado no nossy.pro
+  antigo) e conflitava com os arquivos estáticos.
+
+### Performance < 2s
+- Busca de vaga individual: índice {id -> chunk} (data/site/{base}_idmap.json)
+  + cache em memória (src/lib/job-lookup.ts). Antes: até 19 leituras JSON
+  sequenciais por request nos EUA. Agora: 1 mapa + 1 chunk; quente ~3-5ms.
+- job-detail API reusa findJobFastAsync; layouts (SSR) usam findJobFast sync.
+- validThrough/JSON-LD gerados server-side sem custo de rede.
+
+### Testes (todos verdes no build final)
+- scripts/test-premium-0220.mjs: 11/11 PASS (padrão 0220 intacto, Paddle
+  sandbox com preço ativo US$ 7 validado por chave real).
+- scripts/test-paywall-final.mjs: 8/8 PASS (máscara server-side, /data/ 404).
+- Suíte de requisitos 19/19 PASS (JSON-LD, title/h1 país completo, sitemaps,
+  TTFB < 2s, paywall).

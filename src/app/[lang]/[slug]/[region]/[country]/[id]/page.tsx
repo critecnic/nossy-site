@@ -6,7 +6,7 @@ import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall, getCompanyCareerUrl, getPaywallText } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
-import { formatJobLocation } from "@/lib/location-names";
+import { formatJobLocation, formatJobLocationWithCountry } from "@/lib/location-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
@@ -162,6 +162,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const careerUrl = job ? getCompanyCareerUrl(job) : '';
   const jobUrlPath = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs") + "/" + rc + "/" + cc + "/" + jobId;
   const locationFull = job ? formatJobLocation(job.location, { countrySlug: job.country, countryName: job.countryName, lang }) : '';
+  // Requisito SEO do dono: país SEMPRE por extenso no h1 e no texto —
+  // "Austin, Texas, Estados Unidos" (abreviação fica só na URL)
+  const locationWithCountry = job ? formatJobLocationWithCountry(job.location, { countrySlug: job.country, countryName: job.countryName, lang }) : '';
 
   if (loading) {
     return (
@@ -248,7 +251,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               {pw.paywall && <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-bold border border-amber-200">{pwText.premium}</span>}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">{job.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4">
+              {job.title}
+              {locationWithCountry && (
+                <span className="block mt-2 text-base sm:text-lg font-semibold text-gray-600">{locationWithCountry}</span>
+              )}
+            </h1>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center gap-2">
@@ -264,7 +272,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span className="text-sm text-gray-600">{locationFull}</span>
+                <span className="text-sm text-gray-600">{locationWithCountry || locationFull}</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
