@@ -31,6 +31,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [codeSent, setCodeSent] = useState(false);
+  const [skipNote, setSkipNote] = useState('');
 
   const T = i18n[lang] || i18n['en'];
   const EN = i18n['en'];
@@ -65,6 +66,16 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, jobId, jobUrl }),
       });
+      // Graceful degradation (Premium 0220): if the email provider is not
+      // configured, skip the code step and go straight to payment — Paddle
+      // collects and validates the buyer email itself. The 6-digit flow
+      // comes back automatically once an email key is configured.
+      if (res.status === 503) {
+        setSkipNote(t('emailSkipNote'));
+        setStep('pay');
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setStep('code');
@@ -205,7 +216,12 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
             <p className="text-xs text-gray-400">{t('magicLinkNote')}</p>
           </div>
         )}
-        {step === 'pay' && payButton}
+        {step === 'pay' && (
+          <>
+            {skipNote && <p className="text-xs text-amber-600">{skipNote}</p>}
+            {payButton}
+          </>
+        )}
         {step === 'checkout' && (
           <div className="text-center text-sm text-gray-500">{t('processing')}</div>
         )}
@@ -277,6 +293,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
             </div>
             <h3 className="text-lg font-bold text-gray-900">{t('unlockContact')}</h3>
             <p className="text-sm text-gray-500 mt-1">{t('payToUnlock')}</p>
+            {skipNote && <p className="text-xs text-amber-600 mt-2">{skipNote}</p>}
             {email && (
               <p className="text-xs text-gray-400 mt-2">
                 {(t('connectedAs') || 'Signed in as')} <span className="font-medium text-gray-600">{email}</span>
