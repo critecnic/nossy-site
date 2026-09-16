@@ -13,6 +13,46 @@ interface PaddlePaymentProps {
   compact?: boolean;
 }
 
+declare global {
+  interface Window {
+    Paddle?: any;
+  }
+}
+
+// ─── Paddle.js (overlay checkout) ──────────────────────────────────────
+// Paddle Billing checkouts open as an overlay ON our own site. The API
+// returns a checkout URL composed of the account's default payment link
+// plus ?_ptxn=<txn id>; opening the overlay with the transaction id via
+// Paddle.js is the documented way to collect payment (no page reload).
+const PADDLE_ENV = (process.env.NEXT_PUBLIC_PADDLE_ENV || 'sandbox').toLowerCase();
+const PADDLE_CLIENT_TOKEN = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '';
+
+let paddleReady: Promise<any> | null = null;
+
+function loadPaddle(): Promise<any> {
+  if (paddleReady) return paddleReady;
+  paddleReady = new Promise((resolve, reject) => {
+    if (window.Paddle) return resolve(window.Paddle);
+    const s = document.createElement('script');
+    s.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
+    s.async = true;
+    s.onload = () => (window.Paddle ? resolve(window.Paddle) : reject(new Error('Paddle.js loaded but window.Paddle missing')));
+    s.onerror = () => reject(new Error('Failed to load Paddle.js'));
+    document.head.appendChild(s);
+  });
+  return paddleReady;
+}
+
+function initPaddle(): Promise<any> {
+  return loadPaddle().then(Paddle => {
+    if (Paddle.__nossyInitialized) return Paddle;
+    if (PADDLE_ENV === 'sandbox') Paddle.Environment.set('sandbox');
+    Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
+    Paddle.__nossyInitialized = true;
+    return Paddle;
+  });
+}
+
 /**
  * Payment flow (matches the NOSSY premium diagram):
  *
@@ -142,7 +182,27 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         // Remember the buyer email so the job page can verify the
         // payment with the Paddle API right after the redirect.
         try { sessionStorage.setItem('nossy_checkout_email', email); } catch { /* ignore */ }
+
+        const successUrl = (jobUrl || ('/' + lang + '/jobs')) + ((jobUrl || '').includes('?') ? '&' : '?') + 'payment=success';
+
+        // Preferred: overlay checkout via Paddle.js (documented flow for
+        // server-side created transactions). Fallback: navigate to the
+        // checkout URL returned by the API.
+        if (data.transactionId && PADDLE_CLIENT_TOKEN) {
+          try {
+            const Paddle = await initPaddle();
+            Paddle.on('checkout.completed', () => {
+              window.location.href = successUrl;
+            });
+            await Paddle.Checkout.open({ transactionId: data.transactionId });
+            setStep('checkout');
+            return; // overlay handles the rest — keep spinner
+          } catch (e) {
+            // fall through to redirect fallback
+          }
+        }
         window.location.href = data.url;
+        return;
       } else {
         setError(data.error || t('paymentError'));
         setLoading(false);

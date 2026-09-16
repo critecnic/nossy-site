@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const timeout = setTimeout(() => controller.abort(), 8000);
 
     try {
-      const { checkoutUrl } = await createPaddleCheckout(
+      const { checkoutUrl, transactionId } = await createPaddleCheckout(
         String(email),
         jobIdNum,
         jobTitleSafe,
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       );
       clearTimeout(timeout);
 
-      if (checkoutUrl) return NextResponse.json({ url: checkoutUrl });
+      if (checkoutUrl) return NextResponse.json({ url: checkoutUrl, transactionId });
       return NextResponse.json({ error: 'Checkout error' }, { status: 400 });
     } catch (err: any) {
       clearTimeout(timeout);
