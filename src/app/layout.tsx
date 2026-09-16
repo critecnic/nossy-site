@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { TOTAL_JOBS } from "@/lib/countries";
 import { safeJsonLd } from "@/lib/jsonld";
 import { Analytics } from "@vercel/analytics/react";
+import PaddleAutoOpen from "@/components/PaddleAutoOpen";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={geistSans.variable + " antialiased bg-gray-50 text-gray-900"}>
         {children}
+        <PaddleAutoOpen />
         <Analytics />
       </body>
     </html>

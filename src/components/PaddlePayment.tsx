@@ -146,26 +146,40 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
       });
       const data = await res.json();
       if (data.url) {
-        const successUrl = (jobUrl || ('/' + lang + '/jobs')) + ((jobUrl || '').includes('?') ? '&' : '?') + 'payment=success';
+        const basePage = jobUrl || ('/' + lang + '/jobs');
+        const join = basePage.includes('?') ? '&' : '?';
+        const successUrl = basePage + join + 'payment=success';
 
         // Preferred: overlay checkout via Paddle.js (documented flow for
-        // server-side created transactions). Fallback: navigate to the
-        // checkout URL returned by the API.
+        // server-side created transactions). The card window opens ON THIS
+        // page — no redirect at all.
         if (data.transactionId && PADDLE_CLIENT_TOKEN) {
           try {
             const Paddle = await initPaddle();
             Paddle.on('checkout.completed', () => {
               window.location.href = successUrl;
             });
+            Paddle.on('checkout.closed', () => {
+              // Buyer closed the overlay without paying -> back to pay step
+              setStep('pay');
+              setLoading(false);
+            });
             await Paddle.Checkout.open({ transactionId: data.transactionId });
             setStep('checkout');
-            return; // overlay handles the rest — keep spinner
+            return; // overlay handles the rest
           } catch (e) {
-            // fall through to redirect fallback
+            // Overlay failed: land on the SAME page with ?_ptxn — the
+            // global PaddleAutoOpen script re-opens the checkout there.
+            window.location.href = basePage + join + '_ptxn=' + data.transactionId;
+            return;
           }
         }
-        window.location.href = data.url;
-        return;
+
+        // No client-side token configured: NEVER redirect to the default
+        // payment link (that lands on the homepage doing nothing — the bug
+        // reported by the owner). Show a clear message instead.
+        setError(t('paymentSetupNote') || t('paymentError'));
+        setLoading(false);
       } else {
         setError(data.error || t('paymentError'));
         setLoading(false);
