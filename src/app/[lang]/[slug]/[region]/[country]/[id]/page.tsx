@@ -86,7 +86,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   }, [rc, cc, jobId, langCode, dataVersion]);
 
   // After a Paddle payment redirect (?payment=success), verify the payment
-  // against the Paddle API and unlock the contact info (user -> Premium).
+  // and unlock the contact info (user -> Premium). Primary path: the Paddle
+  // webhook already issued the signed unlock cookie -> /api/payment/status
+  // confirms it (polled a few times while the webhook lands). Legacy path:
+  // an email stored from an older checkout flow is re-validated via API.
   // After a magic-link login (?auth=success), open the payment panel.
   useEffect(() => {
     if (!jobId) return;
@@ -94,40 +97,45 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
       const params = new URLSearchParams(window.location.search);
       if (params.get('payment') === 'success') {
         setVerifying(true);
-        const verify = (email: string) => {
-          fetch('/api/payment/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, jobId: Number(jobId) }),
-          })
-            .then(r => r.json())
+        const finish = (ok: boolean) => {
+          setVerifying(false);
+          if (ok) {
+            setUnlocked(true);
+            setVerifyFailed(false);
+            // Cookie emitido -> recarrega a vaga para receber os dados
+            // reais (antes mascarados pelo servidor)
+            setDataVersion(v => v + 1);
+          } else {
+            setVerifyFailed(true);
+          }
+        };
+        // Poll the unlock cookie status while the webhook lands (up to ~12s)
+        const checkStatus = (tries: number) => {
+          fetch('/api/payment/status?jobId=' + encodeURIComponent(jobId))
+            .then(r => (r.ok ? r.json() : { unlocked: false }))
             .then(d => {
-              if (d.unlocked) {
-                setUnlocked(true);
-                setVerifyFailed(false);
-                // Cookie emitido -> recarrega a vaga para receber os dados
-                // reais (antes mascarados pelo servidor)
-                setDataVersion(v => v + 1);
-              } else {
-                setVerifyFailed(true);
-              }
+              if (d.unlocked) finish(true);
+              else if (tries > 0) setTimeout(() => checkStatus(tries - 1), 2500);
+              else finish(false);
             })
-            .catch(() => { setVerifyFailed(true); })
-            .finally(() => setVerifying(false));
+            .catch(() => {
+              if (tries > 0) setTimeout(() => checkStatus(tries - 1), 2500);
+              else finish(false);
+            });
         };
         const stored = sessionStorage.getItem('nossy_checkout_email') || '';
         if (stored) {
-          verify(stored);
+          // Legacy flow (email captured in an older checkout version)
+          fetch('/api/payment/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: stored, jobId: Number(jobId) }),
+          })
+            .then(r => r.json())
+            .then(d => { if (d.unlocked) finish(true); else checkStatus(4); })
+            .catch(() => checkStatus(4));
         } else {
-          // Cross-device fallback: authenticated via magic link on this
-          // device -> verify with the session email instead.
-          fetch('/api/auth/session')
-            .then(r => (r.ok ? r.json() : { authenticated: false }))
-            .then(d => {
-              if (d.authenticated && d.email) verify(d.email);
-              else { setVerifying(false); setVerifyFailed(true); }
-            })
-            .catch(() => { setVerifying(false); setVerifyFailed(true); });
+          checkStatus(4);
         }
         // Clean the query string so refresh does not re-verify
         window.history.replaceState({}, '', window.location.pathname);

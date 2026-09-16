@@ -3,12 +3,18 @@ import { createPaddleCheckout, hasPaddleKey } from '@/lib/paddle';
 
 const checkoutAttempts: Record<string, number[]> = {};
 
-function isCheckoutRateLimited(email: string): boolean {
+function clientKey(req: Request): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim();
+  return req.headers.get('x-real-ip') || 'anon';
+}
+
+function isCheckoutRateLimited(key: string): boolean {
   const now = Date.now();
-  if (!checkoutAttempts[email]) checkoutAttempts[email] = [];
-  checkoutAttempts[email] = checkoutAttempts[email].filter(t => now - t < 300000); // 5 min window
-  if (checkoutAttempts[email].length >= 5) return true;
-  checkoutAttempts[email].push(now);
+  if (!checkoutAttempts[key]) checkoutAttempts[key] = [];
+  checkoutAttempts[key] = checkoutAttempts[key].filter(t => now - t < 300000); // 5 min window
+  if (checkoutAttempts[key].length >= 5) return true;
+  checkoutAttempts[key].push(now);
   return false;
 }
 
@@ -21,16 +27,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
     }
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
-    }
+    // Email is OPTIONAL (owner decision: verification is on-screen numbers,
+    // no email collected). When absent, Paddle collects the buyer email on
+    // the checkout overlay itself (guest checkout).
+    const hasValidEmail = typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const jobIdNum = Number(jobId);
     if (!Number.isInteger(jobIdNum) || jobIdNum <= 0 || jobIdNum > 1e9) {
       return NextResponse.json({ error: 'Invalid job' }, { status: 400 });
     }
 
-    if (isCheckoutRateLimited(String(email))) {
+    if (isCheckoutRateLimited(clientKey(request))) {
       return NextResponse.json({ error: 'Too many checkout attempts. Try again later.' }, { status: 429 });
     }
 
@@ -45,7 +52,7 @@ export async function POST(request: Request) {
 
     try {
       const { checkoutUrl, transactionId } = await createPaddleCheckout(
-        String(email),
+        hasValidEmail ? String(email).toLowerCase().trim() : null,
         jobIdNum,
         jobTitleSafe,
         langCode,

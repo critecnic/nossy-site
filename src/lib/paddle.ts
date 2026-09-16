@@ -49,11 +49,15 @@ function paddleHeaders(): Record<string, string> {
 
 /**
  * Creates a Paddle Billing checkout transaction for a $7 job unlock.
- * Uses `customer: { email }` (Billing style) so a customer is created or
- * matched automatically. Returns the hosted checkout URL + transaction id.
+ * Email is optional (owner decision: no email collected on the site).
+ * - With email: uses `customer: { email }` (Billing style) so a customer
+ *   is created or matched automatically.
+ * - Without email (guest checkout): the Paddle checkout overlay collects
+ *   the buyer email before payment.
+ * Returns the hosted checkout URL + transaction id.
  */
 export async function createPaddleCheckout(
-  email: string,
+  email: string | null,
   jobId: number,
   jobTitle: string,
   lang: string,
@@ -78,7 +82,7 @@ export async function createPaddleCheckout(
     signal,
     body: JSON.stringify({
       items: [{ price_id: PADDLE_PRICE_ID, quantity: 1 }],
-      customer: { email },
+      ...(email ? { customer: { email } } : {}),
       custom_data: { jobId: String(jobId), jobTitle, lang },
       checkout: {
         // Pass our domain explicitly per-transaction (Paddle Billing docs:
