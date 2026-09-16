@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fsp } from "fs";
 import path from "path";
 import { checkAdminAuth, getSelfBaseUrl } from "@/lib/security";
-
-const DATA_DIR = path.join(process.cwd(), "public", "data");
+import { DATA_DIR } from "@/lib/data-dir";
 
 // ═══════════════════════════════════════════════════════════════════════
 // NOSSY AGENT — Comunicação direta para diagnóstico e reparo em tempo real

@@ -8,6 +8,7 @@ import type { Lang } from "@/lib/i18n";
 import countriesData from "@/data/countries.json";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
+import { DATA_DIR } from "@/lib/data-dir";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -19,7 +20,7 @@ interface Job {
 }
 
 function findJob(region: string, country: string, jobId: string): Job | null {
-  const dataDir = join(process.cwd(), "public", "data");
+  const dataDir = DATA_DIR;
   const baseName = `${region}_${country}`;
 
   // Try direct file first (small countries)

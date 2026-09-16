@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fsp } from "fs";
 import path from "path";
 import { checkAdminAuth } from "@/lib/security";
-
-const DATA_DIR = path.join(process.cwd(), "public", "data");
+import { DATA_DIR } from "@/lib/data-dir";
 
 export async function POST(req: NextRequest) {
   const authResult = checkAdminAuth(req);

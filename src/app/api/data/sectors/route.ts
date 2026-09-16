@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { DATA_DIR } from "@/lib/data-dir";
 import { promises as fsp } from "fs";
 import path from "path";
-
-const DATA_DIR = path.join(process.cwd(), "public", "data");
 
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {

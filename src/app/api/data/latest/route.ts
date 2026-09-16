@@ -3,6 +3,7 @@ import { needsServerTranslation, translateJobListFields } from "@/lib/translate-
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { maskJobAlways } from "@/lib/paywall-mask";
+import { DATA_DIR } from "@/lib/data-dir";
 import { promises as fsp } from "fs";
 import path from "path";
 
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
   const timer = setTimeout(() => controller.abort(), API_TIMEOUT);
 
   try {
-    const filePath = path.join(process.cwd(), "public", "data", "latest_20.json");
+    const filePath = path.join(DATA_DIR, "latest_20.json");
     const raw = await fsp.readFile(filePath, "utf-8");
     const jobs = JSON.parse(raw);
 
@@ -68,11 +69,15 @@ export async function GET(req: NextRequest) {
   } catch (err: any) {
     clearTimeout(timer);
     console.error('[NOSSY API] Latest error:', err.message);
-    // On timeout/error, return raw data without translation rather than failing
+    // On timeout/error, return masked data without translation rather than failing
     try {
-      const filePath = path.join(process.cwd(), "public", "data", "latest_20.json");
+      const filePath = path.join(DATA_DIR, "latest_20.json");
       const raw = await fsp.readFile(filePath, "utf-8");
-      return new NextResponse(raw, {
+      const jobs = JSON.parse(raw);
+      // Premium 0220: NUNCA devolver o arquivo bruto — a máscara server-side
+      // é obrigatória mesmo no fallback de erro (vazamento corrigido).
+      const masked = jobs.map((j: any) => maskJobAlways(j));
+      return new NextResponse(JSON.stringify(masked), {
         headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     } catch {

@@ -233,3 +233,39 @@ git push origin main --tags
 
 Após criar a tag, atualizar a tabela "Índice de padrões" acima no mesmo
 commit (ou em commit imediatamente posterior).
+
+### Dados PRIVADOS fora de public/ (reforço 16/09/2026 — vazamento estático corrigido)
+
+- VAZAMENTO: os JSONs brutos ficavam em `public/data/` e eram servidos
+  estaticamente (`https://nossy.pro/data/asia_china.json`) — qualquer visitante
+  baixava empresa REAL das vagas com paywall, burlando a máscara das APIs.
+- AGORA: os arquivos vivem em `data/site/` (fora de public/, nunca publicados
+  como estático). Somente rotas de API os leem (src/lib/data-dir.ts) e aplicam
+  a máscara antes de responder.
+- `next.config.ts`:
+  * `outputFileTracingIncludes` empacota `data/site/**` no deploy serverless
+    (senão as APIs devolveriam 404 na Vercel);
+  * rewrite `beforeFiles: /data/:path* -> /api/data-blocked` bloqueia qualquer
+    acesso estático residual (rota dedicada responde 404).
+- Rotas atualizadas para o diretório privado: job-detail, country, latest
+  (inclusive o fallback de erro, que antes devolvia o arquivo BRUTO — vazamento
+  corrigido), sectors, [file] (latest_20.json agora sempre mascarado),
+  admin/health, admin/repair, agent, e o layout de meta tags da vaga.
+- Campo `paywall` REALINHADO à regra do padrão (scripts/realign_paywall_field.py):
+  o pipeline antigo marcava 1.979 vagas (9% remoto + salário + hash); a regra
+  Premium 0220 (10% das remotas id%10==0 + lista forçada) resulta em 478.
+  O campo não é lido em runtime, mas a marca errada confundia auditorias.
+- Nomes completos ampliados (src/lib/location-names.ts): províncias do Canadá
+  ("Toronto, ON" -> "Toronto, Ontário" pt/es/en), sufixos de país por sigla
+  ("Austin, USA" -> "Austin, Estados Unidos", "London, UK" -> "London, Reino
+  Unido"), "Remote - US/USA/UK" -> nome completo, "Remote - Worldwide" ->
+  "Remoto - Mundial", busca reversa nome->slug e região "remoto-global"
+  adicionada a REGION_NAMES nos 22 idiomas (com "Ásia" acentuada).
+- Desbloqueio pós-pagamento mais resiliente: ao voltar do Paddle
+  (?payment=success) a página mostra "Confirmando seu pagamento..." e, se a
+  confirmação automática falhar (outro dispositivo/sessão perdida), o
+  comprador digita o e-mail usado na compra para revalidar (i18n en/pt-br/
+  pt-pt/es; demais idiomas caem no fallback EN).
+- Suíte: scripts/test-premium-0220.mjs (11 PASS) + scripts/test-paywall-final.mjs
+  (8 PASS) — vazamento estático 404, máscara por-usuário, cookie premium HMAC,
+  listas públicas mascaradas, HTML sem empresa real.

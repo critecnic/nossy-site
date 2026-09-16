@@ -30,6 +30,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   const [dataError, setDataError] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+  // Premium 0220 — estados da confirmação pós-pagamento: a API da Paddle
+  // confirma a compra e o desbloqueio é automático. Se a confirmação
+  // automática falha (outro dispositivo, sessão perdida), o próprio
+  // comprador digita o e-mail usado na compra para revalidar.
+  const [verifying, setVerifying] = useState(false);
+  const [verifyFailed, setVerifyFailed] = useState(false);
+  const [manualEmail, setManualEmail] = useState('');
+  const [manualMsg, setManualMsg] = useState('');
   // Recarrega os dados quando o desbloqueio acontece (a máscara é aplicada
   // no SERVIDOR: sem cookie válido a API devolve "***" — após o pagamento,
   // o cookie é emitido e a busca é refeita para trazer os dados reais).
@@ -85,6 +93,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
     try {
       const params = new URLSearchParams(window.location.search);
       if (params.get('payment') === 'success') {
+        setVerifying(true);
         const verify = (email: string) => {
           fetch('/api/payment/verify', {
             method: 'POST',
@@ -95,12 +104,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
             .then(d => {
               if (d.unlocked) {
                 setUnlocked(true);
+                setVerifyFailed(false);
                 // Cookie emitido -> recarrega a vaga para receber os dados
                 // reais (antes mascarados pelo servidor)
                 setDataVersion(v => v + 1);
+              } else {
+                setVerifyFailed(true);
               }
             })
-            .catch(() => { /* stay locked; user can retry */ });
+            .catch(() => { setVerifyFailed(true); })
+            .finally(() => setVerifying(false));
         };
         const stored = sessionStorage.getItem('nossy_checkout_email') || '';
         if (stored) {
@@ -110,8 +123,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
           // device -> verify with the session email instead.
           fetch('/api/auth/session')
             .then(r => (r.ok ? r.json() : { authenticated: false }))
-            .then(d => { if (d.authenticated && d.email) verify(d.email); })
-            .catch(() => { /* ignore */ });
+            .then(d => {
+              if (d.authenticated && d.email) verify(d.email);
+              else { setVerifying(false); setVerifyFailed(true); }
+            })
+            .catch(() => { setVerifying(false); setVerifyFailed(true); });
         }
         // Clean the query string so refresh does not re-verify
         window.history.replaceState({}, '', window.location.pathname);
@@ -279,6 +295,60 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
             {showPayment && pw.paywall && !unlocked && (
               <div className="mb-6">
                 <PaddlePayment jobId={job.id} jobTitle={job.title} lang={lang} jobUrl={jobUrlPath} />
+              </div>
+            )}
+
+            {/* Premium 0220 — confirmação automática do desbloqueio após o
+                retorno do Paddle. Enquanto confirma, nada é revelado; se a
+                confirmação falha, o comprador revalida com o e-mail da compra. */}
+            {verifying && (
+              <div className="mb-6 p-4 rounded-xl bg-sky-50 border border-sky-200 flex items-center gap-3">
+                <div className="animate-spin w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full" />
+                <span className="text-sm text-sky-800 font-medium">{T.verifyingPayment || 'Confirming your payment...'}</span>
+              </div>
+            )}
+            {verifyFailed && !unlocked && (
+              <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                <p className="text-sm text-amber-800 mb-3">{T.verifyNeedEmail || 'We could not confirm your payment automatically. Enter the email used at checkout:'}</p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    value={manualEmail}
+                    onChange={(e) => setManualEmail(e.target.value)}
+                    placeholder="email@example.com"
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                  <button
+                    onClick={() => {
+                      setManualMsg('');
+                      if (!manualEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(manualEmail)) return;
+                      setVerifying(true);
+                      setVerifyFailed(false);
+                      fetch('/api/payment/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: manualEmail, jobId: Number(jobId) }),
+                      })
+                        .then(r => r.json())
+                        .then(d => {
+                          if (d.unlocked) {
+                            setUnlocked(true);
+                            setDataVersion(v => v + 1);
+                          } else {
+                            setVerifyFailed(true);
+                            setManualMsg(T.invalidEmail || 'Invalid email');
+                          }
+                        })
+                        .catch(() => { setVerifyFailed(true); })
+                        .finally(() => setVerifying(false));
+                    }}
+                    disabled={verifying || !manualEmail}
+                    className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 transition-all"
+                  >
+                    {T.verifyRetry || 'Verify payment'}
+                  </button>
+                </div>
+                {manualMsg && <p className="text-xs text-red-500 mt-2">{manualMsg}</p>}
               </div>
             )}
 

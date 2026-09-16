@@ -3,10 +3,10 @@ import { needsServerTranslation, translateJobListFields } from "@/lib/translate-
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { maskJobAlways } from "@/lib/paywall-mask";
+import { DATA_DIR } from "@/lib/data-dir";
 import { promises as fsp } from "fs";
 import path from "path";
 
-const DATA_DIR = path.join(process.cwd(), "public", "data");
 const CHUNK_SIZE = 1000;
 const API_TIMEOUT = 8000; // 8s max for the whole request
 

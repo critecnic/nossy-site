@@ -8,8 +8,25 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // Premium 0220 — os dados reais vivem em data/site/ (privado). Estas
+  // rotas leem os arquivos em runtime, então o deploy precisa EMPACOTÁ-LOS
+  // (serverless): sem isso a Vercel não incluiria a pasta e as APIs
+  // devolveriam 404 em produção.
+  outputFileTracingIncludes: {
+    "/api/data/**": ["./data/site/**"],
+    "/api/admin/**": ["./data/site/**"],
+    "/[lang]/[slug]/[region]/[country]/[id]": ["./data/site/**"],
+    "/[lang]/[slug]/[region]/[country]/sectors/[sectorSlug]": ["./data/site/**"],
+  },
   async rewrites() {
-    return [
+    return {
+      // beforeFiles roda ANTES do sistema de arquivos: qualquer request a
+      // /data/* (JSON bruto legado) é bloqueado e recebe 404 de
+      // /api/data-blocked. Cinto E suspensório contra vazamento estático.
+      beforeFiles: [
+        { source: "/data/:path*", destination: "/api/data-blocked" },
+      ],
+      afterFiles: [
       // Premium 0220 — alias gerido via API para o webhook da Paddle.
       // A Paddle recusa criar um segundo webhook com o MESMO destino
       // (notification_setting_cannot_be_duplicate), e o webhook criado
@@ -20,7 +37,8 @@ const nextConfig: NextConfig = {
       // e sincronizado à Vercel pelo workflow sync-vercel-env.yml. O rewrite
       // preserva body e headers, então a validação HMAC é idêntica.
       { source: "/api/webhook-0220", destination: "/api/webhook" },
-    ];
+      ],
+    };
   },
   async headers() {
     return [
@@ -55,12 +73,6 @@ const nextConfig: NextConfig = {
         source: "/logo.png",
         headers: [
           { key: "Cache-Control", value: "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800" },
-        ],
-      },
-      {
-        source: "/data/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400" },
         ],
       },
       {

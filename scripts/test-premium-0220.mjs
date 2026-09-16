@@ -52,7 +52,7 @@ if (coRes.status === 200 && coBody.url) {
 }
 
 // ── 3. Dados: paywall em ~10% das vagas remotas ───────────────────────
-const dir = 'public/data';
+const dir = 'data/site';
 let remote = 0, locked = 0;
 for (const f of readdirSync(dir)) {
   if (!f.endsWith('.json') || f === 'countries.json' || f === 'latest_20.json') continue;

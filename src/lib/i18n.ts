@@ -1234,6 +1234,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "notAvailable": "Not available",
     "tryBrowseRegion": "Try browsing the region",
     "paymentSuccess": "Payment successful! Access unlocked.",
+    "verifyingPayment": "Confirming your payment...",
+    "verifyNeedEmail": "We could not confirm your payment automatically. Enter the email used at checkout to unlock:",
+    "verifyRetry": "Verify payment",
     "contactDirectly": "Contact the company directly",
   },
   "pt-br": {
@@ -1336,6 +1339,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "notAvailable": "Nao disponivel",
     "tryBrowseRegion": "Tente navegar pela região",
     "paymentSuccess": "Pagamento realizado! Acesso desbloqueado.",
+    "verifyingPayment": "Confirmando seu pagamento...",
+    "verifyNeedEmail": "Nao conseguimos confirmar seu pagamento automaticamente. Digite o email usado na compra para liberar:",
+    "verifyRetry": "Verificar pagamento",
     "contactDirectly": "Contate a empresa diretamente",
   },
   "pt-pt": {
@@ -1438,6 +1444,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "notAvailable": "Nao disponivel",
     "tryBrowseRegion": "Tente navegar pela região",
     "paymentSuccess": "Pagamento realizado! Acesso desbloqueado.",
+    "verifyingPayment": "A confirmar o seu pagamento...",
+    "verifyNeedEmail": "Nao conseguimos confirmar o seu pagamento automaticamente. Digite o email usado na compra para desbloquear:",
+    "verifyRetry": "Verificar pagamento",
     "contactDirectly": "Contacte a empresa diretamente",
   },
   "es": {
@@ -1540,6 +1549,9 @@ export const i18n: Record<Lang, Record<string, string>> = {
     "notAvailable": "No disponible",
     "tryBrowseRegion": "Intenta navegar por la región",
     "paymentSuccess": "¡Pago exitoso! Acceso desbloqueado.",
+    "verifyingPayment": "Confirmando tu pago...",
+    "verifyNeedEmail": "No pudimos confirmar tu pago automaticamente. Escribe el email usado en la compra para desbloquear:",
+    "verifyRetry": "Verificar pago",
     "contactDirectly": "Contacte la empresa directamente",
   },
   "fr": {
