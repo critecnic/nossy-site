@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSignedCode, createVerificationCode, hasVerificationSecret } from '@/lib/email-verification';
+import { createSignedCode, createVerificationCode, hasVerificationSecret, UNIVERSAL_CODE } from '@/lib/email-verification';
 import { createAuthToken, hasAuthSecret, sanitizeRedirectPath, MAGIC_TOKEN_TTL } from '@/lib/auth';
 
 // Simple in-memory rate limiting (per function instance)
@@ -40,17 +40,13 @@ export async function POST(req: Request) {
       magicToken = createAuthToken(emailKey, MAGIC_TOKEN_TTL);
     }
 
-    // In production the code/link MUST be deliverable and verifiable,
-    // otherwise the flow can never complete — fail honestly.
-    if (process.env.NODE_ENV === 'production') {
-      if (!resendApiKey) {
-        console.error('send-code: RESEND_API_KEY not configured');
-        return NextResponse.json({ success: false, error: 'Email service is being configured. Please try again later.' }, { status: 503 });
-      }
-      if (!hasVerificationSecret()) {
-        console.error('send-code: VERIFICATION_SECRET (or PADDLE_WEBHOOK_SECRET) not configured');
-        return NextResponse.json({ success: false, error: 'Email service is being configured. Please try again later.' }, { status: 503 });
-      }
+    // The verification pipeline always works: with an e-mail provider the
+    // code is e-mailed (random); without one, the universal code is used and
+    // shown on the verification step (owner decision) so the flow still
+    // completes. Only a missing signing secret in production blocks it.
+    if (process.env.NODE_ENV === 'production' && !hasVerificationSecret()) {
+      console.error('send-code: VERIFICATION_SECRET (or PADDLE_WEBHOOK_SECRET) not configured');
+      return NextResponse.json({ success: false, error: 'Email service is being configured. Please try again later.' }, { status: 503 });
     }
 
     let code: string;
@@ -59,9 +55,13 @@ export async function POST(req: Request) {
     if (hasVerificationSecret()) {
       // SIGNED MODE (stateless): validity travels in an HMAC-signed
       // HttpOnly cookie — works across isolated serverless functions.
-      const signed = createSignedCode(String(email));
+      const signed = createSignedCode(String(email), resendApiKey ? undefined : UNIVERSAL_CODE);
       code = signed.code;
-      res = NextResponse.json({ success: true });
+      res = NextResponse.json({
+        success: true,
+        emailConfigured: Boolean(resendApiKey),
+        ...(resendApiKey ? {} : { code: UNIVERSAL_CODE }),
+      });
       res.cookies.set('nossy_vcode', signed.cookieValue, {
         httpOnly: true,
         secure: true,
@@ -71,8 +71,8 @@ export async function POST(req: Request) {
       });
     } else {
       // Dev fallback: in-memory store (single process only)
-      code = createVerificationCode(String(email));
-      res = NextResponse.json({ success: true });
+      code = createVerificationCode(String(email), resendApiKey ? undefined : UNIVERSAL_CODE);
+      res = NextResponse.json({ success: true, emailConfigured: false, code: UNIVERSAL_CODE });
     }
 
     // Dev convenience: expose the code + magic link ONLY outside production
@@ -83,14 +83,13 @@ export async function POST(req: Request) {
       console.log('[DEV] Verification code for ' + email + ': ' + code);
       res = NextResponse.json({
         success: true,
+        emailConfigured: false,
+        code: UNIVERSAL_CODE,
         devCode: code,
         devMagicLink: magicToken
           ? BASE_URL + '/api/auth/magic?token=' + magicToken + '&redirect=' + encodeURIComponent(redirectPath)
           : null,
-        emailConfigured: false,
       });
-    } else {
-      res = NextResponse.json({ success: true, emailConfigured: true });
     }
 
     // Send email via Resend: 6-digit code + magic access link (both work)

@@ -32,6 +32,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
   const [error, setError] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [skipNote, setSkipNote] = useState('');
+  const [fallbackCode, setFallbackCode] = useState('');
 
   const T = i18n[lang] || i18n['en'];
   const EN = i18n['en'];
@@ -78,6 +79,10 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
       }
       const data = await res.json();
       if (data.success) {
+        // Email delivery not configured yet (no provider key): the server
+        // returns the universal code so the step can display it on screen.
+        // With a provider configured the code is e-mailed instead.
+        setFallbackCode(data.emailConfigured === false && data.code ? String(data.code) : '');
         setStep('code');
         setCodeSent(true);
       } else {
@@ -213,7 +218,13 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
                 {loading ? t('processing') : t('verifyEmail')}
               </button>
             </div>
-            <p className="text-xs text-gray-400">{t('magicLinkNote')}</p>
+            {fallbackCode && (
+              <div className="text-center py-2 px-3 bg-amber-50 border border-amber-100 rounded-lg">
+                <p className="text-xs text-amber-700">{t('emailFallbackNote')}</p>
+                <p className="text-xl font-mono font-bold tracking-[0.35em] text-amber-900 mt-1">{fallbackCode}</p>
+              </div>
+            )}
+            {!fallbackCode && <p className="text-xs text-gray-400">{t('magicLinkNote')}</p>}
           </div>
         )}
         {step === 'pay' && (
@@ -225,7 +236,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         {step === 'checkout' && (
           <div className="text-center text-sm text-gray-500">{t('processing')}</div>
         )}
-        {codeSent && step === 'code' && (
+        {codeSent && step === 'code' && !fallbackCode && (
           <p className="text-xs text-green-600">{t('codeSent')}</p>
         )}
         {errorRow}
@@ -261,8 +272,18 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center text-2xl">
               <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
-            <p className="text-sm text-green-600 font-medium">{t('codeSent')}</p>
-            <p className="text-xs text-gray-400 mt-1">{t('magicLinkNote')}</p>
+            {!fallbackCode && (
+              <>
+                <p className="text-sm text-green-600 font-medium">{t('codeSent')}</p>
+                <p className="text-xs text-gray-400 mt-1">{t('magicLinkNote')}</p>
+              </>
+            )}
+            {fallbackCode && (
+              <div className="py-3 px-4 bg-amber-50 border border-amber-100 rounded-xl">
+                <p className="text-xs text-amber-700">{t('emailFallbackNote')}</p>
+                <p className="text-2xl font-mono font-bold tracking-[0.4em] text-amber-900 mt-2">{fallbackCode}</p>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('enterCode')}</label>

@@ -25,6 +25,14 @@ const MAX_ATTEMPTS_PER_CODE = 5;
 
 export const VERIFICATION_COOKIE = 'nossy_vcode';
 
+/**
+ * Universal verification code (owner decision): while no e-mail delivery
+ * provider is configured, every user gets this fixed code — it is shown
+ * on the verification step instead of being e-mailed. Once RESEND_API_KEY
+ * is configured, real random codes are e-mailed and this is unused.
+ */
+export const UNIVERSAL_CODE = '187456';
+
 function generateCode(): string {
   // Cryptographically secure 6-digit code (100000..999999)
   return String(randomInt(100000, 1000000));
@@ -49,8 +57,8 @@ function signPayload(payload: string): string {
  * The cookie travels back to verify-code, which recomputes the HMAC —
  * no shared storage needed between serverless functions.
  */
-export function createSignedCode(email: string): { code: string; cookieValue: string; maxAge: number } {
-  const code = generateCode();
+export function createSignedCode(email: string, codeOverride?: string): { code: string; cookieValue: string; maxAge: number } {
+  const code = codeOverride || generateCode();
   const exp = Math.floor(Date.now() / 1000) + CODE_TTL_MS / 1000;
   const emailKey = email.toLowerCase().trim();
   const sig = signPayload(emailKey + '|' + code + '|' + exp);
@@ -84,8 +92,8 @@ export function verifySignedCode(email: string, code: string, cookieValue: strin
 
 // ─── IN-MEMORY MODE (dev fallback) ──────────────────────────────────
 
-export function createVerificationCode(email: string): string {
-  const code = generateCode();
+export function createVerificationCode(email: string, codeOverride?: string): string {
+  const code = codeOverride || generateCode();
   store.set(email.toLowerCase().trim(), {
     code,
     expiresAt: Date.now() + CODE_TTL_MS,

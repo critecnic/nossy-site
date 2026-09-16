@@ -81,6 +81,11 @@ export async function createPaddleCheckout(
       customer: { email },
       custom_data: { jobId: String(jobId), jobTitle, lang },
       checkout: {
+        // Pass our domain explicitly per-transaction (Paddle Billing docs:
+        // "You may pass a URL when creating an automatically-collected
+        // transaction") so checkout creation never depends on the
+        // account-level default payment link.
+        url: baseUrl,
         settings: {
           success_url: successUrl,
         },
@@ -94,7 +99,13 @@ export async function createPaddleCheckout(
   }
 
   const data = await res.json() as any;
-  const checkoutUrl = data?.data?.urls?.checkout?.url || '';
+  // Paddle Billing returns the hosted checkout URL at data.checkout.url
+  // (older payload shape had it under data.urls.checkout.url — kept as
+  // a fallback).
+  const checkoutUrl =
+    data?.data?.checkout?.url ||
+    data?.data?.urls?.checkout?.url ||
+    '';
   const transactionId = data?.data?.id || '';
   if (!checkoutUrl) {
     throw new Error('Paddle API did not return a checkout URL: ' + JSON.stringify(data).slice(0, 500));
