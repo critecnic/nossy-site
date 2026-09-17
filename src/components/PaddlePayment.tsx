@@ -101,7 +101,7 @@ async function verifyPaymentSilently(jobId: number, attempt = 0): Promise<boolea
  *     user status becomes "Premium" -> content unlocked.
  */
 export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess, compact = false }: PaddlePaymentProps) {
-  const [step, setStep] = useState<'code' | 'pay' | 'checkout'>('code');
+  const [step, setStep] = useState<'code' | 'pay' | 'checkout' | 'confirming'>('code');
   const [challenge, setChallenge] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -207,39 +207,43 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         if (data.transactionId && PADDLE_CLIENT_TOKEN) {
           try {
             const Paddle = await initPaddle();
+            // ─── Padrão 1874 (fluxo rápido de pagamento premium) ───
             // Paddle.js v2 has no Paddle.on() — subscribe via the shared
             // event registry (fed by the Initialize eventCallback).
+            // displaySuccess:false closes the overlay right after the card
+            // is authorized — no "we emailed you" screen. The server then
+            // confirms the payment with the Paddle API and unlocks IN PLACE.
             let paid = false;
             const offCompleted = addPaddleHandler(event => {
               if (event?.name !== 'checkout.completed') return;
               offCompleted();
               paid = true;
-              // Keep the Paddle receipt visible (owner liked it). The real
-              // unlock happens when the buyer closes the receipt (offClosed),
-              // with the success-redirect as the safety net if confirmation
-              // lags behind.
+              setStep('confirming'); // card approved -> instantly confirming
             });
             const offClosed = addPaddleHandler(event => {
               if (event?.name !== 'checkout.closed') return;
               offClosed();
-              setStep('pay');
-              setLoading(true);
-              // Confirm the payment server-side and unlock IN PLACE when the
-              // buyer closes the receipt (no redirect needed).
-              verifyPaymentSilently(jobId).then(ok => {
-                if (ok) {
-                  onSuccess?.();
-                  setLoading(false);
-                } else if (paid) {
-                  // Payment completed but confirmation lagged -> the page's
-                  // ?payment=success loop re-verifies with more retries.
-                  window.location.href = successUrl;
-                } else {
-                  setLoading(false); // buyer closed before paying
-                }
-              });
+              if (paid) {
+                setStep('confirming');
+                // Server confirms the REAL payment with the Paddle API and
+                // unlocks in place (Padrão 1874: fast, no email step).
+                verifyPaymentSilently(jobId).then(ok => {
+                  if (ok) {
+                    onSuccess?.(); // page reveals the data immediately
+                  } else {
+                    // Confirmation lagged -> page-level loop with more retries
+                    window.location.href = successUrl;
+                  }
+                });
+              } else {
+                setStep('pay'); // buyer closed before paying
+                setLoading(false);
+              }
             });
-            await Paddle.Checkout.open({ transactionId: data.transactionId });
+            await Paddle.Checkout.open({
+              transactionId: data.transactionId,
+              settings: { displaySuccess: false },
+            });
             setStep('checkout');
             return; // overlay handles the rest
           } catch (e) {
@@ -331,6 +335,12 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         {step === 'checkout' && (
           <div className="text-center text-sm text-gray-500">{t('processing')}</div>
         )}
+        {step === 'confirming' && (
+          <div className="text-center text-sm font-medium text-emerald-600 flex items-center justify-center gap-2">
+            <span className="animate-spin inline-block w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full" />
+            {t('paymentConfirmed')}
+          </div>
+        )}
         {errorRow}
       </div>
     );
@@ -382,6 +392,12 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         <div className="text-center py-6">
           <div className="animate-spin w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full mx-auto mb-3" />
           <p className="text-sm text-gray-500">{t('processing')}</p>
+        </div>
+      )}
+      {step === 'confirming' && (
+        <div className="text-center py-6">
+          <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-3" />
+          <p className="text-sm font-medium text-emerald-600">{t('paymentConfirmed')}</p>
         </div>
       )}
       <p className="text-center text-[11px] text-gray-400">{t('securePayment')}</p>
