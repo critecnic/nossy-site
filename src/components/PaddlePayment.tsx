@@ -210,15 +210,20 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
             // ─── Padrão 1874 (fluxo rápido de pagamento premium) ───
             // Paddle.js v2 has no Paddle.on() — subscribe via the shared
             // event registry (fed by the Initialize eventCallback).
-            // displaySuccess:false closes the overlay right after the card
-            // is authorized — no "we emailed you" screen. The server then
-            // confirms the payment with the Paddle API and unlocks IN PLACE.
+            // NOTE: settings (displaySuccess etc.) are NOT accepted when
+            // opening by transactionId (checkout-service returns 400) —
+            // so we auto-close the receipt ourselves right after approval.
             let paid = false;
             const offCompleted = addPaddleHandler(event => {
               if (event?.name !== 'checkout.completed') return;
               offCompleted();
               paid = true;
               setStep('confirming'); // card approved -> instantly confirming
+              // Close the Paddle receipt automatically (fast flow: no
+              // "we emailed you" screen) -> checkout.closed fires -> unlock.
+              setTimeout(() => {
+                try { window.Paddle?.Checkout?.close(); } catch { /* buyer can close manually */ }
+              }, 1500);
             });
             const offClosed = addPaddleHandler(event => {
               if (event?.name !== 'checkout.closed') return;
@@ -240,10 +245,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
                 setLoading(false);
               }
             });
-            await Paddle.Checkout.open({
-              transactionId: data.transactionId,
-              settings: { displaySuccess: false },
-            });
+            await Paddle.Checkout.open({ transactionId: data.transactionId });
             setStep('checkout');
             return; // overlay handles the rest
           } catch (e) {
