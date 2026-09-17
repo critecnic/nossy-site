@@ -213,6 +213,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
     } catch { /* ignore */ }
   }, [jobId]);
 
+  // Desbloqueio imediato usado pelo painel de pagamento (checkout.closed ->
+  // verificação server-side ok): revela os dados sem recarregar a página.
+  const unlockNow = () => {
+    setUnlocked(true);
+    setVerifyFailed(false);
+    setDataVersion(v => v + 1);
+  };
+
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
   const rName = getRegionName(lang, rc);
@@ -367,7 +375,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
 
             {showPayment && pw.paywall && !unlocked && (
               <div className="mb-6">
-                <PaddlePayment jobId={job.id} jobTitle={job.title} lang={lang} jobUrl={jobUrlPath} />
+                <PaddlePayment jobId={job.id} jobTitle={job.title} lang={lang} jobUrl={jobUrlPath} onSuccess={unlockNow} />
               </div>
             )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
+import { paddleEventCallback } from '@/lib/paddle-events';
 
 // ─── Paddle.js global auto-open ────────────────────────────────────────
 // Mounted once in the ROOT layout. Two jobs:
@@ -48,7 +49,10 @@ function initPaddleGlobal(): Promise<any> {
       }
       if (!Paddle.__nossyInitialized) {
         if (PADDLE_ENV === 'sandbox') Paddle.Environment.set('sandbox');
-        Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
+        // eventCallback is the ONLY way to receive checkout events in
+        // Paddle.js v2 (there is no Paddle.on) — payment completion, overlay
+        // closed, errors, etc. all flow through the shared registry.
+        Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN, eventCallback: paddleEventCallback });
         Paddle.__nossyInitialized = true;
       }
       resolve(Paddle);

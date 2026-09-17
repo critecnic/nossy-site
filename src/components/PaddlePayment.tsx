@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Lang } from '@/lib/i18n';
 import { i18n } from '@/lib/i18n';
+import { addPaddleHandler, paddleEventCallback } from '@/lib/paddle-events';
 
 interface PaddlePaymentProps {
   jobId: number;
@@ -47,10 +48,45 @@ function initPaddle(): Promise<any> {
   return loadPaddle().then(Paddle => {
     if (Paddle.__nossyInitialized) return Paddle;
     if (PADDLE_ENV === 'sandbox') Paddle.Environment.set('sandbox');
-    Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
+    // Paddle.js v2: events ONLY via eventCallback (no Paddle.on).
+    Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN, eventCallback: paddleEventCallback });
     Paddle.__nossyInitialized = true;
     return Paddle;
   });
+}
+
+/**
+ * Server-side confirmation of the REAL payment: the transaction id saved
+ * before the overlay opened is checked against the Paddle Billing API
+ * (status completed + same job). Only a REAL payment unlocks — the server
+ * issues the signed cookies. No email needed (guest checkout).
+ */
+async function verifyPaymentSilently(jobId: number, attempt = 0): Promise<boolean> {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('nossy_last_txn') || 'null');
+    if (!saved || !saved.txn || Number(saved.jobId) !== Number(jobId)) return false;
+    const res = await fetch('/api/payment/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ txn: saved.txn, jobId: Number(jobId) }),
+    });
+    const d = await res.json().catch(() => ({ unlocked: false }));
+    if (d.unlocked) {
+      try { sessionStorage.removeItem('nossy_last_txn'); } catch { /* ignore */ }
+      return true;
+    }
+    if (attempt < 2) {
+      await new Promise(r => setTimeout(r, 2500));
+      return verifyPaymentSilently(jobId, attempt + 1);
+    }
+    return false;
+  } catch {
+    if (attempt < 2) {
+      await new Promise(r => setTimeout(r, 2500));
+      return verifyPaymentSilently(jobId, attempt + 1);
+    }
+    return false;
+  }
 }
 
 /**
@@ -171,13 +207,37 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         if (data.transactionId && PADDLE_CLIENT_TOKEN) {
           try {
             const Paddle = await initPaddle();
-            Paddle.on('checkout.completed', () => {
-              window.location.href = successUrl;
+            // Paddle.js v2 has no Paddle.on() — subscribe via the shared
+            // event registry (fed by the Initialize eventCallback).
+            let paid = false;
+            const offCompleted = addPaddleHandler(event => {
+              if (event?.name !== 'checkout.completed') return;
+              offCompleted();
+              paid = true;
+              // Keep the Paddle receipt visible (owner liked it). The real
+              // unlock happens when the buyer closes the receipt (offClosed),
+              // with the success-redirect as the safety net if confirmation
+              // lags behind.
             });
-            Paddle.on('checkout.closed', () => {
-              // Buyer closed the overlay without paying -> back to pay step
+            const offClosed = addPaddleHandler(event => {
+              if (event?.name !== 'checkout.closed') return;
+              offClosed();
               setStep('pay');
-              setLoading(false);
+              setLoading(true);
+              // Confirm the payment server-side and unlock IN PLACE when the
+              // buyer closes the receipt (no redirect needed).
+              verifyPaymentSilently(jobId).then(ok => {
+                if (ok) {
+                  onSuccess?.();
+                  setLoading(false);
+                } else if (paid) {
+                  // Payment completed but confirmation lagged -> the page's
+                  // ?payment=success loop re-verifies with more retries.
+                  window.location.href = successUrl;
+                } else {
+                  setLoading(false); // buyer closed before paying
+                }
+              });
             });
             await Paddle.Checkout.open({ transactionId: data.transactionId });
             setStep('checkout');
