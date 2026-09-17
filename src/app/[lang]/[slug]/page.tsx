@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -28,14 +28,15 @@ const CATALOG = (countriesData as CountryInfo[]).filter((c) => c.slug !== "remot
 const REAL_COUNTRIES = CATALOG.length;
 
 export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
-  const [langCode, setLangCode] = useState("");
+  // SSR no idioma correto: use(params) resolve a Promise durante a
+  // renderização inicial — antes o lang só chegava após a hidratação e a
+  // página inteira nascia em inglês (falha de tradução reportada pelo dono).
+  const { lang: langCode } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [latest, setLatest] = useState<Job[]>([]);
   const [countries] = useState<CountryInfo[]>(CATALOG);
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
-
-  useEffect(() => { params.then(p => setLangCode(p.lang)); }, [params]);
 
   // Fetch latest jobs from API (with server-side translation)
   useEffect(() => {

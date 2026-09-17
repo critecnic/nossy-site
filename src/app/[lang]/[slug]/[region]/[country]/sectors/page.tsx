@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -37,11 +37,8 @@ const SECTOR_ORDER = [
 ];
 
 export default function SectorsPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
-  const [resolvedParams, setResolvedParams] = useState<{ lang: string; slug: string; region: string; country: string } | null>(null);
-  useEffect(() => { params.then(setResolvedParams); }, [params]);
-  const langCode = resolvedParams?.lang || '';
-  const rc = resolvedParams?.region || '';
-  const cc = resolvedParams?.country || '';
+  // SSR no idioma correto (use(params) resolve na renderização inicial)
+  const { lang: langCode, region: rc, country: cc } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
 
   const initialCountryName = countriesData.find((c: any) => c.slug === cc)?.name || '';

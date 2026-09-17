@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, use } from "react";
 import Link from "next/link";
 import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -61,12 +61,8 @@ interface Job {
 }
 
 export default function SectorJobsPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string; sectorSlug: string }> }) {
-  const [resolvedParams, setResolvedParams] = useState<{ lang: string; slug: string; region: string; country: string; sectorSlug: string } | null>(null);
-  useEffect(() => { params.then(setResolvedParams); }, [params]);
-  const langCode = resolvedParams?.lang || '';
-  const rc = resolvedParams?.region || '';
-  const cc = resolvedParams?.country || '';
-  const sectorSlugParam = resolvedParams?.sectorSlug || '';
+  // SSR no idioma correto (use(params) resolve na renderização inicial)
+  const { lang: langCode, region: rc, country: cc, sectorSlug: sectorSlugParam } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
 
   const initialCountryName = countriesData.find((c: any) => c.slug === cc)?.name || '';

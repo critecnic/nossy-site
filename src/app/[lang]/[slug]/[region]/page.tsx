@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -15,10 +15,8 @@ import continentsData from "@/data/continents.json";
 interface CountryInfo { name: string; namePt?: string; slug: string; region: string; continent: string; count: number; }
 
 export default function RegionPage({ params }: { params: Promise<{ lang: string; slug: string; region: string }> }) {
-  const [resolvedParams, setResolvedParams] = useState<{ lang: string; slug: string; region: string } | null>(null);
-  useEffect(() => { params.then(setResolvedParams); }, [params]);
-  const langCode = resolvedParams?.lang || '';
-  const rc = resolvedParams?.region || '';
+  // SSR no idioma correto (use(params) resolve na renderização inicial)
+  const { lang: langCode, region: rc } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   // Catálogo mundial: agrupa por CONTINENTE (países com região de dados
   // diferente — ex. Estados Unidos em "eua" — aparecem no continente certo)

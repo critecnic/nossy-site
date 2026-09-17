@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { COUNTRIES, REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
@@ -14,7 +14,9 @@ const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Remote", "Internship",
 
 export default function CompanyPostPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const router = useRouter();
-  const [resolved, setResolved] = useState<{ lang: Lang; slug: string } | null>(null);
+  // SSR no idioma correto: use(params) resolve a Promise na renderização
+  // inicial (antes a página nascia em inglês até a hidratação completar).
+  const resolved = use(params);
   const [step, setStep] = useState<"register" | "form" | "success">("register");
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,20 +37,17 @@ export default function CompanyPostPage({ params }: { params: Promise<{ lang: st
   const [salaryMax, setSalaryMax] = useState("");
   const [salaryCurrency, setSalaryCurrency] = useState("");
 
+  // Validação de slug continua no efeito (redirect após montagem)
   useEffect(() => {
-    params.then((p) => {
-      const langCode = p.lang as Lang;
-      const expectedSlug = LANG_SLUGS[langCode];
-      if (!expectedSlug || p.slug !== expectedSlug) {
-        router.replace(`/${langCode}/${expectedSlug}/company/post`);
-      } else {
-        setResolved({ lang: langCode, slug: p.slug });
-      }
-    });
-  }, [params, router]);
+    const langCode = resolved.lang as Lang;
+    const expectedSlug = LANG_SLUGS[langCode];
+    if (!expectedSlug || resolved.slug !== expectedSlug) {
+      router.replace(`/${langCode}/${expectedSlug}/company/post`);
+    }
+  }, [resolved, router]);
 
-  const lang = resolved?.lang || "en";
-  const slug = resolved?.slug || "";
+  const lang = resolved.lang || "en";
+  const slug = resolved.slug || "";
   const T = i18n[lang];
   const dir = LANGUAGES.find((l) => l.code === lang)?.dir || "ltr";
 

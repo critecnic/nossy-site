@@ -72,6 +72,15 @@ export async function generateMetadata({
   };
 }
 
+// Mesmo mapa do LangUpdater — replicado aqui para o script inline
+const HTML_LANG_MAP: Record<string, string> = {
+  'pt-br': 'pt-BR', 'pt-pt': 'pt-PT', 'zh': 'zh-CN', 'en': 'en',
+  'es': 'es-ES', 'fr': 'fr-FR', 'de': 'de-DE', 'it': 'it-IT',
+  'nl': 'nl-NL', 'pl': 'pl-PL', 'ru': 'ru-RU', 'ja': 'ja', 'ko': 'ko',
+  'hi': 'hi', 'bn': 'bn', 'ar': 'ar', 'tr': 'tr-TR', 'vi': 'vi',
+  'th': 'th', 'ur': 'ur', 'tl': 'tl', 'sw': 'sw',
+};
+
 export default async function LangSlugLayout({
   children,
   params,
@@ -80,5 +89,18 @@ export default async function LangSlugLayout({
   params: Promise<{ lang: string; slug: string }>;
 }) {
   const { lang } = await params;
-  return <><LangUpdater lang={lang} />{children}</>;
+  // Correção do idioma do <html> JÁ NO HTML SERVIDO: o layout raiz emite
+  // lang="en" e o LangUpdater só corrigia após a hidratação — crawlers e a
+  // primeira pintura viam inglês. O script inline roda no parse do HTML,
+  // antes da primeira pintura, sem custo de re-render.
+  const htmlLang = HTML_LANG_MAP[lang] || lang;
+  const htmlDir = lang === 'ar' || lang === 'ur' ? 'rtl' : 'ltr';
+  const setLangScript = `document.documentElement.lang=${JSON.stringify(htmlLang)};document.documentElement.dir=${JSON.stringify(htmlDir)};`;
+  return (
+    <>
+      <script dangerouslySetInnerHTML={{ __html: setLangScript }} />
+      <LangUpdater lang={lang} />
+      {children}
+    </>
+  );
 }

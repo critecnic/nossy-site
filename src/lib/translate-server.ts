@@ -83,8 +83,11 @@ async function googleGTX(text: string, targetLang: string): Promise<string | nul
 // ---- Provider 2: MyMemory API (free fallback) ----
 async function myMemoryTranslate(text: string, targetLang: string): Promise<string | null> {
   const gtLang = LANG_TO_GT[targetLang] || targetLang;
+  // MyMemory aceita ~500 bytes por consulta: fatias maiores são REJEITADAS
+  // (responseStatus != 200) e o trecho ficava sem tradução. O chamador
+  // (translateTextFree) é responsável por dividir textos longos.
   const url = 'https://api.mymemory.translated.net/get?q='
-    + encodeURIComponent(text.slice(0, 2000))
+    + encodeURIComponent(text)
     + '&langpair=pt|' + encodeURIComponent(gtLang);
 
   const ctrl = new AbortController();
@@ -127,22 +130,55 @@ function splitText(text: string, maxLen = 4000): string[] {
 }
 
 // ---- Translate single text with GTX → MyMemory fallback ----
+// MyMemory: limite de ~500 bytes/consulta — textos maiores são divididos
+// em sub-fatias de 400 chars para que o fallback cubra o texto inteiro
+// (antes só os 2000 primeiros chars eram enviados e o resto voltava SEM
+// tradução — descrição misturava idiomas, falha reportada pelo dono).
+const MYMEMORY_MAX = 400;
+
 async function translateTextFree(text: string, targetLang: string): Promise<string> {
   if (!text) return text;
   let result = await googleGTX(text, targetLang);
   if (result) return result;
+  if (text.length > MYMEMORY_MAX) {
+    const parts = splitText(text, MYMEMORY_MAX);
+    const out: string[] = [];
+    let allOk = true;
+    for (const part of parts) {
+      const r = await myMemoryTranslate(part, targetLang);
+      if (r) out.push(r); else { out.push(part); allOk = false; }
+    }
+    // tradução parcial (com trechos crus) é pior que nada: devolve o
+    // original inteiro para manter o texto num único idioma
+    if (allOk && out.length) return out.join(' ');
+    return text;
+  }
   result = await myMemoryTranslate(text, targetLang);
   if (result) return result;
   return text;
 }
 
 // ---- Translate long text with chunking ----
+// Se qualquer chunk falhar nos dois provedores, o texto inteiro volta no
+// idioma original — descrição MEIO traduzida (metade PT, metade EN) era
+// confundida com bug de tradução pelo dono.
 async function translateTextChunked(text: string, targetLang: string): Promise<string> {
   if (!text) return text;
   const chunks = splitText(text);
   if (chunks.length === 1) return translateTextFree(text, targetLang);
   const results: string[] = [];
-  for (const chunk of chunks) results.push(await translateTextFree(chunk, targetLang));
+  let anyFailed = false;
+  for (const chunk of chunks) {
+    let r = await translateTextFree(chunk, targetLang);
+    if (r === chunk) {
+      // 1 retry: GTX pode ter esbarrado em rate limit momentâneo
+      await delay(400);
+      r = await translateTextFree(chunk, targetLang);
+    }
+    if (r === chunk) anyFailed = true;
+    results.push(r);
+  }
+  if (anyFailed) return text;
   return results.join('');
 }
 

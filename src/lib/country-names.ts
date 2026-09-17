@@ -3,6 +3,7 @@
 
 import type { Lang } from './i18n';
 import { COUNTRY_PT_FULL } from './country-names-full';
+import { COUNTRY_NAMES_LANGS } from './country-names-langs';
 
 export const COUNTRY_NAMES: Record<string, Record<string, string>> = {
   en: {
@@ -697,6 +698,11 @@ export function getCountryNameTranslated(slug: string, lang: string, fallback: s
     const pt = COUNTRY_PT_FULL[slug];
     if (pt) return pt;
   }
+  // Catálogo CLDR gerado: cobre TODOS os 197 países nos 19 idiomas
+  // não-PT (antes ~139 países ficavam em inglês — falha de tradução
+  // reportada pelo dono). Traduções manuais precedem este catálogo.
+  const generated = COUNTRY_NAMES_LANGS[lang]?.[slug];
+  if (generated) return generated;
   return fallback;
 }
 

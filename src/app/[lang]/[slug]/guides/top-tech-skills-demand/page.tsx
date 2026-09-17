@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
@@ -11,10 +11,9 @@ import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
 
 export default function TopTechSkillsDemand({ params }: { params: Promise<{ lang: string; slug: string }> }) {
-  const [langCode, setLangCode] = useState("");
+  // SSR no idioma correto (use(params) resolve na renderização inicial)
+  const { lang: langCode } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
-
-  useEffect(() => { params.then(p => setLangCode(p.lang)); }, [params]);
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { REGIONS } from "@/lib/countries";
@@ -24,11 +24,8 @@ interface Job {
 }
 
 export default function CountryPage({ params }: { params: Promise<{ lang: string; slug: string; region: string; country: string }> }) {
-  const [resolvedParams, setResolvedParams] = useState<{ lang: string; slug: string; region: string; country: string } | null>(null);
-  useEffect(() => { params.then(setResolvedParams); }, [params]);
-  const langCode = resolvedParams?.lang || '';
-  const rc = resolvedParams?.region || '';
-  const cc = resolvedParams?.country || '';
+  // SSR no idioma correto (use(params) resolve na renderização inicial)
+  const { lang: langCode, region: rc, country: cc } = use(params);
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [jobs, setJobs] = useState<Job[]>([]);
   const [totalJobs, setTotalJobs] = useState(0);
