@@ -2,6 +2,7 @@
 // Used to display localized country names instead of English defaults.
 
 import type { Lang } from './i18n';
+import { COUNTRY_PT_FULL } from './country-names-full';
 
 export const COUNTRY_NAMES: Record<string, Record<string, string>> = {
   en: {
@@ -689,7 +690,14 @@ export const COUNTRY_ONE: Record<string, string> = {
 };
 
 export function getCountryNameTranslated(slug: string, lang: string, fallback: string): string {
-  return COUNTRY_NAMES[lang]?.[slug] || fallback;
+  const exact = COUNTRY_NAMES[lang]?.[slug];
+  if (exact) return exact;
+  // Catálogo mundial: nomes INTEIROS em PT para pt-br/pt-pt (pedido do dono)
+  if (lang === 'pt-br' || lang === 'pt-pt') {
+    const pt = COUNTRY_PT_FULL[slug];
+    if (pt) return pt;
+  }
+  return fallback;
 }
 
 export function getCountryCountLabel(count: number, lang: string, plural: string): string {

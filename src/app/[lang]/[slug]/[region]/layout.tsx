@@ -49,13 +49,13 @@ export async function generateMetadata({
   const descFn = REGION_META_DESC[lang] || REGION_META_DESC["en"];
 
   return {
-    title: `${regionInfo?.flag || ''} ${regionName} | Tech Jobs | NOSSY`,
+    title: `${regionName} | Tech Jobs | NOSSY`,
     description: descFn(regionName, countStr) || regionInfo?.seoDescription,
     alternates: { canonical: url, languages: alternates },
     robots: { index: true, follow: true },
     openGraph: {
       type: "website",
-      title: `${regionInfo?.flag || ''} ${regionName} | Tech Jobs | NOSSY`,
+      title: `${regionName} | Tech Jobs | NOSSY`,
       description: descFn(regionName, countStr),
       url,
       siteName: "NOSSY",
@@ -63,7 +63,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${regionInfo?.flag || ''} ${regionName} | Tech Jobs | NOSSY`,
+      title: `${regionName} | Tech Jobs | NOSSY`,
       description: descFn(regionName, countStr),
       images: ["https://nossy.pro/og/og-default.png"],
     },

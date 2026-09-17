@@ -26,7 +26,6 @@ export default function LangSelector({ lang, switchLang }: { lang: Lang; switchL
         className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all text-sm font-medium text-gray-700 cursor-pointer min-w-[140px] justify-between"
       >
         <span className="flex items-center gap-1.5">
-          <span className="text-base">{current.flag}</span>
           <span className="hidden sm:inline">{current.name}</span>
         </span>
         <svg className={"w-4 h-4 text-gray-400 transition-transform " + (open ? "rotate-180" : "")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,7 +49,6 @@ export default function LangSelector({ lang, switchLang }: { lang: Lang; switchL
                     ? "bg-sky-50 text-sky-700 font-semibold"
                     : "text-gray-700 hover:bg-gray-50")}
               >
-                <span className="text-lg">{l.flag}</span>
                 <span className="flex-1">{l.name}</span>
                 {isActive && <svg className="w-4 h-4 text-sky-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
               </button>

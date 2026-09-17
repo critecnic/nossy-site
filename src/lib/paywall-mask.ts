@@ -31,7 +31,26 @@ export function isJobUnlocked(jobId: number, getCookie: CookieGetter): boolean {
  * Remove os campos identificadores de uma vaga. Mantém as chaves (com
  * placeholders) para que os componentes continuem funcionando sem
  * lógica condicional extra.
+ *
+ * PADRÃO 1874: a DESCRICÃO também é limpa — muitas vagas citam o nome da
+ * empresa no texto ("...na Shopify..."), o que revelava a empresa mesmo com
+ * o campo company mascarado (vazamento reportado pelo dono).
  */
+export function scrubCompanyFromText(
+  text: string | undefined | null,
+  company: string | undefined | null
+): string {
+  const desc = text || '';
+  const name = (company || '').trim();
+  if (!desc || !name) return desc;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  try {
+    return desc.replace(new RegExp(escaped, 'gi'), '***');
+  } catch {
+    return desc;
+  }
+}
+
 export function maskJobContact<T extends Record<string, any>>(job: T): T {
   return {
     ...job,
@@ -39,6 +58,7 @@ export function maskJobContact<T extends Record<string, any>>(job: T): T {
     companyUrl: null,
     contactEmail: '',
     contactPhone: null,
+    description: scrubCompanyFromText(job.description, job.company),
   };
 }
 

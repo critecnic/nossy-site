@@ -34,8 +34,11 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
   const [totalJobs, setTotalJobs] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const initialCountryName = countriesData.find((c: any) => c.slug === cc)?.name || '';
-  const [countryNameRaw, setCountryNameRaw] = useState(initialCountryName);
+  // Nome do país: catálogo mundial (nomes inteiros) SEMPRE prevalece;
+  // fetchedCountryName é só fallback para slug fora do catálogo.
+  const catalogCountryName = countriesData.find((c: any) => c.slug === cc)?.name || '';
+  const [fetchedCountryName, setFetchedCountryName] = useState('');
+  const countryNameRaw = catalogCountryName || fetchedCountryName;
   const countryName = countryNameRaw ? getCountryNameTranslated(cc, lang, countryNameRaw) : '';
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
@@ -83,7 +86,9 @@ export default function CountryPage({ params }: { params: Promise<{ lang: string
         setTotalJobs(data.total || 0);
         setTotalPages(data.totalPages || 1);
         setCurrentPage(data.page || 1);
-        if (data.jobs && data.jobs.length > 0) setCountryNameRaw(data.jobs[0].countryName || countries.find((c: any) => c.slug === cc)?.name || cc);
+        // Nome do país: catálogo prevalece (ver acima); job countryName só
+        // alimenta o fallback para slugs fora do catálogo
+        if (data.jobs && data.jobs.length > 0) setFetchedCountryName(data.jobs[0].countryName || '');
         setLoadProgress(100); setLoading(false);
       }).catch(() => { setDataError(true); setLoading(false); });
   }, [rc, cc, langCode, countries]);

@@ -3,6 +3,7 @@ import { needsServerTranslation, translateJobListFields } from "@/lib/translate-
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { maskJobAlways } from "@/lib/paywall-mask";
+import { filterCompetitorJobs } from "@/lib/competitors";
 import { DATA_DIR } from "@/lib/data-dir";
 import { promises as fsp } from "fs";
 import path from "path";
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
   try {
     const filePath = path.join(DATA_DIR, "latest_20.json");
     const raw = await fsp.readFile(filePath, "utf-8");
-    const jobs = JSON.parse(raw);
+    const jobs = filterCompetitorJobs(JSON.parse(raw));
 
     // Premium 0220: resposta pública — máscara sempre nas vagas com paywall
     const masked = jobs.map((j: any) => maskJobAlways(j));
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest) {
     try {
       const filePath = path.join(DATA_DIR, "latest_20.json");
       const raw = await fsp.readFile(filePath, "utf-8");
-      const jobs = JSON.parse(raw);
+      const jobs = filterCompetitorJobs(JSON.parse(raw));
       // Premium 0220: NUNCA devolver o arquivo bruto — a máscara server-side
       // é obrigatória mesmo no fallback de erro (vazamento corrigido).
       const masked = jobs.map((j: any) => maskJobAlways(j));

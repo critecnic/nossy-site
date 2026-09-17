@@ -5,14 +5,14 @@ import Link from "next/link";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getFlag } from "@/lib/flags";
-import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, getCompanyCareerUrl, shouldHavePaywall } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall } from "@/lib/shared";
 import { formatJobLocation, normalizeRegionCode } from "@/lib/location-names";
 import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
 import countriesData from "@/data/countries.json";
+import continentsData from "@/data/continents.json";
 
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
@@ -20,13 +20,18 @@ interface Job {
   salary: string; description: string; sector: string; posted: string; type: string; paywall: boolean;
   regiao?: string;
 }
-interface CountryInfo { name: string; slug: string; region: string; count: number; }
+interface CountryInfo { name: string; namePt?: string; slug: string; region: string; continent: string; count: number; }
+
+// Catálogo mundial: 6 continentes, nomes inteiros, sem bandeiras/emojis
+const CONTINENTS: { code: string; count: number }[] = continentsData as { code: string; count: number }[];
+const CATALOG = (countriesData as CountryInfo[]).filter((c) => c.slug !== "remoto-global");
+const REAL_COUNTRIES = CATALOG.length;
 
 export default function HomePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const [langCode, setLangCode] = useState("");
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
   const [latest, setLatest] = useState<Job[]>([]);
-  const [countries] = useState<CountryInfo[]>(countriesData as CountryInfo[]);
+  const [countries] = useState<CountryInfo[]>(CATALOG);
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
 
@@ -51,7 +56,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
   const homeHref = "/" + lang + "/" + LANG_SLUGS[lang];
 
   const byRegion: Record<string, CountryInfo[]> = {};
-  for (const c of countries) { if (!byRegion[c.region]) byRegion[c.region] = []; byRegion[c.region].push(c); }
+  for (const c of countries) { if (!byRegion[c.continent]) byRegion[c.continent] = []; byRegion[c.continent].push(c); }
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
@@ -81,8 +86,8 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10">{T.heroSubtitle}</p>
           <div className="flex items-center justify-center flex-wrap gap-x-8 gap-y-3 text-blue-100 text-sm">
             <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" /><strong>{TOTAL_JOBS.toLocaleString()}+</strong> {T.vacancies}</span>
-            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg><strong>58</strong> {T.countries}</span>
-            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg><strong>3</strong> {T.allRegions}</span>
+            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg><strong>{REAL_COUNTRIES}</strong> {T.countries}</span>
+            <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg><strong>{CONTINENTS.length}</strong> {T.allRegions}</span>
           </div>
         </div>
       </section>
@@ -91,16 +96,13 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         <section className="mb-14">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByRegion}</h1>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {REGIONS.map((r) => {
-              const sm = getSectorMeta(r.topCategories?.[0]?.name || "Other");
-              const rc = byRegion[r.code] || [];
+            {CONTINENTS.map((cont) => {
+              const rc = byRegion[cont.code] || [];
               return (
-              <Link key={r.code} href={homeHref + "/" + r.code} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-300">
-                <div className={"absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity " + sm.color} />
+              <Link key={cont.code} href={homeHref + "/" + cont.code} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-300">
                 <div className="relative">
-                  <span className="text-4xl mb-3 block">{r.flag}</span>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">{getRegionName(lang, r.code)}</h2>
-                  <p className="text-3xl font-extrabold text-sky-600">{r.jobCount.toLocaleString()}+</p>
+                  <h2 className="text-xl font-bold text-gray-900 mb-1">{getRegionName(lang, cont.code)}</h2>
+                  <p className="text-3xl font-extrabold text-sky-600">{cont.count.toLocaleString()}</p>
                   <p className="text-sm text-gray-500 mt-1">{T.vacancies}</p>
                   {rc.length > 0 && <p className="text-xs text-gray-400 mt-2">{getCountryCountLabel(rc.length, lang, T.countries)}</p>}
                 </div>
@@ -158,19 +160,18 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">{T.browseByCountry}</h2>
           <div className="space-y-8">
-            {REGIONS.map((region) => {
-              const rc = byRegion[region.code] || []; if (!rc.length) return null;
+            {CONTINENTS.map((cont) => {
+              const rc = (byRegion[cont.code] || []).slice().sort((a, b) => b.count - a.count); if (!rc.length) return null;
               return (
-                <div key={region.code}>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <span className="text-xl">{region.flag}</span> {getRegionName(lang, region.code)}
+                <div key={cont.code}>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                    {getRegionName(lang, cont.code)}
                     <span className="text-sm font-normal text-gray-400"> ({getCountryCountLabel(rc.length, lang, T.countries)})</span>
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {rc.sort((a, b) => b.count - a.count).map((c) => (
-                      <Link key={c.slug} href={homeHref + "/" + region.code + "/" + c.slug} className="group flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all">
-                        <span className="text-3xl">{getFlag(c.slug)}</span>
-                        <span className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2 group-hover:text-sky-600 transition-colors">{getCountryNameTranslated(c.slug, lang, c.name)}</span>
+                    {rc.map((c) => (
+                      <Link key={c.region + "/" + c.slug} href={homeHref + "/" + c.region + "/" + c.slug} className="group flex flex-col items-center justify-between gap-1.5 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all">
+                        <span className="text-sm font-semibold text-gray-900 text-center leading-snug group-hover:text-sky-600 transition-colors">{getCountryNameTranslated(c.slug, lang, c.name)}</span>
                         <span className="text-xs font-bold text-sky-600">{c.count.toLocaleString()}</span>
                       </Link>))}
                   </div></div>);
@@ -193,7 +194,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
               <div className="flex items-center gap-6">
                 <span>{TOTAL_JOBS.toLocaleString()}+ {T.vacancies}</span>
                 <span className="text-gray-600">|</span>
-                <span>58 {T.countries}</span>
+                <span>{REAL_COUNTRIES} {T.countries}</span>
               </div>
               <a href="mailto:CRITECNIC@OUTLOOK.COM" className="text-sky-400 hover:text-sky-300 transition-colors">Contact: CRITECNIC@OUTLOOK.COM</a>
               <span>{T.footerText}</span>

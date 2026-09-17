@@ -4,6 +4,8 @@ import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { maskJobAlways } from "@/lib/paywall-mask";
 import { DATA_DIR } from "@/lib/data-dir";
+import { getRemotePool } from "@/lib/remote-pool";
+import { filterCompetitorJobs } from "@/lib/competitors";
 import { promises as fsp } from "fs";
 import path from "path";
 
@@ -92,6 +94,39 @@ export async function GET(req: NextRequest) {
     let total: number;
     const sectorFilter = sector.trim().toLowerCase();
 
+    // CATÁLOGO MUNDIAL: país sem arquivo próprio de dados recebe o pool
+    // remoto global (todas as vagas remotas do NOSSY, pedido do dono).
+    // Países fatiados (EUA/Canadá/Austrália) NÃO têm arquivo base — têm
+    // _index.json + chunks. Só caem no pool quem não tem NENHUM dos dois.
+    const [baseExists, indexExists] = await Promise.all([
+      fsp.access(safePath).then(() => true).catch(() => false),
+      fsp.access(path.join(DATA_DIR, baseName + "_index.json")).then(() => true).catch(() => false),
+    ]);
+    const hasOwnFile = baseExists || indexExists;
+    if (!hasOwnFile) {
+      const pool = await getRemotePool();
+      let source = pool;
+      if (sectorFilter) source = pool.filter((j: any) => (j.sector || '').toLowerCase() === sectorFilter);
+      total = source.length;
+      const offset = (page - 1) * limit;
+      jobs = source.slice(offset, offset + limit);
+      const totalPagesCountPool = Math.max(1, Math.ceil(total / limit));
+      const maskedPool = jobs.map((j: any) => maskJobAlways(j));
+      if (!needsServerTranslation(lang)) {
+        return NextResponse.json({ jobs: maskedPool, total, page, totalPages: totalPagesCountPool }, {
+          headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
+        });
+      }
+      const { map: tmap, ok: tok } = await translateJobListFields(maskedPool, lang);
+      const translatedPool = maskedPool.map((job: any) => {
+        const t = tmap.get(job.id);
+        return t ? { ...job, title: t.title, company: t.company, location: t.location, ...(t.description ? { description: t.description } : {}) } : job;
+      });
+      return NextResponse.json({ jobs: translatedPool, total, page, totalPages: totalPagesCountPool }, {
+        headers: { "Content-Type": "application/json", "Cache-Control": tok ? "public, s-maxage=3600, stale-while-revalidate=600" : "no-store" },
+      });
+    }
+
     if (sectorFilter) {
       // Sector filter: must scan all chunks, filter, then paginate
       const idx = await getIndex(baseName);
@@ -135,6 +170,12 @@ export async function GET(req: NextRequest) {
         jobs = allJobs.slice(offset, offset + limit);
       }
     }
+
+    // BLOQUEIO DE CONCORRENTES: portais (LinkedIn, Indeed, Seek...) nunca
+    // aparecem nas listagens — filtro em duas camadas (dados + runtime).
+    const preMask = filterCompetitorJobs(jobs);
+    total = Math.max(0, total - (jobs.length - preMask.length));
+    jobs = preMask;
 
     const totalPagesCount = Math.max(1, Math.ceil(total / limit));
 

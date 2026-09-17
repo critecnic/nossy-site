@@ -1,368 +1,1594 @@
 [
-  {
-    "name": "United States",
-    "slug": "united-states",
-    "region": "eua",
-    "count": 19046
-  },
-  {
-    "name": "India",
-    "slug": "india",
-    "region": "asia",
-    "count": 3005
-  },
-  {
-    "name": "United Kingdom",
-    "slug": "united-kingdom",
-    "region": "europa",
-    "count": 2681
-  },
-  {
-    "name": "China",
-    "slug": "china",
-    "region": "asia",
-    "count": 1698
-  },
-  {
-    "name": "Germany",
-    "slug": "germany",
-    "region": "europa",
-    "count": 1549
-  },
-  {
-    "name": "France",
-    "slug": "france",
-    "region": "europa",
-    "count": 1446
-  },
-  {
-    "name": "Japan",
-    "slug": "japao",
-    "region": "asia",
-    "count": 1097
-  },
-  {
-    "name": "Global Remote",
-    "slug": "remoto-global",
-    "region": "asia",
-    "count": 873
-  },
-  {
-    "name": "Singapore",
-    "slug": "singapura",
-    "region": "asia",
-    "count": 858
-  },
-  {
-    "name": "Sweden",
-    "slug": "sweden",
-    "region": "europa",
-    "count": 813
-  },
-  {
-    "name": "South Korea",
-    "slug": "coreia-do-sul",
-    "region": "asia",
-    "count": 795
-  },
-  {
-    "name": "Spain",
-    "slug": "spain",
-    "region": "europa",
-    "count": 793
-  },
-  {
-    "name": "Remote",
-    "slug": "remoto-global",
-    "region": "europa",
-    "count": 763
-  },
-  {
-    "name": "Netherlands",
-    "slug": "netherlands",
-    "region": "europa",
-    "count": 752
-  },
-  {
-    "name": "Poland",
-    "slug": "poland",
-    "region": "europa",
-    "count": 685
-  },
-  {
-    "name": "Ireland",
-    "slug": "ireland",
-    "region": "europa",
-    "count": 652
-  },
-  {
-    "name": "Finland",
-    "slug": "finland",
-    "region": "europa",
-    "count": 553
-  },
-  {
-    "name": "Portugal",
-    "slug": "portugal",
-    "region": "europa",
-    "count": 484
-  },
-  {
-    "name": "Switzerland",
-    "slug": "switzerland",
-    "region": "europa",
-    "count": 513
-  },
-  {
-    "name": "Italy",
-    "slug": "italy",
-    "region": "europa",
-    "count": 507
-  },
-  {
-    "name": "Denmark",
-    "slug": "denmark",
-    "region": "europa",
-    "count": 424
-  },
-  {
-    "name": "Norway",
-    "slug": "norway",
-    "region": "europa",
-    "count": 320
-  },
-  {
-    "name": "Hong Kong",
-    "slug": "hong-kong",
-    "region": "asia",
-    "count": 316
-  },
-  {
-    "name": "Belgium",
-    "slug": "belgium",
-    "region": "europa",
-    "count": 304
-  },
-  {
-    "name": "Taiwan",
-    "slug": "taiwan",
-    "region": "asia",
-    "count": 292
-  },
-  {
-    "name": "Indonesia",
-    "slug": "indonesia",
-    "region": "asia",
-    "count": 289
-  },
-  {
-    "name": "Thailand",
-    "slug": "tailandia",
-    "region": "asia",
-    "count": 286
-  },
-  {
-    "name": "Malaysia",
-    "slug": "malasia",
-    "region": "asia",
-    "count": 257
-  },
-  {
-    "name": "Austria",
-    "slug": "austria",
-    "region": "europa",
-    "count": 247
-  },
-  {
-    "name": "Vietnam",
-    "slug": "vietna",
-    "region": "asia",
-    "count": 235
-  },
-  {
-    "name": "Philippines",
-    "slug": "filipinas",
-    "region": "asia",
-    "count": 206
-  },
-  {
-    "name": "Estonia",
-    "slug": "estonia",
-    "region": "europa",
-    "count": 150
-  },
-  {
-    "name": "Czech Republic",
-    "slug": "czech-republic",
-    "region": "europa",
-    "count": 138
-  },
-  {
-    "name": "Romania",
-    "slug": "romania",
-    "region": "europa",
-    "count": 122
-  },
-  {
-    "name": "Hungary",
-    "slug": "hungary",
-    "region": "europa",
-    "count": 95
-  },
-  {
-    "name": "Luxembourg",
-    "slug": "luxembourg",
-    "region": "europa",
-    "count": 89
-  },
-  {
-    "name": "Ukraine",
-    "slug": "ukraine",
-    "region": "europa",
-    "count": 88
-  },
-  {
-    "name": "Greece",
-    "slug": "greece",
-    "region": "europa",
-    "count": 85
-  },
-  {
-    "name": "Pakistan",
-    "slug": "paquistao",
-    "region": "asia",
-    "count": 85
-  },
-  {
-    "name": "Lithuania",
-    "slug": "lithuania",
-    "region": "europa",
-    "count": 84
-  },
-  {
-    "name": "Sri Lanka",
-    "slug": "sri-lanka",
-    "region": "asia",
-    "count": 84
-  },
-  {
-    "name": "Bulgaria",
-    "slug": "bulgaria",
-    "region": "europa",
-    "count": 75
-  },
-  {
-    "name": "Cyprus",
-    "slug": "cyprus",
-    "region": "europa",
-    "count": 54
-  },
-  {
-    "name": "Croatia",
-    "slug": "croatia",
-    "region": "europa",
-    "count": 53
-  },
-  {
-    "name": "Serbia",
-    "slug": "serbia",
-    "region": "europa",
-    "count": 49
-  },
-  {
-    "name": "Slovakia",
-    "slug": "slovakia",
-    "region": "europa",
-    "count": 47
-  },
-  {
-    "name": "Malta",
-    "slug": "malta",
-    "region": "europa",
-    "count": 41
-  },
-  {
-    "name": "Iceland",
-    "slug": "iceland",
-    "region": "europa",
-    "count": 40
-  },
-  {
-    "name": "Slovenia",
-    "slug": "slovenia",
-    "region": "europa",
-    "count": 36
-  },
-  {
-    "name": "Bangladesh",
-    "slug": "bangladesh",
-    "region": "asia",
-    "count": 34
-  },
-  {
-    "name": "Latvia",
-    "slug": "latvia",
-    "region": "europa",
-    "count": 33
-  },
-  {
-    "name": "Nepal",
-    "slug": "nepal",
-    "region": "asia",
-    "count": 28
-  },
-  {
-    "name": "Moldova",
-    "slug": "moldova",
-    "region": "europa",
-    "count": 20
-  },
-  {
-    "name": "Georgia",
-    "slug": "georgia",
-    "region": "europa",
-    "count": 19
-  },
-  {
-    "name": "Albania",
-    "slug": "albania",
-    "region": "europa",
-    "count": 14
-  },
-  {
-    "name": "North Macedonia",
-    "slug": "north-macedonia",
-    "region": "europa",
-    "count": 13
-  },
-  {
-    "name": "Bosnia and Herzegovina",
-    "slug": "bosnia-and-herzegovina",
-    "region": "europa",
-    "count": 11
-  },
-  {
-    "name": "Montenegro",
-    "slug": "montenegro",
-    "region": "europa",
-    "count": 11
-  },
-  {
-    "name": "Australia",
-    "slug": "australia",
-    "region": "oceania",
-    "count": 8597
-  },
-  {
-    "name": "New Zealand",
-    "slug": "nova-zelandia",
-    "region": "oceania",
-    "count": 2056
-  },
-  {
-    "name": "Canada",
-    "slug": "canada",
-    "region": "america-do-norte",
-    "count": 6411
-  }
+ {
+  "name": "Algeria",
+  "namePt": "Argélia",
+  "slug": "algeria",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Angola",
+  "namePt": "Angola",
+  "slug": "angola",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Benin",
+  "namePt": "Benin",
+  "slug": "benin",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Botswana",
+  "namePt": "Botsuana",
+  "slug": "botswana",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Burkina Faso",
+  "namePt": "Burkina Faso",
+  "slug": "burkina-faso",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Burundi",
+  "namePt": "Burundi",
+  "slug": "burundi",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Cabo Verde",
+  "namePt": "Cabo Verde",
+  "slug": "cabo-verde",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Cameroon",
+  "namePt": "Camarões",
+  "slug": "cameroon",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Central African Republic",
+  "namePt": "República Centro-Africana",
+  "slug": "central-african-republic",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Chad",
+  "namePt": "Chade",
+  "slug": "chad",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Comoros",
+  "namePt": "Comores",
+  "slug": "comoros",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Djibouti",
+  "namePt": "Djibuti",
+  "slug": "djibouti",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Democratic Republic of the Congo",
+  "namePt": "República Democrática do Congo",
+  "slug": "dr-congo",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Egypt",
+  "namePt": "Egito",
+  "slug": "egypt",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Equatorial Guinea",
+  "namePt": "Guiné Equatorial",
+  "slug": "equatorial-guinea",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Eritrea",
+  "namePt": "Eritreia",
+  "slug": "eritrea",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Eswatini",
+  "namePt": "Eswatini",
+  "slug": "eswatini",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Ethiopia",
+  "namePt": "Etiópia",
+  "slug": "ethiopia",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Gabon",
+  "namePt": "Gabão",
+  "slug": "gabon",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Gambia",
+  "namePt": "Gâmbia",
+  "slug": "gambia",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Ghana",
+  "namePt": "Gana",
+  "slug": "ghana",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Guinea",
+  "namePt": "Guiné",
+  "slug": "guinea",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Guinea-Bissau",
+  "namePt": "Guiné-Bissau",
+  "slug": "guinea-bissau",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Côte d'Ivoire",
+  "namePt": "Costa do Marfim",
+  "slug": "ivory-coast",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Kenya",
+  "namePt": "Quênia",
+  "slug": "kenya",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Lesotho",
+  "namePt": "Lesoto",
+  "slug": "lesotho",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Liberia",
+  "namePt": "Libéria",
+  "slug": "liberia",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Libya",
+  "namePt": "Líbia",
+  "slug": "libya",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Madagascar",
+  "namePt": "Madagascar",
+  "slug": "madagascar",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Malawi",
+  "namePt": "Malaui",
+  "slug": "malawi",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Mali",
+  "namePt": "Mali",
+  "slug": "mali",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Mauritania",
+  "namePt": "Mauritânia",
+  "slug": "mauritania",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Mauritius",
+  "namePt": "Maurício",
+  "slug": "mauritius",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Morocco",
+  "namePt": "Marrocos",
+  "slug": "morocco",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Mozambique",
+  "namePt": "Moçambique",
+  "slug": "mozambique",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Namibia",
+  "namePt": "Namíbia",
+  "slug": "namibia",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Niger",
+  "namePt": "Níger",
+  "slug": "niger",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Nigeria",
+  "namePt": "Nigéria",
+  "slug": "nigeria",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Republic of the Congo",
+  "namePt": "República do Congo",
+  "slug": "republic-of-the-congo",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Rwanda",
+  "namePt": "Ruanda",
+  "slug": "rwanda",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "São Tomé and Príncipe",
+  "namePt": "São Tomé e Príncipe",
+  "slug": "sao-tome-and-principe",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Senegal",
+  "namePt": "Senegal",
+  "slug": "senegal",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Seychelles",
+  "namePt": "Seicheles",
+  "slug": "seychelles",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Sierra Leone",
+  "namePt": "Serra Leoa",
+  "slug": "sierra-leone",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Somalia",
+  "namePt": "Somália",
+  "slug": "somalia",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "South Africa",
+  "namePt": "África do Sul",
+  "slug": "south-africa",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "South Sudan",
+  "namePt": "Sudão do Sul",
+  "slug": "south-sudan",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Sudan",
+  "namePt": "Sudão",
+  "slug": "sudan",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Tanzania",
+  "namePt": "Tanzânia",
+  "slug": "tanzania",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Togo",
+  "namePt": "Togo",
+  "slug": "togo",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Tunisia",
+  "namePt": "Tunísia",
+  "slug": "tunisia",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Uganda",
+  "namePt": "Uganda",
+  "slug": "uganda",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Zambia",
+  "namePt": "Zâmbia",
+  "slug": "zambia",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Zimbabwe",
+  "namePt": "Zimbábue",
+  "slug": "zimbabwe",
+  "region": "africa",
+  "continent": "africa",
+  "count": 1565
+ },
+ {
+  "name": "Canada",
+  "namePt": "Canadá",
+  "slug": "canada",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 6411
+ },
+ {
+  "name": "Antigua and Barbuda",
+  "namePt": "Antígua e Barbuda",
+  "slug": "antigua-and-barbuda",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Bahamas",
+  "namePt": "Bahamas",
+  "slug": "bahamas",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Barbados",
+  "namePt": "Barbados",
+  "slug": "barbados",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Belize",
+  "namePt": "Belize",
+  "slug": "belize",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Costa Rica",
+  "namePt": "Costa Rica",
+  "slug": "costa-rica",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Cuba",
+  "namePt": "Cuba",
+  "slug": "cuba",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Dominica",
+  "namePt": "Dominica",
+  "slug": "dominica",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Dominican Republic",
+  "namePt": "República Dominicana",
+  "slug": "dominican-republic",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "El Salvador",
+  "namePt": "El Salvador",
+  "slug": "el-salvador",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Grenada",
+  "namePt": "Granada",
+  "slug": "grenada",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Guatemala",
+  "namePt": "Guatemala",
+  "slug": "guatemala",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Haiti",
+  "namePt": "Haiti",
+  "slug": "haiti",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Honduras",
+  "namePt": "Honduras",
+  "slug": "honduras",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Jamaica",
+  "namePt": "Jamaica",
+  "slug": "jamaica",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Mexico",
+  "namePt": "México",
+  "slug": "mexico",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Nicaragua",
+  "namePt": "Nicarágua",
+  "slug": "nicaragua",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Panama",
+  "namePt": "Panamá",
+  "slug": "panama",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Saint Kitts and Nevis",
+  "namePt": "São Cristóvão e Névis",
+  "slug": "saint-kitts-and-nevis",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Saint Lucia",
+  "namePt": "Santa Lúcia",
+  "slug": "saint-lucia",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Saint Vincent and the Grenadines",
+  "namePt": "São Vicente e Granadinas",
+  "slug": "saint-vincent-and-the-grenadines",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "Trinidad and Tobago",
+  "namePt": "Trinidad e Tobago",
+  "slug": "trinidad-and-tobago",
+  "region": "america-do-norte",
+  "continent": "america-do-norte",
+  "count": 1565
+ },
+ {
+  "name": "United States",
+  "namePt": "Estados Unidos",
+  "slug": "united-states",
+  "region": "eua",
+  "continent": "america-do-norte",
+  "count": 18983
+ },
+ {
+  "name": "Argentina",
+  "namePt": "Argentina",
+  "slug": "argentina",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Bolivia",
+  "namePt": "Bolívia",
+  "slug": "bolivia",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Brazil",
+  "namePt": "Brasil",
+  "slug": "brazil",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Chile",
+  "namePt": "Chile",
+  "slug": "chile",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Colombia",
+  "namePt": "Colômbia",
+  "slug": "colombia",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Ecuador",
+  "namePt": "Equador",
+  "slug": "ecuador",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Guyana",
+  "namePt": "Guiana",
+  "slug": "guyana",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Paraguay",
+  "namePt": "Paraguai",
+  "slug": "paraguay",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Peru",
+  "namePt": "Peru",
+  "slug": "peru",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Suriname",
+  "namePt": "Suriname",
+  "slug": "suriname",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Uruguay",
+  "namePt": "Uruguai",
+  "slug": "uruguay",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "Venezuela",
+  "namePt": "Venezuela",
+  "slug": "venezuela",
+  "region": "america-do-sul",
+  "continent": "america-do-sul",
+  "count": 1565
+ },
+ {
+  "name": "India",
+  "namePt": "Índia",
+  "slug": "india",
+  "region": "asia",
+  "continent": "asia",
+  "count": 3005
+ },
+ {
+  "name": "China",
+  "namePt": "China",
+  "slug": "china",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1698
+ },
+ {
+  "name": "Afghanistan",
+  "namePt": "Afeganistão",
+  "slug": "afghanistan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Armenia",
+  "namePt": "Armênia",
+  "slug": "armenia",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Azerbaijan",
+  "namePt": "Azerbaijão",
+  "slug": "azerbaijan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Bahrain",
+  "namePt": "Barein",
+  "slug": "bahrain",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Bhutan",
+  "namePt": "Butão",
+  "slug": "bhutan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Brunei",
+  "namePt": "Brunei",
+  "slug": "brunei",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Cambodia",
+  "namePt": "Camboja",
+  "slug": "cambodia",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Iran",
+  "namePt": "Irã",
+  "slug": "iran",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Iraq",
+  "namePt": "Iraque",
+  "slug": "iraq",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Israel",
+  "namePt": "Israel",
+  "slug": "israel",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Jordan",
+  "namePt": "Jordânia",
+  "slug": "jordan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Kazakhstan",
+  "namePt": "Cazaquistão",
+  "slug": "kazakhstan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Kuwait",
+  "namePt": "Kuwait",
+  "slug": "kuwait",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Kyrgyzstan",
+  "namePt": "Quirguistão",
+  "slug": "kyrgyzstan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Laos",
+  "namePt": "Laos",
+  "slug": "laos",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Lebanon",
+  "namePt": "Líbano",
+  "slug": "lebanon",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Maldives",
+  "namePt": "Maldivas",
+  "slug": "maldives",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Mongolia",
+  "namePt": "Mongólia",
+  "slug": "mongolia",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Myanmar",
+  "namePt": "Mianmar",
+  "slug": "myanmar",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "North Korea",
+  "namePt": "Coreia do Norte",
+  "slug": "north-korea",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Oman",
+  "namePt": "Omã",
+  "slug": "oman",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Palestine",
+  "namePt": "Palestina",
+  "slug": "palestine",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Qatar",
+  "namePt": "Catar",
+  "slug": "qatar",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Saudi Arabia",
+  "namePt": "Arábia Saudita",
+  "slug": "saudi-arabia",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Syria",
+  "namePt": "Síria",
+  "slug": "syria",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Tajikistan",
+  "namePt": "Tadjiquistão",
+  "slug": "tajikistan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Timor-Leste",
+  "namePt": "Timor-Leste",
+  "slug": "timor-leste",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Turkey",
+  "namePt": "Turquia",
+  "slug": "turkey",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Turkmenistan",
+  "namePt": "Turcomenistão",
+  "slug": "turkmenistan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "United Arab Emirates",
+  "namePt": "Emirados Árabes Unidos",
+  "slug": "united-arab-emirates",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Uzbekistan",
+  "namePt": "Uzbequistão",
+  "slug": "uzbekistan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Yemen",
+  "namePt": "Iêmen",
+  "slug": "yemen",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1565
+ },
+ {
+  "name": "Japan",
+  "namePt": "Japão",
+  "slug": "japao",
+  "region": "asia",
+  "continent": "asia",
+  "count": 1097
+ },
+ {
+  "name": "Global Remote",
+  "namePt": "Remoto Global",
+  "slug": "remoto-global",
+  "region": "asia",
+  "continent": "asia",
+  "count": 873
+ },
+ {
+  "name": "Singapore",
+  "namePt": "Singapura",
+  "slug": "singapura",
+  "region": "asia",
+  "continent": "asia",
+  "count": 858
+ },
+ {
+  "name": "South Korea",
+  "namePt": "Coreia do Sul",
+  "slug": "coreia-do-sul",
+  "region": "asia",
+  "continent": "asia",
+  "count": 795
+ },
+ {
+  "name": "Hong Kong",
+  "namePt": "Hong Kong",
+  "slug": "hong-kong",
+  "region": "asia",
+  "continent": "asia",
+  "count": 316
+ },
+ {
+  "name": "Taiwan",
+  "namePt": "Taiwan",
+  "slug": "taiwan",
+  "region": "asia",
+  "continent": "asia",
+  "count": 292
+ },
+ {
+  "name": "Indonesia",
+  "namePt": "Indonésia",
+  "slug": "indonesia",
+  "region": "asia",
+  "continent": "asia",
+  "count": 289
+ },
+ {
+  "name": "Thailand",
+  "namePt": "Tailândia",
+  "slug": "tailandia",
+  "region": "asia",
+  "continent": "asia",
+  "count": 286
+ },
+ {
+  "name": "Malaysia",
+  "namePt": "Malásia",
+  "slug": "malasia",
+  "region": "asia",
+  "continent": "asia",
+  "count": 257
+ },
+ {
+  "name": "Vietnam",
+  "namePt": "Vietnã",
+  "slug": "vietna",
+  "region": "asia",
+  "continent": "asia",
+  "count": 235
+ },
+ {
+  "name": "Philippines",
+  "namePt": "Filipinas",
+  "slug": "filipinas",
+  "region": "asia",
+  "continent": "asia",
+  "count": 206
+ },
+ {
+  "name": "Pakistan",
+  "namePt": "Paquistão",
+  "slug": "paquistao",
+  "region": "asia",
+  "continent": "asia",
+  "count": 85
+ },
+ {
+  "name": "Sri Lanka",
+  "namePt": "Sri Lanka",
+  "slug": "sri-lanka",
+  "region": "asia",
+  "continent": "asia",
+  "count": 84
+ },
+ {
+  "name": "Bangladesh",
+  "namePt": "Bangladesh",
+  "slug": "bangladesh",
+  "region": "asia",
+  "continent": "asia",
+  "count": 34
+ },
+ {
+  "name": "Nepal",
+  "namePt": "Nepal",
+  "slug": "nepal",
+  "region": "asia",
+  "continent": "asia",
+  "count": 28
+ },
+ {
+  "name": "United Kingdom",
+  "namePt": "Reino Unido",
+  "slug": "united-kingdom",
+  "region": "europa",
+  "continent": "europa",
+  "count": 2677
+ },
+ {
+  "name": "Andorra",
+  "namePt": "Andorra",
+  "slug": "andorra",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1565
+ },
+ {
+  "name": "Belarus",
+  "namePt": "Bielorrússia",
+  "slug": "belarus",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1565
+ },
+ {
+  "name": "Liechtenstein",
+  "namePt": "Liechtenstein",
+  "slug": "liechtenstein",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1565
+ },
+ {
+  "name": "Monaco",
+  "namePt": "Mônaco",
+  "slug": "monaco",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1565
+ },
+ {
+  "name": "Russia",
+  "namePt": "Rússia",
+  "slug": "russia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1565
+ },
+ {
+  "name": "San Marino",
+  "namePt": "San Marino",
+  "slug": "san-marino",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1565
+ },
+ {
+  "name": "Vatican City",
+  "namePt": "Vaticano",
+  "slug": "vatican-city",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1565
+ },
+ {
+  "name": "Germany",
+  "namePt": "Alemanha",
+  "slug": "germany",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1549
+ },
+ {
+  "name": "France",
+  "namePt": "França",
+  "slug": "france",
+  "region": "europa",
+  "continent": "europa",
+  "count": 1446
+ },
+ {
+  "name": "Sweden",
+  "namePt": "Suécia",
+  "slug": "sweden",
+  "region": "europa",
+  "continent": "europa",
+  "count": 813
+ },
+ {
+  "name": "Spain",
+  "namePt": "Espanha",
+  "slug": "spain",
+  "region": "europa",
+  "continent": "europa",
+  "count": 793
+ },
+ {
+  "name": "Global Remote",
+  "namePt": "Remoto Global",
+  "slug": "remoto-global",
+  "region": "europa",
+  "continent": "europa",
+  "count": 763
+ },
+ {
+  "name": "Netherlands",
+  "namePt": "Países Baixos",
+  "slug": "netherlands",
+  "region": "europa",
+  "continent": "europa",
+  "count": 752
+ },
+ {
+  "name": "Poland",
+  "namePt": "Polônia",
+  "slug": "poland",
+  "region": "europa",
+  "continent": "europa",
+  "count": 685
+ },
+ {
+  "name": "Ireland",
+  "namePt": "Irlanda",
+  "slug": "ireland",
+  "region": "europa",
+  "continent": "europa",
+  "count": 623
+ },
+ {
+  "name": "Finland",
+  "namePt": "Finlândia",
+  "slug": "finland",
+  "region": "europa",
+  "continent": "europa",
+  "count": 553
+ },
+ {
+  "name": "Switzerland",
+  "namePt": "Suíça",
+  "slug": "switzerland",
+  "region": "europa",
+  "continent": "europa",
+  "count": 513
+ },
+ {
+  "name": "Italy",
+  "namePt": "Itália",
+  "slug": "italy",
+  "region": "europa",
+  "continent": "europa",
+  "count": 507
+ },
+ {
+  "name": "Portugal",
+  "namePt": "Portugal",
+  "slug": "portugal",
+  "region": "europa",
+  "continent": "europa",
+  "count": 484
+ },
+ {
+  "name": "Denmark",
+  "namePt": "Dinamarca",
+  "slug": "denmark",
+  "region": "europa",
+  "continent": "europa",
+  "count": 424
+ },
+ {
+  "name": "Norway",
+  "namePt": "Noruega",
+  "slug": "norway",
+  "region": "europa",
+  "continent": "europa",
+  "count": 320
+ },
+ {
+  "name": "Belgium",
+  "namePt": "Bélgica",
+  "slug": "belgium",
+  "region": "europa",
+  "continent": "europa",
+  "count": 304
+ },
+ {
+  "name": "Austria",
+  "namePt": "Áustria",
+  "slug": "austria",
+  "region": "europa",
+  "continent": "europa",
+  "count": 247
+ },
+ {
+  "name": "Estonia",
+  "namePt": "Estônia",
+  "slug": "estonia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 150
+ },
+ {
+  "name": "Czech Republic",
+  "namePt": "República Tcheca",
+  "slug": "czech-republic",
+  "region": "europa",
+  "continent": "europa",
+  "count": 138
+ },
+ {
+  "name": "Romania",
+  "namePt": "Romênia",
+  "slug": "romania",
+  "region": "europa",
+  "continent": "europa",
+  "count": 122
+ },
+ {
+  "name": "Hungary",
+  "namePt": "Hungria",
+  "slug": "hungary",
+  "region": "europa",
+  "continent": "europa",
+  "count": 95
+ },
+ {
+  "name": "Luxembourg",
+  "namePt": "Luxemburgo",
+  "slug": "luxembourg",
+  "region": "europa",
+  "continent": "europa",
+  "count": 89
+ },
+ {
+  "name": "Ukraine",
+  "namePt": "Ucrânia",
+  "slug": "ukraine",
+  "region": "europa",
+  "continent": "europa",
+  "count": 88
+ },
+ {
+  "name": "Greece",
+  "namePt": "Grécia",
+  "slug": "greece",
+  "region": "europa",
+  "continent": "europa",
+  "count": 85
+ },
+ {
+  "name": "Lithuania",
+  "namePt": "Lituânia",
+  "slug": "lithuania",
+  "region": "europa",
+  "continent": "europa",
+  "count": 84
+ },
+ {
+  "name": "Bulgaria",
+  "namePt": "Bulgária",
+  "slug": "bulgaria",
+  "region": "europa",
+  "continent": "europa",
+  "count": 75
+ },
+ {
+  "name": "Cyprus",
+  "namePt": "Chipre",
+  "slug": "cyprus",
+  "region": "europa",
+  "continent": "europa",
+  "count": 54
+ },
+ {
+  "name": "Croatia",
+  "namePt": "Croácia",
+  "slug": "croatia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 53
+ },
+ {
+  "name": "Serbia",
+  "namePt": "Sérvia",
+  "slug": "serbia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 49
+ },
+ {
+  "name": "Slovakia",
+  "namePt": "Eslováquia",
+  "slug": "slovakia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 47
+ },
+ {
+  "name": "Malta",
+  "namePt": "Malta",
+  "slug": "malta",
+  "region": "europa",
+  "continent": "europa",
+  "count": 41
+ },
+ {
+  "name": "Iceland",
+  "namePt": "Islândia",
+  "slug": "iceland",
+  "region": "europa",
+  "continent": "europa",
+  "count": 40
+ },
+ {
+  "name": "Slovenia",
+  "namePt": "Eslovênia",
+  "slug": "slovenia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 36
+ },
+ {
+  "name": "Latvia",
+  "namePt": "Letônia",
+  "slug": "latvia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 33
+ },
+ {
+  "name": "Moldova",
+  "namePt": "Moldávia",
+  "slug": "moldova",
+  "region": "europa",
+  "continent": "europa",
+  "count": 20
+ },
+ {
+  "name": "Georgia",
+  "namePt": "Geórgia",
+  "slug": "georgia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 19
+ },
+ {
+  "name": "Albania",
+  "namePt": "Albânia",
+  "slug": "albania",
+  "region": "europa",
+  "continent": "europa",
+  "count": 14
+ },
+ {
+  "name": "North Macedonia",
+  "namePt": "Macedônia do Norte",
+  "slug": "north-macedonia",
+  "region": "europa",
+  "continent": "europa",
+  "count": 13
+ },
+ {
+  "name": "Bosnia and Herzegovina",
+  "namePt": "Bósnia e Herzegovina",
+  "slug": "bosnia-and-herzegovina",
+  "region": "europa",
+  "continent": "europa",
+  "count": 11
+ },
+ {
+  "name": "Montenegro",
+  "namePt": "Montenegro",
+  "slug": "montenegro",
+  "region": "europa",
+  "continent": "europa",
+  "count": 11
+ },
+ {
+  "name": "Australia",
+  "namePt": "Austrália",
+  "slug": "australia",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 8579
+ },
+ {
+  "name": "New Zealand",
+  "namePt": "Nova Zelândia",
+  "slug": "nova-zelandia",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 2056
+ },
+ {
+  "name": "Fiji",
+  "namePt": "Fiji",
+  "slug": "fiji",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Kiribati",
+  "namePt": "Kiribati",
+  "slug": "kiribati",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Marshall Islands",
+  "namePt": "Ilhas Marshall",
+  "slug": "marshall-islands",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Micronesia",
+  "namePt": "Micronésia",
+  "slug": "micronesia",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Nauru",
+  "namePt": "Nauru",
+  "slug": "nauru",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Palau",
+  "namePt": "Palau",
+  "slug": "palau",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Papua New Guinea",
+  "namePt": "Papua-Nova Guiné",
+  "slug": "papua-new-guinea",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Samoa",
+  "namePt": "Samoa",
+  "slug": "samoa",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Solomon Islands",
+  "namePt": "Ilhas Salomão",
+  "slug": "solomon-islands",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Tonga",
+  "namePt": "Tonga",
+  "slug": "tonga",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Tuvalu",
+  "namePt": "Tuvalu",
+  "slug": "tuvalu",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ },
+ {
+  "name": "Vanuatu",
+  "namePt": "Vanuatu",
+  "slug": "vanuatu",
+  "region": "oceania",
+  "continent": "oceania",
+  "count": 1565
+ }
 ]

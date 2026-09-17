@@ -113,7 +113,7 @@ export default function CompanyPostPage({ params }: { params: Promise<{ lang: st
             <SiteLogo size={28} />
           </div>
           <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm">
-            <span className="text-lg leading-none">{LANGUAGES.find((l) => l.code === lang)?.flag}</span>
+            
             <span className="hidden sm:inline text-xs font-semibold text-gray-600">{LANGUAGES.find((l) => l.code === lang)?.name}</span>
           </div>
         </div>
@@ -197,7 +197,7 @@ export default function CompanyPostPage({ params }: { params: Promise<{ lang: st
                   <select value={jobCountry} onChange={(e) => { setJobCountry(e.target.value); const c = COUNTRIES.find(x => x.code === e.target.value); if (c) setSalaryCurrency(c.currency.code); }} className={selectClass}>
                     <option value="">{T.selectCountry2}...</option>
                     {COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
+                      <option key={c.code} value={c.code}>{c.name}</option>
                     ))}
                   </select>
                 </div>

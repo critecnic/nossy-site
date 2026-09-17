@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DATA_DIR } from "@/lib/data-dir";
+import { getRemotePool } from "@/lib/remote-pool";
+import { isCompetitorJob } from "@/lib/competitors";
 import { promises as fsp } from "fs";
 import path from "path";
 
@@ -40,6 +42,27 @@ export async function GET(req: NextRequest) {
     const baseName = file.replace('.json', '');
     const sectorCounts: Record<string, number> = {};
 
+    // CATÁLOGO MUNDIAL: país sem arquivo próprio (nem base nem índice) →
+    // contagem por setor vem do pool remoto global.
+    const [baseExists, indexExists] = await Promise.all([
+      fsp.access(safePath).then(() => true).catch(() => false),
+      fsp.access(path.join(DATA_DIR, `${baseName}_index.json`)).then(() => true).catch(() => false),
+    ]);
+    if (!baseExists && !indexExists) {
+      const pool = await getRemotePool();
+      for (const job of pool) {
+        if (isCompetitorJob(job)) continue;
+        const s = job.sector || 'Other';
+        sectorCounts[s] = (sectorCounts[s] || 0) + 1;
+      }
+      const sortedPool = Object.entries(sectorCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([sector, count]) => ({ sector, count }));
+      return NextResponse.json({ sectors: sortedPool, totalJobs: Object.values(sectorCounts).reduce((a, b) => a + b, 0) }, {
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
+      });
+    }
+
     // Check for index file (chunked data)
     try {
       const indexPath = path.join(DATA_DIR, `${baseName}_index.json`);
@@ -53,6 +76,7 @@ export async function GET(req: NextRequest) {
           const chunkRaw = await fsp.readFile(chunkPath, 'utf-8');
           const chunk = JSON.parse(chunkRaw);
           for (const job of chunk) {
+            if (isCompetitorJob(job)) continue; // portais concorrentes não contam
             const s = job.sector || 'Other';
             sectorCounts[s] = (sectorCounts[s] || 0) + 1;
           }
@@ -63,6 +87,7 @@ export async function GET(req: NextRequest) {
       const raw = await fsp.readFile(safePath, "utf-8");
       const allJobs = JSON.parse(raw);
       for (const job of allJobs) {
+        if (isCompetitorJob(job)) continue; // portais concorrentes não contam
         const s = job.sector || 'Other';
         sectorCounts[s] = (sectorCounts[s] || 0) + 1;
       }

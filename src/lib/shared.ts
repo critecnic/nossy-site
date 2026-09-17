@@ -1,30 +1,34 @@
 // Shared constants used across all pages - eliminates duplication
 
 import type { Lang } from './i18n';
+import {
+  isCompetitorJobBoardCompany as companyIsCompetitor,
+  isCompetitorJobBoardUrl as urlIsCompetitor,
+} from './competitors';
 
 export const REGION_NAMES: Record<string, Record<string, string>> = {
-  "en": { europa: "Europe", asia: "Asia", eua: "United States", oceania: "Oceania", "america-do-norte": "North America" , "remoto-global": "Remote - Worldwide" },
-  "pt-br": { europa: "Europa", asia: "Ásia", eua: "Estados Unidos", oceania: "Oceania", "america-do-norte": "América do Norte" , "remoto-global": "Remoto - Mundial" },
-  "pt-pt": { europa: "Europa", asia: "Ásia", eua: "Estados Unidos", oceania: "Oceania", "america-do-norte": "América do Norte" , "remoto-global": "Remoto - Mundial" },
-  "es": { europa: "Europa", asia: "Ásia", eua: "Estados Unidos", oceania: "Oceanía", "america-do-norte": "América del Norte" , "remoto-global": "Remoto - Mundial" },
-  "fr": { europa: "Europe", asia: "Asie", eua: "États-Unis", oceania: "Océanie", "america-do-norte": "Amérique du Nord" , "remoto-global": "Télétravail - Mondial" },
-  "de": { europa: "Europa", asia: "Asien", eua: "Vereinigte Staaten", oceania: "Ozeanien", "america-do-norte": "Nordamerika" , "remoto-global": "Remote - Weltweit" },
-  "it": { europa: "Europa", asia: "Asia", eua: "Stati Uniti", oceania: "Oceania", "america-do-norte": "Nord America" , "remoto-global": "Remoto - Mondiale" },
-  "nl": { europa: "Europa", asia: "Azië", eua: "Verenigde Staten", oceania: "Oceanië", "america-do-norte": "Noord-Amerika" , "remoto-global": "Remote - Wereldwijd" },
-  "pl": { europa: "Europa", asia: "Azja", eua: "Stany Zjednoczone", oceania: "Oceania", "america-do-norte": "Ameryka Północna" , "remoto-global": "Zdalnie - Cały świat" },
-  "ru": { europa: "Европа", asia: "Азия", eua: "Соединённые Штаты", oceania: "Океания", "america-do-norte": "Северная Америка" , "remoto-global": "Удалённо - Всемирно" },
-  "zh": { europa: "欧洲", asia: "亚洲", eua: "美国", oceania: "大洋洲", "america-do-norte": "北美洲" , "remoto-global": "远程 - 全球" },
-  "ja": { europa: "ヨーロッパ", asia: "アジア", eua: "アメリカ", oceania: "オセアニア", "america-do-norte": "北米" , "remoto-global": "リモート - 世界" },
-  "ko": { europa: "유럽", asia: "아시아", eua: "미국", oceania: "오세아니아", "america-do-norte": "북미" , "remoto-global": "원격 - 전 세계" },
-  "hi": { europa: "यूरोप", asia: "एशिया", eua: "अमेरिका", oceania: "ओशियानिया", "america-do-norte": "उत्तर अमेरिका" , "remoto-global": "रिमोट - विश्वव्यापी" },
-  "bn": { europa: "ইউরোপ", asia: "এশিয়া", eua: "যুক্তরাষ্ট্র", oceania: "ওশেনিয়া", "america-do-norte": "উত্তর আমেরিকা" , "remoto-global": "রিমোট - বিশ্বব্যাপী" },
-  "ar": { europa: "أوروبا", asia: "آسيا", eua: "الولايات المتحدة", oceania: "أوقيانوسيا", "america-do-norte": "أمريكا الشمالية" , "remoto-global": "عن بُعد - عالمي" },
-  "tr": { europa: "Avrupa", asia: "Asya", eua: "Amerika Birleşik Devletleri", oceania: "Okyanusya", "america-do-norte": "Kuzey Amerika" , "remoto-global": "Uzaktan - Küresel" },
-  "vi": { europa: "Châu Âu", asia: "Châu Á", eua: "Hoa Kỳ", oceania: "Châu Đại Dương", "america-do-norte": "Bắc Mỹ" , "remoto-global": "Từ xa - Toàn cầu" },
-  "th": { europa: "ยุโรป", asia: "เอเชีย", eua: "อเมริกา", oceania: "โอเชียเนีย", "america-do-norte": "อเมริกาเหนือ" , "remoto-global": "ทำงานระยะไกล - ทั่วโลก" },
-  "ur": { europa: "یورپ", asia: "ایشیا", eua: "امریکہ", oceania: "اوشیانیا", "america-do-norte": "شمالی امریکہ" , "remoto-global": "ریموٹ - عالمگیر" },
-  "tl": { europa: "Europa", asia: "Asya", eua: "Estados Unidos", oceania: "Oceania", "america-do-norte": "North America" , "remoto-global": "Remote - Worldwide" },
-  "sw": { europa: "Ulaya", asia: "Asia", eua: "Marekani", oceania: "Oseania", "america-do-norte": "Amerika ya Kaskazini" , "remoto-global": "Remote - Kimataifa" },
+  "en": { europa: "Europe", asia: "Asia", eua: "United States", oceania: "Oceania", "america-do-norte": "North America", "america-do-sul": "South America", africa: "Africa", "remoto-global": "Remote - Worldwide" },
+  "pt-br": { europa: "Europa", asia: "Ásia", eua: "Estados Unidos", oceania: "Oceania", "america-do-norte": "América do Norte", "america-do-sul": "América do Sul", africa: "África", "remoto-global": "Remoto - Mundial" },
+  "pt-pt": { europa: "Europa", asia: "Ásia", eua: "Estados Unidos", oceania: "Oceania", "america-do-norte": "América do Norte", "america-do-sul": "América do Sul", africa: "África", "remoto-global": "Remoto - Mundial" },
+  "es": { europa: "Europa", asia: "Ásia", eua: "Estados Unidos", oceania: "Oceanía", "america-do-norte": "América del Norte", "america-do-sul": "América del Sur", africa: "África", "remoto-global": "Remoto - Mundial" },
+  "fr": { europa: "Europe", asia: "Asie", eua: "États-Unis", oceania: "Océanie", "america-do-norte": "Amérique du Nord", "america-do-sul": "Amérique du Sud", africa: "Afrique", "remoto-global": "Télétravail - Mondial" },
+  "de": { europa: "Europa", asia: "Asien", eua: "Vereinigte Staaten", oceania: "Ozeanien", "america-do-norte": "Nordamerika", "america-do-sul": "Südamerika", africa: "Afrika", "remoto-global": "Remote - Weltweit" },
+  "it": { europa: "Europa", asia: "Asia", eua: "Stati Uniti", oceania: "Oceania", "america-do-norte": "Nord America", "america-do-sul": "Sud America", africa: "Africa", "remoto-global": "Remoto - Mondiale" },
+  "nl": { europa: "Europa", asia: "Azië", eua: "Verenigde Staten", oceania: "Oceanië", "america-do-norte": "Noord-Amerika", "america-do-sul": "Zuid-Amerika", africa: "Afrika", "remoto-global": "Remote - Wereldwijd" },
+  "pl": { europa: "Europa", asia: "Azja", eua: "Stany Zjednoczone", oceania: "Oceania", "america-do-norte": "Ameryka Północna", "america-do-sul": "Ameryka Południowa", africa: "Afryka", "remoto-global": "Zdalnie - Cały świat" },
+  "ru": { europa: "Европа", asia: "Азия", eua: "Соединённые Штаты", oceania: "Океания", "america-do-norte": "Северная Америка", "america-do-sul": "Южная Америка", africa: "Африка", "remoto-global": "Удалённо - Всемирно" },
+  "zh": { europa: "欧洲", asia: "亚洲", eua: "美国", oceania: "大洋洲", "america-do-norte": "北美洲", "america-do-sul": "南美洲", africa: "非洲", "remoto-global": "远程 - 全球" },
+  "ja": { europa: "ヨーロッパ", asia: "アジア", eua: "アメリカ", oceania: "オセアニア", "america-do-norte": "北米", "america-do-sul": "南米", africa: "アフリカ", "remoto-global": "リモート - 世界" },
+  "ko": { europa: "유럽", asia: "아시아", eua: "미국", oceania: "오세아니아", "america-do-norte": "북미", "america-do-sul": "남미", africa: "아프리카", "remoto-global": "원격 - 전 세계" },
+  "hi": { europa: "यूरोप", asia: "एशिया", eua: "अमेरिका", oceania: "ओशियानिया", "america-do-norte": "उत्तर अमेरिका", "america-do-sul": "दक्षिण अमेरिका", africa: "अफ़्रीका", "remoto-global": "रिमोट - विश्वव्यापी" },
+  "bn": { europa: "ইউরোপ", asia: "এশিয়া", eua: "যুক্তরাষ্ট্র", oceania: "ওশেনিয়া", "america-do-norte": "উত্তর আমেরিকা", "america-do-sul": "দক্ষিণ আমেরিকা", africa: "আফ্রিকা", "remoto-global": "রিমোট - বিশ্বব্যাপী" },
+  "ar": { europa: "أوروبا", asia: "آسيا", eua: "الولايات المتحدة", oceania: "أوقيانوسيا", "america-do-norte": "أمريكا الشمالية", "america-do-sul": "أمريكا الجنوبية", africa: "أفريقيا", "remoto-global": "عن بُعد - عالمي" },
+  "tr": { europa: "Avrupa", asia: "Asya", eua: "Amerika Birleşik Devletleri", oceania: "Okyanusya", "america-do-norte": "Kuzey Amerika", "america-do-sul": "Güney Amerika", africa: "Afrika", "remoto-global": "Uzaktan - Küresel" },
+  "vi": { europa: "Châu Âu", asia: "Châu Á", eua: "Hoa Kỳ", oceania: "Châu Đại Dương", "america-do-norte": "Bắc Mỹ", "america-do-sul": "Nam Mỹ", africa: "Châu Phi", "remoto-global": "Từ xa - Toàn cầu" },
+  "th": { europa: "ยุโรป", asia: "เอเชีย", eua: "อเมริกา", oceania: "โอเชียเนีย", "america-do-norte": "อเมริกาเหนือ", "america-do-sul": "อเมริกาใต้", africa: "แอฟริกา", "remoto-global": "ทำงานระยะไกล - ทั่วโลก" },
+  "ur": { europa: "یورپ", asia: "ایشیا", eua: "امریکہ", oceania: "اوشیانیا", "america-do-norte": "شمالی امریکہ", "america-do-sul": "جنوبی امریکہ", africa: "افریقہ", "remoto-global": "ریموٹ - عالمگیر" },
+  "tl": { europa: "Europa", asia: "Asya", eua: "Estados Unidos", oceania: "Oceania", "america-do-norte": "Hilagang Amerika", "america-do-sul": "Timog Amerika", africa: "Aprika", "remoto-global": "Remote - Worldwide" },
+  "sw": { europa: "Ulaya", asia: "Asia", eua: "Marekani", oceania: "Oseania", "america-do-norte": "Amerika ya Kaskazini", "america-do-sul": "Amerika ya Kusini", africa: "Afrika", "remoto-global": "Remote - Kimataifa" },
 };
 
 export function getRegionName(lang: string, regionCode: string): string {
@@ -134,7 +138,7 @@ export function getPaywallText(lang: string) {
 
 export interface PaywallResult {
   paywall: boolean;
-  reason: '' | 'remote_10pct' | 'premium_0220';
+  reason: '' | 'remote_10pct' | 'premium_0220' | 'contact_premium';
 }
 
 /**
@@ -150,14 +154,17 @@ export const PREMIUM_0220_FORCE_JOB_IDS: readonly number[] = [
 ];
 
 /**
- * Deterministic paywall (Premium 0220):
- *  1. Lista Premium 0220 (anúncio designado) -> sempre bloqueado;
- *  2. 10% das vagas remotas (id % 10 === 0)  -> bloqueado;
- *  3. Todo o resto                           -> GRATUITO.
+ * Premium 1874 — regra de bloqueio (paywall) determinística:
+ *  1. Lista Premium 0220 (anúncio designado)            -> sempre bloqueado;
+ *  2. 10% das vagas remotas (id % 10 === 0)             -> bloqueado;
+ *  3. Vaga com e-mail de contato real (contactEmail)    -> bloqueada
+ *     (empresa + e-mail só aparecem após pagamento US$ 7 confirmado);
+ *  4. Todo o resto (sem contato)                        -> GRATUITA.
  */
 export function shouldHavePaywall(job: {
   id?: number;
   type?: string;
+  contactEmail?: string | null;
 }): PaywallResult {
   const id = job.id || 0;
 
@@ -174,25 +181,24 @@ export function shouldHavePaywall(job: {
     return { paywall: true, reason: 'remote_10pct' };
   }
 
+  // PADRÃO 1874 (regra do dono): vaga com e-mail de contato real é PREMIUM —
+  // empresa e e-mail ficam bloqueados até o pagamento de US$ 7 confirmado.
+  // Sem isso ~17 mil vagas com contato ficavam livres ("premium não está
+  // bloqueado para ver empresa e e-mail").
+  if (job.contactEmail && String(job.contactEmail).trim() !== '') {
+    return { paywall: true, reason: 'contact_premium' };
+  }
+
   return { paywall: false, reason: '' };
 }
 
 // ─── Company URL Cleaning ──────────────────────────────────────────
 
 /**
- * Known competitor/agency job board domains.
- * Links pointing to these should be replaced with direct company URLs.
+ * Bloqueio de portais concorrentes migrado para o módulo central
+ * src/lib/competitors.ts (fonte única usada também na limpeza de dados).
+ * Links para portais concorrentes são substituídos por URL direta da empresa.
  */
-const COMPETITOR_DOMAINS = [
-  'remotive.com', 'jobgether.com', 'arbeitnow.co.uk', 'arbeitnow.com',
-  'wellfound.com', 'justremote.co', 'weworkremotely.com', 'remoteok.com',
-  'flexjobs.com', 'ziprecruiter.com', 'indeed.com',
-  'monster.com', 'naukri.com', 'stepstone.de', 'stepstone.be',
-  'careerjet.com', 'jooble.org', 'adzuna.com', 'talent.com', 'jobisjob.com',
-  'linkedin.com/jobs', 'glassdoor.com', 'glassdoor.',
-  'wowjobs.ca', 'jobrapido.com', 'lensa.com', 'simplyhired.com',
-  'usajobs.gov', 'gov.uk/find-a-job', 'seek.com.au',
-];
 
 /**
  * Known companies mapped to their career/homepage URLs.
@@ -389,10 +395,8 @@ export function getCompanyCareerUrl(job: { company?: string; companyUrl?: string
   }
 
   // Check if URL points to a competitor job board (replace)
-  for (const domain of COMPETITOR_DOMAINS) {
-    if (urlLower.includes(domain)) {
-      return inferCompanyUrl(company);
-    }
+  if (urlIsCompetitor(rawUrl)) {
+    return inferCompanyUrl(company);
   }
 
   // If URL looks like a direct company URL, keep it
@@ -410,6 +414,10 @@ function inferCompanyUrl(company: string): string {
   if (!company) return '';
 
   const nameLower = company.toLowerCase().trim();
+
+  // PADRÃO 1874 anti-concorrência: nunca inferir URL para portal
+  // concorrente (ex.: company "Linkedin" gerava https://www.linkedin.com)
+  if (companyIsCompetitor(nameLower)) return '';
 
   // Check known company map
   for (const [key, url] of Object.entries(KNOWN_COMPANY_URLS)) {

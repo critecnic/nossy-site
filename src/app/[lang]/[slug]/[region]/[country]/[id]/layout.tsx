@@ -4,7 +4,10 @@ import { REGIONS } from "@/lib/countries";
 import { getRegionName, shouldHavePaywall } from "@/lib/shared";
 import { getCountryNameTranslated } from "@/lib/country-names";
 import { safeJsonLd } from "@/lib/jsonld";
+import { scrubCompanyFromText } from "@/lib/paywall-mask";
 import { findJobFast } from "@/lib/job-lookup";
+import { findJobInPoolsSync } from "@/lib/remote-pool";
+import { isCompetitorJob } from "@/lib/competitors";
 import {
   formatJobLocationWithCountry,
   expandLocationNames,
@@ -24,8 +27,12 @@ interface Job {
 
 // A busca da vaga usa o índice id->chunk gerado no build (gen-idmaps.mjs):
 // em vez de varrer até 19 chunks sequencialmente, lê 1 mapa + 1 chunk.
+// CATÁLOGO MUNDIAL: países sem arquivo próprio (ex. africa_angola) caem no
+// pool remoto global — mesmo dado exibido pela listagem do país.
 function findJob(region: string, country: string, jobId: string): Job | null {
-  return findJobFast<Job>(`${region}_${country}`, jobId);
+  const local = findJobFast<Job>(`${region}_${country}`, jobId);
+  if (local) return local;
+  return findJobInPoolsSync(jobId) as Job | null;
 }
 
 const JOB_META_DESC: Record<string, (title: string, company: string, location: string, type: string, salary: string) => string> = {
@@ -67,6 +74,15 @@ export async function generateMetadata({
   const job = findJob(rc, cc, jobId);
   const countryInfo = (countriesData as any[]).find(c => c.slug === cc);
   const regionInfo = REGIONS.find(r => r.code === rc);
+
+  // BLOQUEIO DE CONCORRENTES: portais de emprego não são indexados nem
+  // anunciados no NOSSY (pedido do dono).
+  if (job && isCompetitorJob(job)) {
+    return {
+      title: "Job not found | NOSSY",
+      robots: { index: false, follow: false },
+    };
+  }
 
   const countryName = job?.countryName || countryInfo?.name || cc;
   const countryNameTranslated = getCountryNameTranslated(cc, lang, countryName);
@@ -169,11 +185,18 @@ function JobPostingSchema({ job, url }: { job: Job; url: string }) {
 
   // Descrição com abreviações expandidas ("Austin, TX, USA" ->
   // "Austin, Texas, United States") e limpa para o Google Jobs.
+  // PADRÃO 1874: vaga bloqueada não cita o nome da empresa na descrição
+  // (nem no schema) — a empresa só aparece após o pagamento.
   const rawDesc = job.description || `Tech job: ${job.title}${paywalled ? "" : ` at ${job.company}`}`;
-  const desc = expandLocationNames(rawDesc, {
-    countrySlug: job.country,
-    countryName: job.countryName,
-  });
+  const desc = paywalled
+    ? scrubCompanyFromText(
+        expandLocationNames(rawDesc, { countrySlug: job.country, countryName: job.countryName }),
+        job.company
+      )
+    : expandLocationNames(rawDesc, {
+        countrySlug: job.country,
+        countryName: job.countryName,
+      });
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -240,9 +263,12 @@ export default async function JobDetailLayout({
   const job = findJob(rc, cc, jobId);
   const url = `https://nossy.pro/${langCode}/${slug}/${rc}/${cc}/${jobId}`;
 
+  // Portais concorrentes não recebem JSON-LD de vaga (JobPosting/Google Jobs)
+  const blocked = job && isCompetitorJob(job);
+
   return (
     <>
-      {job && <JobPostingSchema job={job} url={url} />}
+      {job && !blocked && <JobPostingSchema job={job} url={url} />}
       {children}
     </>
   );

@@ -5,6 +5,8 @@ import type { Lang } from "@/lib/i18n";
 import { shouldHavePaywall } from "@/lib/shared";
 import { maskJobIfLocked } from "@/lib/paywall-mask";
 import { findJobFastAsync } from "@/lib/job-lookup";
+import { findJobInPools } from "@/lib/remote-pool";
+import { isCompetitorJob } from "@/lib/competitors";
 import { expandLocationNames } from "@/lib/location-names";
 
 // Premium 0220 — tradução com Gemini→GTX→MyMemory pode levar >10s no
@@ -25,7 +27,11 @@ function isRateLimited(ip: string): boolean {
 async function findJob(baseName: string, jobId: string): Promise<any | null> {
   // Busca rápida: índice id->chunk gerado no build + cache em memória
   // (sem isso, países fatiados como os EUA exigiam até 19 leituras JSON)
-  return findJobFastAsync<any>(baseName, jobId);
+  const local = await findJobFastAsync<any>(baseName, jobId);
+  if (local) return local;
+  // CATÁLOGO MUNDIAL: países sem arquivo próprio (ex. africa_angola) servem
+  // o pool remoto global — o detalhe busca a MESMA vaga do pool da listagem.
+  return findJobInPools(jobId);
 }
 
 export async function GET(req: NextRequest) {
@@ -54,6 +60,12 @@ export async function GET(req: NextRequest) {
     const job = await findJob(baseName, jobId);
 
     if (!job) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    // BLOQUEIO DE CONCORRENTES: portais de emprego nunca têm página de
+    // detalhe (404), independentemente do estado dos dados.
+    if (isCompetitorJob(job)) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 

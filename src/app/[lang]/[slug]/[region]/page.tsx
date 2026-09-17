@@ -2,18 +2,17 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { REGIONS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getFlag } from "@/lib/flags";
 import { getRegionName } from "@/lib/shared";
-import { getCountryNameTranslated } from "@/lib/country-names";
+import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
 import NossyBrand from "@/components/NossyBrand";
 import LangSelector from "@/components/LangSelector";
 import allCountries from "@/data/countries.json";
+import continentsData from "@/data/continents.json";
 
-interface CountryInfo { name: string; slug: string; region: string; count: number; }
+interface CountryInfo { name: string; namePt?: string; slug: string; region: string; continent: string; count: number; }
 
 export default function RegionPage({ params }: { params: Promise<{ lang: string; slug: string; region: string }> }) {
   const [resolvedParams, setResolvedParams] = useState<{ lang: string; slug: string; region: string } | null>(null);
@@ -21,15 +20,19 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
   const langCode = resolvedParams?.lang || '';
   const rc = resolvedParams?.region || '';
   const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
-  const regionCountries = (allCountries as CountryInfo[]).filter((c) => c.region === rc).sort((a, b) => b.count - a.count);
+  // Catálogo mundial: agrupa por CONTINENTE (países com região de dados
+  // diferente — ex. Estados Unidos em "eua" — aparecem no continente certo)
+  const regionCountries = (allCountries as CountryInfo[])
+    .filter((c) => c.continent === rc && c.slug !== "remoto-global")
+    .sort((a, b) => b.count - a.count);
 
   const homeHref = "/" + lang + "/" + LANG_SLUGS[lang];
   const regionHref = homeHref + "/" + rc;
 
   const T = i18n[lang] || i18n["en"];
   const isRtl = LANGUAGES.find(l => l.code === lang)?.dir === "rtl";
-  const rCfg = REGIONS.find(r => r.code === rc);
   const rName = getRegionName(lang, rc);
+  const continentJobs = (continentsData as { code: string; count: number }[]).find(c => c.code === rc)?.count ?? 0;
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
@@ -51,19 +54,16 @@ export default function RegionPage({ params }: { params: Promise<{ lang: string;
           <span className="text-gray-900 font-medium">{rName}</span>
         </nav>
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">{rCfg?.flag} {rName}</h1>
-          <p className="text-gray-500 mt-1">{rCfg?.jobCount.toLocaleString()}+ {T.vacancies}</p>
+          <h1 className="text-3xl font-extrabold text-gray-900">{rName}</h1>
+          <p className="text-gray-500 mt-1">{continentJobs.toLocaleString()} {T.vacancies} · {getCountryCountLabel(regionCountries.length, lang, T.countries)}</p>
         </div>
         <section>
             <h2 className="text-xl font-bold text-gray-900 mb-4">{T.browseByCountry}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {regionCountries.map((c) => (
-                <Link key={c.slug} href={regionHref + "/" + c.slug} className="group flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all text-left">
-                  <span className="text-3xl">{getFlag(c.slug)}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate group-hover:text-sky-600 transition-colors">{getCountryNameTranslated(c.slug, lang, c.name)}</p>
-                    <p className="text-xs font-bold text-sky-600">{c.count.toLocaleString()} {T.jobCount}</p>
-                  </div>
+                <Link key={c.region + "/" + c.slug} href={homeHref + "/" + c.region + "/" + c.slug} className="group flex items-center justify-between gap-3 p-4 rounded-xl border border-gray-100 bg-white hover:border-sky-200 hover:shadow-lg transition-all text-left">
+                  <span className="flex-1 min-w-0 text-sm font-semibold text-gray-900 group-hover:text-sky-600 transition-colors">{getCountryNameTranslated(c.slug, lang, c.name)}</span>
+                  <span className="text-xs font-bold text-sky-600 whitespace-nowrap">{c.count.toLocaleString()}</span>
                 </Link>))}
             </div>
         </section>

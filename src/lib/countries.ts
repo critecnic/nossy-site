@@ -1,5 +1,9 @@
 // NOSSY Global Region Configuration - Seek and you shall find.
-// 5 major regions: Europa, Asia, United States (eua), Oceania, North America
+// 5 data regions (Europa, Asia, eua, Oceania, North America) + catálogo
+// mundial por CONTINENTE (padrão 1874/0220 — ver CONTINENTS abaixo).
+// Os continentes existem na camada de EXIBIÇÃO: os Estados Unidos continuam
+// com região de dados "eua" (URLs e arquivos inalterados), mas aparecem sob
+// o continente América do Norte.
 
 export interface CountryCurrency {
   code: string;
@@ -147,6 +151,20 @@ export const REGIONS: RegionConfig[] = [
 
 // Backward compat aliases
 export const COUNTRIES = REGIONS as unknown as RegionConfig[];
+
+// ─── Catálogo mundial por continente (sem bandeiras, sem emojis) ────────
+// Os cards de continente na home; contagens únicas em src/data/continents.json
+// (dados locais + pool remoto contado uma vez por continente).
+export const CONTINENT_CODES = [
+  "africa",
+  "america-do-norte",
+  "america-do-sul",
+  "asia",
+  "europa",
+  "oceania",
+] as const;
+
+export type ContinentCode = (typeof CONTINENT_CODES)[number];
 
 export function getRegion(code: string): RegionConfig | undefined {
   return REGIONS.find(r => r.code === code.toLowerCase());

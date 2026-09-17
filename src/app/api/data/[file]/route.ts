@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DATA_DIR } from "@/lib/data-dir";
 import { maskJobAlways } from "@/lib/paywall-mask";
+import { filterCompetitorJobs } from "@/lib/competitors";
 import fs from "fs";
 import path from "path";
 
@@ -24,8 +25,9 @@ export async function GET(
     if (file === "latest_20.json") {
       // Premium 0220: este arquivo contém vagas com paywall (empresa real).
       // Mesmo vindo de uma rota de API, a máscara server-side é obrigatória.
+      // Portais concorrentes também são filtrados em runtime (defesa extra).
       try {
-        const jobs = JSON.parse(data);
+        const jobs = filterCompetitorJobs(JSON.parse(data));
         body = JSON.stringify((Array.isArray(jobs) ? jobs : []).map((j: any) => maskJobAlways(j)));
       } catch { return NextResponse.json({ error: "Not found" }, { status: 404 }); }
     }
