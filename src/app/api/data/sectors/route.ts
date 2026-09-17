@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DATA_DIR } from "@/lib/data-dir";
-import { getRemotePool } from "@/lib/remote-pool";
+import { getRemotePool, getRemoteExtraJobs } from "@/lib/remote-pool";
 import { isCompetitorJob } from "@/lib/competitors";
 import { promises as fsp } from "fs";
 import path from "path";
@@ -91,6 +91,15 @@ export async function GET(req: NextRequest) {
         const s = job.sector || 'Other';
         sectorCounts[s] = (sectorCounts[s] || 0) + 1;
       }
+    }
+
+    // PADRÃO 1874 — remoto em TODOS os países: os setores do pool remoto
+    // exclusivo do país ({base}_remote-extra.json) entram na contagem junto
+    // com os locais, espelhando a listagem (local + pool).
+    const extraJobs = await getRemoteExtraJobs(baseName);
+    for (const job of extraJobs) {
+      const s = job.sector || 'Other';
+      sectorCounts[s] = (sectorCounts[s] || 0) + 1;
     }
 
     // Sort by count descending

@@ -114,5 +114,109 @@ export function remotePoolCountSync(): number {
   return getRemotePoolSync().length;
 }
 
+// ─── Extra remoto por país (padrão 1874 — remoto em TODOS os países) ──────
+//
+// O pool remoto passa a ser anexado às listagens de TODOS os países, não só
+// dos que não têm dados locais. Como ids do pool COLIDEM com ids locais de
+// vários países (são vagas diferentes com o mesmo número), cada país só
+// recebe a fração do pool cujos ids NÃO existem nos dados locais — lista
+// pré-computada no build em data/site/{base}_remote-extra.json (ids na MESMA
+// ordem do pool, então fatiar por offset aqui equivale à ordem da listagem).
+
+const EXTRA_CACHE = new Map<string, string[] | null>();
+const extraIdsCacheAsync = new Map<string, Promise<string[] | null>>();
+
+function parseExtraIds(raw: string): string[] | null {
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.map((id) => String(id));
+  } catch {
+    return null;
+  }
+}
+
+/** Ids do pool remoto exclusivos do país (ordem do pool). Síncrono. */
+export function getRemoteExtraIdsSync(baseName: string): string[] | null {
+  if (EXTRA_CACHE.has(baseName)) return EXTRA_CACHE.get(baseName)!;
+  const p = safeRead(`${baseName}_remote-extra.json`);
+  if (!p) {
+    EXTRA_CACHE.set(baseName, null);
+    return null;
+  }
+  const ids = parseExtraIds(p);
+  EXTRA_CACHE.set(baseName, ids);
+  return ids;
+}
+
+/** Ids do pool remoto exclusivos do país — assíncrono (rotas de API). */
+export async function getRemoteExtraIds(baseName: string): Promise<string[] | null> {
+  const cached = EXTRA_CACHE.get(baseName);
+  if (cached !== undefined) return cached;
+  const pending = extraIdsCacheAsync.get(baseName);
+  if (pending) return pending;
+  const promise = (async () => {
+    if (!/^[a-z0-9][a-z0-9\-_]*$/.test(baseName)) {
+      EXTRA_CACHE.set(baseName, null);
+      return null;
+    }
+    const p = path.resolve(DATA_DIR, `${baseName}_remote-extra.json`);
+    if (!p.startsWith(DATA_DIR + path.sep) && p !== DATA_DIR) {
+      EXTRA_CACHE.set(baseName, null);
+      return null;
+    }
+    try {
+      const raw = await fsp.readFile(p, "utf-8");
+      const ids = parseExtraIds(raw);
+      EXTRA_CACHE.set(baseName, ids);
+      return ids;
+    } catch {
+      EXTRA_CACHE.set(baseName, null);
+      return null;
+    }
+  })();
+  extraIdsCacheAsync.set(baseName, promise);
+  return promise;
+}
+
+/** Mapa id -> vaga do pool (lazy, compartilhado). */
+function poolById(): Map<string, AnyJob> {
+  const byId = new Map<string, AnyJob>();
+  for (const j of getRemotePoolSync()) byId.set(String(j.id), j);
+  return byId;
+}
+
+async function poolByIdAsync(): Promise<Map<string, AnyJob>> {
+  const byId = new Map<string, AnyJob>();
+  for (const j of await getRemotePool()) byId.set(String(j.id), j);
+  return byId;
+}
+
+/** Vagas do pool correspondentes aos ids extra (ordem dos ids). Síncrono. */
+export function getRemoteExtraJobsSync(baseName: string): AnyJob[] {
+  const ids = getRemoteExtraIdsSync(baseName);
+  if (!ids || ids.length === 0) return [];
+  const byId = poolById();
+  const jobs: AnyJob[] = [];
+  for (const id of ids) {
+    const job = byId.get(id);
+    if (job) jobs.push(job);
+  }
+  return jobs;
+}
+
+/** Vagas do pool correspondentes aos ids extra — assíncrono (APIs). */
+export async function getRemoteExtraJobs(baseName: string): Promise<AnyJob[]> {
+  const ids = await getRemoteExtraIds(baseName);
+  if (!ids || ids.length === 0) return [];
+  const byId = await poolByIdAsync();
+  const jobs: AnyJob[] = [];
+  for (const id of ids) {
+    const job = byId.get(id);
+    if (job) jobs.push(job);
+  }
+  return jobs;
+}
+
 // Reexport para rotas que só precisam filtrar concorrentes de arquivos locais
 export { filterCompetitorJobs };

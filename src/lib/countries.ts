@@ -180,6 +180,8 @@ export function getCountryName(code: string, lang?: string): string {
   return r.name;
 }
 
-export const TOTAL_JOBS = 61401;
+// Total ÚNICO de vagas no sistema: 59.651 locais + 1.565 do pool remoto
+// (contado 1x) = 61.216 — verificado por scripts/gen-remote-extra.mjs.
+export const TOTAL_JOBS = 61216;
 export const TOTAL_REGIONS = 5;
 export const TOTAL_CATEGORIES = 21;

@@ -4,7 +4,7 @@ import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { maskJobAlways } from "@/lib/paywall-mask";
 import { DATA_DIR } from "@/lib/data-dir";
-import { getRemotePool } from "@/lib/remote-pool";
+import { getRemotePool, getRemoteExtraJobs } from "@/lib/remote-pool";
 import { filterCompetitorJobs } from "@/lib/competitors";
 import { promises as fsp } from "fs";
 import path from "path";
@@ -168,6 +168,27 @@ export async function GET(req: NextRequest) {
         total = allJobs.length;
         const offset = (page - 1) * limit;
         jobs = allJobs.slice(offset, offset + limit);
+      }
+    }
+
+    // PADRÃO 1874 — remoto em TODOS os países: depois das vagas locais
+    // (paginadas acima), a listagem continua no pool remoto exclusivo do
+    // país ({base}_remote-extra.json — ids do pool que NÃO colidem com ids
+    // locais, pré-computado no build). Paginação atravessa a fronteira
+    // local->pool sem buracos nem duplicatas; o detalhe já resolve ids do
+    // pool via findJobInPools (listagem <-> detalhe consistentes).
+    const localTotal = total;
+    const extraJobs = await getRemoteExtraJobs(baseName);
+    if (extraJobs.length > 0) {
+      const extraFiltered = sectorFilter
+        ? extraJobs.filter((j: any) => (j.sector || '').toLowerCase() === sectorFilter)
+        : extraJobs;
+      total += extraFiltered.length;
+      const offset = (page - 1) * limit;
+      const poolStart = Math.max(0, offset - localTotal);
+      const poolEnd = offset + limit - localTotal;
+      if (poolStart < extraFiltered.length) {
+        jobs = [...jobs, ...extraFiltered.slice(poolStart, Math.max(0, poolEnd))];
       }
     }
 

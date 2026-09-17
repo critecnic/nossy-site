@@ -437,7 +437,7 @@
   "slug": "canada",
   "region": "america-do-norte",
   "continent": "america-do-norte",
-  "count": 6411
+  "count": 7716
  },
  {
   "name": "Antigua and Barbuda",
@@ -613,7 +613,7 @@
   "slug": "united-states",
   "region": "eua",
   "continent": "america-do-norte",
-  "count": 18983
+  "count": 19019
  },
  {
   "name": "Argentina",
@@ -717,7 +717,7 @@
   "slug": "india",
   "region": "asia",
   "continent": "asia",
-  "count": 3005
+  "count": 4570
  },
  {
   "name": "China",
@@ -725,7 +725,7 @@
   "slug": "china",
   "region": "asia",
   "continent": "asia",
-  "count": 1698
+  "count": 3263
  },
  {
   "name": "Afghanistan",
@@ -989,7 +989,7 @@
   "slug": "japao",
   "region": "asia",
   "continent": "asia",
-  "count": 1097
+  "count": 2662
  },
  {
   "name": "Global Remote",
@@ -1005,7 +1005,7 @@
   "slug": "singapura",
   "region": "asia",
   "continent": "asia",
-  "count": 858
+  "count": 2423
  },
  {
   "name": "South Korea",
@@ -1013,7 +1013,7 @@
   "slug": "coreia-do-sul",
   "region": "asia",
   "continent": "asia",
-  "count": 795
+  "count": 2360
  },
  {
   "name": "Hong Kong",
@@ -1021,7 +1021,7 @@
   "slug": "hong-kong",
   "region": "asia",
   "continent": "asia",
-  "count": 316
+  "count": 1881
  },
  {
   "name": "Taiwan",
@@ -1029,7 +1029,7 @@
   "slug": "taiwan",
   "region": "asia",
   "continent": "asia",
-  "count": 292
+  "count": 1857
  },
  {
   "name": "Indonesia",
@@ -1037,7 +1037,7 @@
   "slug": "indonesia",
   "region": "asia",
   "continent": "asia",
-  "count": 289
+  "count": 1738
  },
  {
   "name": "Thailand",
@@ -1045,7 +1045,7 @@
   "slug": "tailandia",
   "region": "asia",
   "continent": "asia",
-  "count": 286
+  "count": 1851
  },
  {
   "name": "Malaysia",
@@ -1053,7 +1053,7 @@
   "slug": "malasia",
   "region": "asia",
   "continent": "asia",
-  "count": 257
+  "count": 1752
  },
  {
   "name": "Vietnam",
@@ -1061,7 +1061,7 @@
   "slug": "vietna",
   "region": "asia",
   "continent": "asia",
-  "count": 235
+  "count": 1684
  },
  {
   "name": "Philippines",
@@ -1069,7 +1069,7 @@
   "slug": "filipinas",
   "region": "asia",
   "continent": "asia",
-  "count": 206
+  "count": 1710
  },
  {
   "name": "Pakistan",
@@ -1077,7 +1077,7 @@
   "slug": "paquistao",
   "region": "asia",
   "continent": "asia",
-  "count": 85
+  "count": 1650
  },
  {
   "name": "Sri Lanka",
@@ -1085,7 +1085,7 @@
   "slug": "sri-lanka",
   "region": "asia",
   "continent": "asia",
-  "count": 84
+  "count": 1649
  },
  {
   "name": "Bangladesh",
@@ -1093,7 +1093,7 @@
   "slug": "bangladesh",
   "region": "asia",
   "continent": "asia",
-  "count": 34
+  "count": 1599
  },
  {
   "name": "Nepal",
@@ -1101,7 +1101,7 @@
   "slug": "nepal",
   "region": "asia",
   "continent": "asia",
-  "count": 28
+  "count": 1593
  },
  {
   "name": "United Kingdom",
@@ -1109,7 +1109,7 @@
   "slug": "united-kingdom",
   "region": "europa",
   "continent": "europa",
-  "count": 2677
+  "count": 4107
  },
  {
   "name": "Andorra",
@@ -1173,7 +1173,7 @@
   "slug": "germany",
   "region": "europa",
   "continent": "europa",
-  "count": 1549
+  "count": 3045
  },
  {
   "name": "France",
@@ -1181,7 +1181,7 @@
   "slug": "france",
   "region": "europa",
   "continent": "europa",
-  "count": 1446
+  "count": 2959
  },
  {
   "name": "Sweden",
@@ -1189,7 +1189,7 @@
   "slug": "sweden",
   "region": "europa",
   "continent": "europa",
-  "count": 813
+  "count": 2357
  },
  {
   "name": "Spain",
@@ -1197,7 +1197,7 @@
   "slug": "spain",
   "region": "europa",
   "continent": "europa",
-  "count": 793
+  "count": 2352
  },
  {
   "name": "Global Remote",
@@ -1213,7 +1213,7 @@
   "slug": "netherlands",
   "region": "europa",
   "continent": "europa",
-  "count": 752
+  "count": 2307
  },
  {
   "name": "Poland",
@@ -1221,7 +1221,7 @@
   "slug": "poland",
   "region": "europa",
   "continent": "europa",
-  "count": 685
+  "count": 2236
  },
  {
   "name": "Ireland",
@@ -1229,7 +1229,7 @@
   "slug": "ireland",
   "region": "europa",
   "continent": "europa",
-  "count": 623
+  "count": 2187
  },
  {
   "name": "Finland",
@@ -1237,7 +1237,7 @@
   "slug": "finland",
   "region": "europa",
   "continent": "europa",
-  "count": 553
+  "count": 2077
  },
  {
   "name": "Switzerland",
@@ -1245,7 +1245,7 @@
   "slug": "switzerland",
   "region": "europa",
   "continent": "europa",
-  "count": 513
+  "count": 2070
  },
  {
   "name": "Italy",
@@ -1253,7 +1253,7 @@
   "slug": "italy",
   "region": "europa",
   "continent": "europa",
-  "count": 507
+  "count": 2067
  },
  {
   "name": "Portugal",
@@ -1261,7 +1261,7 @@
   "slug": "portugal",
   "region": "europa",
   "continent": "europa",
-  "count": 484
+  "count": 1925
  },
  {
   "name": "Denmark",
@@ -1269,7 +1269,7 @@
   "slug": "denmark",
   "region": "europa",
   "continent": "europa",
-  "count": 424
+  "count": 1953
  },
  {
   "name": "Norway",
@@ -1277,7 +1277,7 @@
   "slug": "norway",
   "region": "europa",
   "continent": "europa",
-  "count": 320
+  "count": 1857
  },
  {
   "name": "Belgium",
@@ -1285,7 +1285,7 @@
   "slug": "belgium",
   "region": "europa",
   "continent": "europa",
-  "count": 304
+  "count": 1830
  },
  {
   "name": "Austria",
@@ -1293,7 +1293,7 @@
   "slug": "austria",
   "region": "europa",
   "continent": "europa",
-  "count": 247
+  "count": 1781
  },
  {
   "name": "Estonia",
@@ -1301,7 +1301,7 @@
   "slug": "estonia",
   "region": "europa",
   "continent": "europa",
-  "count": 150
+  "count": 1709
  },
  {
   "name": "Czech Republic",
@@ -1309,7 +1309,7 @@
   "slug": "czech-republic",
   "region": "europa",
   "continent": "europa",
-  "count": 138
+  "count": 1678
  },
  {
   "name": "Romania",
@@ -1317,7 +1317,7 @@
   "slug": "romania",
   "region": "europa",
   "continent": "europa",
-  "count": 122
+  "count": 1663
  },
  {
   "name": "Hungary",
@@ -1325,7 +1325,7 @@
   "slug": "hungary",
   "region": "europa",
   "continent": "europa",
-  "count": 95
+  "count": 1645
  },
  {
   "name": "Luxembourg",
@@ -1333,7 +1333,7 @@
   "slug": "luxembourg",
   "region": "europa",
   "continent": "europa",
-  "count": 89
+  "count": 1642
  },
  {
   "name": "Ukraine",
@@ -1341,7 +1341,7 @@
   "slug": "ukraine",
   "region": "europa",
   "continent": "europa",
-  "count": 88
+  "count": 1645
  },
  {
   "name": "Greece",
@@ -1349,7 +1349,7 @@
   "slug": "greece",
   "region": "europa",
   "continent": "europa",
-  "count": 85
+  "count": 1643
  },
  {
   "name": "Lithuania",
@@ -1357,7 +1357,7 @@
   "slug": "lithuania",
   "region": "europa",
   "continent": "europa",
-  "count": 84
+  "count": 1642
  },
  {
   "name": "Bulgaria",
@@ -1365,7 +1365,7 @@
   "slug": "bulgaria",
   "region": "europa",
   "continent": "europa",
-  "count": 75
+  "count": 1628
  },
  {
   "name": "Cyprus",
@@ -1373,7 +1373,7 @@
   "slug": "cyprus",
   "region": "europa",
   "continent": "europa",
-  "count": 54
+  "count": 1609
  },
  {
   "name": "Croatia",
@@ -1381,7 +1381,7 @@
   "slug": "croatia",
   "region": "europa",
   "continent": "europa",
-  "count": 53
+  "count": 1610
  },
  {
   "name": "Serbia",
@@ -1389,7 +1389,7 @@
   "slug": "serbia",
   "region": "europa",
   "continent": "europa",
-  "count": 49
+  "count": 1602
  },
  {
   "name": "Slovakia",
@@ -1397,7 +1397,7 @@
   "slug": "slovakia",
   "region": "europa",
   "continent": "europa",
-  "count": 47
+  "count": 1607
  },
  {
   "name": "Malta",
@@ -1405,7 +1405,7 @@
   "slug": "malta",
   "region": "europa",
   "continent": "europa",
-  "count": 41
+  "count": 1598
  },
  {
   "name": "Iceland",
@@ -1413,7 +1413,7 @@
   "slug": "iceland",
   "region": "europa",
   "continent": "europa",
-  "count": 40
+  "count": 1598
  },
  {
   "name": "Slovenia",
@@ -1421,7 +1421,7 @@
   "slug": "slovenia",
   "region": "europa",
   "continent": "europa",
-  "count": 36
+  "count": 1596
  },
  {
   "name": "Latvia",
@@ -1429,7 +1429,7 @@
   "slug": "latvia",
   "region": "europa",
   "continent": "europa",
-  "count": 33
+  "count": 1598
  },
  {
   "name": "Moldova",
@@ -1437,7 +1437,7 @@
   "slug": "moldova",
   "region": "europa",
   "continent": "europa",
-  "count": 20
+  "count": 1582
  },
  {
   "name": "Georgia",
@@ -1445,7 +1445,7 @@
   "slug": "georgia",
   "region": "europa",
   "continent": "europa",
-  "count": 19
+  "count": 1582
  },
  {
   "name": "Albania",
@@ -1453,7 +1453,7 @@
   "slug": "albania",
   "region": "europa",
   "continent": "europa",
-  "count": 14
+  "count": 1578
  },
  {
   "name": "North Macedonia",
@@ -1461,7 +1461,7 @@
   "slug": "north-macedonia",
   "region": "europa",
   "continent": "europa",
-  "count": 13
+  "count": 1577
  },
  {
   "name": "Bosnia and Herzegovina",
@@ -1469,7 +1469,7 @@
   "slug": "bosnia-and-herzegovina",
   "region": "europa",
   "continent": "europa",
-  "count": 11
+  "count": 1575
  },
  {
   "name": "Montenegro",
@@ -1477,7 +1477,7 @@
   "slug": "montenegro",
   "region": "europa",
   "continent": "europa",
-  "count": 11
+  "count": 1575
  },
  {
   "name": "Australia",
@@ -1485,7 +1485,7 @@
   "slug": "australia",
   "region": "oceania",
   "continent": "oceania",
-  "count": 8579
+  "count": 9451
  },
  {
   "name": "New Zealand",
@@ -1493,7 +1493,7 @@
   "slug": "nova-zelandia",
   "region": "oceania",
   "continent": "oceania",
-  "count": 2056
+  "count": 3078
  },
  {
   "name": "Fiji",
