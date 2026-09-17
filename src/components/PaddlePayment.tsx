@@ -76,7 +76,9 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
   const t = (key: string) => T[key] || EN[key] || '';
 
   // On mount: fetch a random on-screen challenge (numbers to type back).
-  async function loadChallenge() {
+  // Se falhar (ex.: limite por minuto), tenta de novo sozinho — o usuário
+  // nunca pode ficar preso sem números (bug reportado pelo dono).
+  async function loadChallenge(attempt = 0) {
     setLoading(true);
     setError('');
     try {
@@ -89,13 +91,17 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
       if (data.success && data.code) {
         setChallenge(String(data.code));
         setCode('');
-      } else {
-        setError(data.error || t('errorSendingCode'));
+        setLoading(false);
+        return;
       }
+      setError(data.error || t('errorSendingCode'));
     } catch {
       setError(t('connectionError'));
     }
     setLoading(false);
+    if (attempt < 2) {
+      setTimeout(() => { loadChallenge(attempt + 1); }, 5000 * (attempt + 1));
+    }
   }
 
   useEffect(() => { loadChallenge(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, []);
@@ -223,7 +229,7 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
 
   const newNumbersButton = (
     <button
-      onClick={loadChallenge}
+      onClick={() => loadChallenge(0)}
       disabled={loading}
       className={"text-gray-400 hover:text-sky-600 underline transition-colors disabled:opacity-50 " + (compact ? "text-[11px]" : "text-xs")}
     >

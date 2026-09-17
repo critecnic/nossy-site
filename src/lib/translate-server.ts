@@ -28,23 +28,27 @@ export function needsServerTranslation(lang: string): boolean {
 }
 
 // ---- Cache ----
-const cache = new Map<string, { data: any; ts: number }>();
+// Traduções de conteúdo estático (vaga+idioma) são imutáveis: TTL longo
+// (24h) evita re-traduzir a cada visita e elimina lentidão/falha que fazia
+// a página cair no fallback SEM tradução (bug reportado pelo dono).
+const cache = new Map<string, { data: any; ts: number; ttl: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
-const MAX_CACHE = 500;
+const CACHE_TTL_LONG = 24 * 60 * 60 * 1000; // 24h — conteúdo estático
+const MAX_CACHE = 2000;
 
 function getCached(key: string): any | null {
   const e = cache.get(key);
-  if (e && Date.now() - e.ts < CACHE_TTL) return e.data;
+  if (e && Date.now() - e.ts < e.ttl) return e.data;
   if (e) cache.delete(key);
   return null;
 }
 
-function setCache(key: string, data: any): void {
+function setCache(key: string, data: any, ttl: number = CACHE_TTL): void {
   if (cache.size >= MAX_CACHE) {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) cache.delete(oldest);
   }
-  cache.set(key, { data, ts: Date.now() });
+  cache.set(key, { data, ts: Date.now(), ttl });
 }
 
 // ---- Provider 1: Google Translate GTX (free, fast, no key needed) ----
@@ -143,33 +147,59 @@ async function translateTextChunked(text: string, targetLang: string): Promise<s
 }
 
 // ---- Gemini API (optional, for batch quality) ----
-const GEMINI_MODEL = 'gemini-2.0-flash';
-const MAX_RETRIES = 2;
+// Modelos com FALLBACK: o gemini-2.0-flash pode ser aposentado pelo Google
+// e aí TODA tradução falhava silenciosamente (dono viu descrição em PT no
+// site EN). Tentamos o modelo mais novo primeiro; o que funcionar fica em
+// cache; se nenhum funcionar, desligamos o Gemini por 10 min e seguimos
+// com GTX/MyMemory (rápidos) sem desperdiçar tempo em retries.
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+let geminiWorkingModel: string | null = null;
+let geminiDisabledUntil = 0;
+
 function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
-async function callGemini(systemPrompt: string, userContent: string, jsonMode = false): Promise<string | null> {
+async function callGeminiModel(model: string, systemPrompt: string, userContent: string, jsonMode: boolean): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const body: any = {
     systemInstruction: { parts: [{ text: systemPrompt }] },
     contents: [{ role: 'user', parts: [{ text: userContent }] }],
     generationConfig: { temperature: 0.1 },
   };
   if (jsonMode) body.generationConfig.responseMimeType = 'application/json';
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
-      clearTimeout(timer);
-      if (!res.ok) { if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; } return null; }
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text?.trim()) return null;
-      return text.trim();
-    } catch { if (attempt < MAX_RETRIES) { await delay(500 * (attempt + 1)); continue; } return null; }
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 6000);
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text?.trim()) return null;
+    return text.trim();
+  } catch { return null; }
+}
+
+async function callGemini(systemPrompt: string, userContent: string, jsonMode = false): Promise<string | null> {
+  if (!process.env.GEMINI_API_KEY) return null;
+  if (Date.now() < geminiDisabledUntil) return null;
+
+  // Modelo que funcionou antes vai primeiro; demais na ordem de novidade.
+  const models = geminiWorkingModel
+    ? [geminiWorkingModel, ...GEMINI_MODELS.filter(m => m !== geminiWorkingModel)]
+    : GEMINI_MODELS;
+
+  for (const model of models) {
+    const text = await callGeminiModel(model, systemPrompt, userContent, jsonMode);
+    if (text) {
+      geminiWorkingModel = model;
+      return text;
+    }
   }
+
+  // Nenhum modelo respondeu: não insistir em cada request — GTX cobre.
+  geminiDisabledUntil = Date.now() + 10 * 60 * 1000;
   return null;
 }
 
@@ -228,7 +258,7 @@ Rules:
             batchCache[String(item.id)] = entry;
           }
         }
-        setCache(cacheKey, batchCache);
+        setCache(cacheKey, batchCache, CACHE_TTL_LONG);
         geminiOk = true;
       } catch { anyFailed = true; for (const j of batch) allResults.set(j.id, { title: j.title, company: j.company, location: j.location }); }
     } else { break; }
@@ -274,7 +304,7 @@ Rules:
         const entry: { title: string; company: string; location: string; description?: string } = { title, company, location };
         if (description) entry.description = description;
         allResults.set(job.id, entry);
-        setCache(cacheKey, entry);
+        setCache(cacheKey, entry, CACHE_TTL_LONG);
       } catch {
         anyFailed = true;
         const fallback: { title: string; company: string; location: string; description?: string } = { title: job.title, company: job.company, location: job.location };
@@ -320,7 +350,7 @@ Rules:
       const descRatio = parsed.description ? parsed.description.length / job.description.length : 0;
       if (parsed.description && descRatio >= 0.5) {
         const result = { title: parsed.title || job.title, description: parsed.description, company: parsed.company || job.company, location: parsed.location || job.location, ok: true };
-        setCache(cacheKey, result);
+        setCache(cacheKey, result, CACHE_TTL_LONG);
         return result;
       }
     } catch {}
@@ -335,7 +365,7 @@ Rules:
       translateTextFree(job.location, gtLang),
     ]);
     const result = { title, description, company, location, ok: true };
-    setCache(cacheKey, result);
+    setCache(cacheKey, result, CACHE_TTL_LONG);
     return result;
   } catch { return { ...passThrough, ok: false }; }
 }

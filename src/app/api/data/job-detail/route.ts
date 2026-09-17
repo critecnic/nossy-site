@@ -7,6 +7,10 @@ import { maskJobIfLocked } from "@/lib/paywall-mask";
 import { findJobFastAsync } from "@/lib/job-lookup";
 import { expandLocationNames } from "@/lib/location-names";
 
+// Premium 0220 — tradução com Gemini→GTX→MyMemory pode levar >10s no
+// primeiro acesso (frio). Sem isso a Vercel matava a função no meio e a
+// página caía no fallback SEM tradução (bug do dono).
+export const maxDuration = 30;
 
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {

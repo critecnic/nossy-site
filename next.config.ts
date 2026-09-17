@@ -53,7 +53,11 @@ const nextConfig: NextConfig = {
           { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://checkout.paddle.com https://vendor-api.paddle.com https://vitals.vercel-insights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+            // Premium 0220 — CSP inclui os domínios do Paddle.js: sem eles o
+            // navegador baixa cdn.paddle.com mas RECUSA executar o script
+            // (script-src), e bloquearia o iframe do checkout (frame-src).
+            // Era a causa do bug "clica Pay e a página volta ao início".
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.paddle.com https://vitals.vercel-insights.com https://va.vercel-scripts.com; frame-src https://*.paddle.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
           },
         ],
       },

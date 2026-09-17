@@ -3,7 +3,10 @@ import { createSignedChallenge, createVerificationCode, hasVerificationSecret, V
 
 // Simple in-memory rate limiting (per function instance)
 const sendCodeAttempts: Record<string, number[]> = {};
-const MAX_ATTEMPTS_PER_MINUTE = 6;
+// 12/min: o painel busca os números a cada abertura; com 6/min o usuário
+// que reabria o quadro algumas vezes recebia 429 e ficava SEM números
+// ("não avança" — bug reportado pelo dono).
+const MAX_ATTEMPTS_PER_MINUTE = 12;
 
 function clientKey(req: Request): string {
   const fwd = req.headers.get('x-forwarded-for');
