@@ -129,3 +129,25 @@ Stage Summary:
 - Pacote: /home/z/my-project/download/nossy-fix-critical.zip
 - Próximo passo: deploy no Vercel e testar /en/jobs/eua/united-states
 
+
+---
+Task ID: 18
+Agent: Main Agent
+Task: padrão premium 1874 — corrigir falhas no sistema de tradução (22 idiomas) e validar sistema de pagamento (dono: "traduçao estar com falhas / sistema de pagamento nao estar funcionando")
+
+Work Log:
+- Re-clonou o repo (ambiente resetado) no commit 32b41e4; instalou dependências
+- AUDITORIA de tradução: scripts/audit-i18n.mjs — 20 de 22 idiomas tinham 7-10 chaves de pagamento/verificação FALTANDO (apareciam em inglês fora de en/pt-br); scripts de auditoria mantidos no repo
+- CAUSA RAIZ 1 (crítica): 9 páginas usavam params.then(setState) — o SSR nascia SEMPRE em inglês até a hidratação trocar o idioma (home, continente, país, setores ×2, guias ×3, company/post). Convertidas para use(params) do React 19, que resolve a Promise na renderização inicial (padrão já usado na página de detalhe)
+- CAUSA RAIZ 2: <html lang="en"> fixo no layout raiz; LangUpdater só corrigia pós-hidratação. Adicionado script inline no [lang]/[slug]/layout.tsx que define lang/dir JÁ NO PARSE do HTML (crawlers e primeira pintura veem o idioma certo; ar/ur recebem dir=rtl)
+- CHAVES FALTANDO: scripts/add-payment-keys.mjs inseriu 220 traduções (10 chaves × 22 idiomas: codePrompt, verifyNumbers, newNumbers, paymentConfirmed, paymentSetupNote, emailFallbackNote, emailSkipNote, verifyNeedEmail, verifyRetry, verifyingPayment); scripts/dedup-i18n.mjs removeu 26 duplicatas geradas na inserção (bloco truncado por placeholders {0}); auditoria final: 22 idiomas × 110 chaves, 0 faltando
+- PAÍSES: scripts/gen-country-names-langs.mjs gerou country-names-langs.ts via CLDR (Intl.DisplayNames) — 197 países × 19 idiomas não-PT; antes ~139 países ficavam em inglês na lista do continente (COUNTRY_NAMES só tinha 60 por idioma); getCountryNameTranslated consulta o catálogo gerado (manuais > PT > CLDR > fallback)
+- PIPELINE: translate-server.ts — MyMemory tem limite real de ~500 bytes (o código tentava 2000 e o excedente voltava SEM tradução); agora translateTextFree divide textos >400 chars em sub-fatias e translateTextChunked devolve o texto INTEIRO no idioma original se algum chunk falhar nos 2 provedores (descrição meio traduzida era confundida com bug)
+- PAGAMENTO: fluxo E2E REAL validado em produção com cartão sandbox 4242 4242 4242 4242 — desafio de números → checkout Paddle abriu → pagamento US$7 aprovado → overlay fechou sozinho → desbloqueio automático (empresa/e-mail/site reais na página) → cookie premium global (nossy_premium) desbloqueou OUTRAS vagas premium na mesma sessão. APIs send-code/status/verify OK ao vivo. Causa provável do relato do dono: cartão REAL no ambiente SANDBOX (só aceita cartões de teste) + textos de pagamento em inglês (corrigido)
+- Validação em produção: scripts/validate-traducao-production.sh — 39/39 PASS (h1 no idioma da URL em 19 idiomas, lang-script es-ES/pt-BR/rtl ar, nomes CLDR Espana/Alemania/Japon/Германия/Vereinigtes Königreich, APIs de dados íntegras, 7 páginas 200); navegador headless confirmou ES: título/localização traduzidos, painel "Verificar números/Nuevos números" e desafio numérico funcionando
+
+Stage Summary:
+- Deploy d5454b5 + 1822532 ao vivo em nossy.pro (padrão premium 1874 — só ajustes no sistema premium/tradução de UI)
+- Tradução: SSR nasce no idioma da URL nas 22 línguas; catálogo mundial 197 países × 22 idiomas; fluxo de pagamento 100% traduzido
+- Pagamento: funcionando E2E (sandbox) com desbloqueio automático global — orientar dono: usar cartão de teste 4242 4242 4242 4242 (validade futura qualquer, CVV qualquer) no sandbox; cartões reais só funcionam após trocar PADDLE_ENV para live com chaves de produção
+- Guias SEO (3 artigos) continuam em inglês (conteúdo pré-existente; não é parte do sistema de tradução de UI)
