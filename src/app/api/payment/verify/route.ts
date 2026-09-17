@@ -5,18 +5,39 @@ export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/payment/verify
- * Body: { email, jobId, txn? }
+ * Body: { jobId, txn?, email? }
  *
- * Verifies with the Paddle Billing API that a completed payment exists for
- * this email + job (directly by transaction id when available, otherwise by
- * matching the customer's completed transactions).
+ * Verifies with the Paddle Billing API that a COMPLETED payment exists
+ * (source of truth = Paddle itself, queried with the server secret key):
+ *   1. Primary (guest flow): transaction id captured client-side before the
+ *      overlay opened — no email needed. The card validation (expiry, funds,
+ *      3DS) happens INSIDE the Paddle checkout; we only ever see the result
+ *      (status completed/paid) — an unauthorized payment can never unlock.
+ *   2. Legacy/restore: email + job match against the customer's history.
  *
  * On success the user status becomes "Premium": an HMAC-signed premium
  * cookie (unlocks ALL paywalled content for 1 year) is issued, plus the
- * legacy per-job unlock cookie. No database required.
+ * per-job unlock cookie. No database required.
  */
+
+// Simple in-memory rate limit (per serverless instance) — each call hits
+// the Paddle API, so we keep it tight but generous for real retry loops.
+const verifyHits = new Map<string, number[]>();
+function verifyRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const arr = (verifyHits.get(ip) || []).filter(t => now - t < 60_000);
+  arr.push(now);
+  verifyHits.set(ip, arr);
+  return arr.length > 30;
+}
+
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (verifyRateLimited(ip)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json().catch(() => ({}));
     const { email, jobId, txn } = body || {};
 
@@ -24,8 +45,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Payment system is being configured. Please try again later.' }, { status: 503 });
     }
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
-      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+    const txnId = typeof txn === 'string' && /^txn_[a-z0-9]+$/i.test(txn) ? txn : '';
+    const emailOk = !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email));
+
+    if (!txnId && !emailOk) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
     const jobIdNum = Number(jobId);
@@ -38,12 +62,11 @@ export async function POST(request: Request) {
 
     try {
       let paid = false;
-      const txnId = typeof txn === 'string' && /^txn_[a-z0-9]+$/i.test(txn) ? txn : '';
 
         if (txnId) {
           paid = await isTransactionPaidForJob(txnId, jobIdNum, controller.signal);
         }
-        if (!paid) {
+        if (!paid && emailOk) {
           const found = await findPaidTransaction(String(email), jobIdNum, controller.signal);
           paid = found.paid;
         }

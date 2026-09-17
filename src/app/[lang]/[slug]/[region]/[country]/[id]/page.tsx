@@ -86,10 +86,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
   }, [rc, cc, jobId, langCode, dataVersion]);
 
   // After a Paddle payment redirect (?payment=success), verify the payment
-  // and unlock the contact info (user -> Premium). Primary path: the Paddle
-  // webhook already issued the signed unlock cookie -> /api/payment/status
-  // confirms it (polled a few times while the webhook lands). Legacy path:
-  // an email stored from an older checkout flow is re-validated via API.
+  // and unlock the contact info (user -> Premium). PRIMARY path (guest): the
+  // transaction id saved before the overlay opened is verified SERVER-SIDE
+  // against the Paddle Billing API (status completed + same job) — only then
+  // the signed unlock cookie is issued. Fallbacks: legacy email flow and
+  // /api/payment/status polling (webhook/premium cookie).
   // After a magic-link login (?auth=success), open the payment panel.
   useEffect(() => {
     if (!jobId) return;
@@ -124,19 +125,52 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
             });
         };
         const stored = sessionStorage.getItem('nossy_checkout_email') || '';
-        if (stored) {
-          // Legacy flow (email captured in an older checkout version)
+        // Legacy flow (email captured in an older checkout version)
+        const legacyEmailVerify = (onFail: () => void) => {
           fetch('/api/payment/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: stored, jobId: Number(jobId) }),
           })
             .then(r => r.json())
-            .then(d => { if (d.unlocked) finish(true); else checkStatus(4); })
-            .catch(() => checkStatus(4));
-        } else {
-          checkStatus(4);
-        }
+            .then(d => { if (d.unlocked) finish(true); else onFail(); })
+            .catch(onFail);
+        };
+        // PRIMARY: ask the SERVER to confirm the real payment with Paddle
+        // (txn id + jobId). Retries cover cold-start/finalization latency.
+        const verifyByTxn = (tries: number) => {
+          let saved: { txn?: string; jobId?: number } | null = null;
+          try { saved = JSON.parse(sessionStorage.getItem('nossy_last_txn') || 'null'); } catch { /* ignore */ }
+          if (!saved || !saved.txn || Number(saved.jobId) !== Number(jobId)) {
+            if (stored) legacyEmailVerify(() => checkStatus(4));
+            else checkStatus(4);
+            return;
+          }
+          fetch('/api/payment/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ txn: saved.txn, jobId: Number(jobId) }),
+          })
+            .then(r => (r.ok ? r.json() : { unlocked: false }))
+            .then(d => {
+              if (d.unlocked) {
+                try { sessionStorage.removeItem('nossy_last_txn'); } catch { /* ignore */ }
+                finish(true);
+              } else if (tries > 0) {
+                setTimeout(() => verifyByTxn(tries - 1), 2500);
+              } else if (stored) {
+                legacyEmailVerify(() => checkStatus(4));
+              } else {
+                checkStatus(4);
+              }
+            })
+            .catch(() => {
+              if (tries > 0) setTimeout(() => verifyByTxn(tries - 1), 2500);
+              else if (stored) legacyEmailVerify(() => checkStatus(4));
+              else checkStatus(4);
+            });
+        };
+        verifyByTxn(5);
         // Clean the query string so refresh does not re-verify
         window.history.replaceState({}, '', window.location.pathname);
       } else if (params.get('auth') === 'success') {
@@ -150,7 +184,30 @@ export default function JobDetailPage({ params }: { params: Promise<{ lang: stri
         // Returning visitor: check for a valid unlock / premium cookie
         fetch('/api/payment/status?jobId=' + encodeURIComponent(jobId))
           .then(r => (r.ok ? r.json() : { unlocked: false }))
-          .then(d => { if (d.unlocked) setUnlocked(true); })
+          .then(d => {
+            if (d.unlocked) { setUnlocked(true); return; }
+            // Self-heal: buyer paid but the success redirect was lost
+            // (closed tab, blocked redirect). Verify the saved txn once —
+            // if the payment is real, unlock silently.
+            let saved: { txn?: string; jobId?: number } | null = null;
+            try { saved = JSON.parse(sessionStorage.getItem('nossy_last_txn') || 'null'); } catch { /* ignore */ }
+            if (saved && saved.txn && Number(saved.jobId) === Number(jobId)) {
+              fetch('/api/payment/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ txn: saved.txn, jobId: Number(jobId) }),
+              })
+                .then(r => (r.ok ? r.json() : { unlocked: false }))
+                .then(v => {
+                  if (v.unlocked) {
+                    try { sessionStorage.removeItem('nossy_last_txn'); } catch { /* ignore */ }
+                    setUnlocked(true);
+                    setDataVersion(ver => ver + 1);
+                  }
+                })
+                .catch(() => { /* ignore */ });
+            }
+          })
           .catch(() => { /* ignore */ });
       }
     } catch { /* ignore */ }

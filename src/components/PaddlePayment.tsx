@@ -156,6 +156,15 @@ export default function PaddlePayment({ jobId, jobTitle, lang, jobUrl, onSuccess
         const join = basePage.includes('?') ? '&' : '?';
         const successUrl = basePage + join + 'payment=success';
 
+        // Persist the transaction id NOW: after the overlay closes we verify
+        // the REAL payment server-side (Paddle API lookup by txn + jobId) and
+        // only then release the contacts. Works for guest checkout (no email).
+        if (data.transactionId) {
+          try {
+            sessionStorage.setItem('nossy_last_txn', JSON.stringify({ txn: data.transactionId, jobId: Number(jobId), at: Date.now() }));
+          } catch { /* storage unavailable */ }
+        }
+
         // Preferred: overlay checkout via Paddle.js (documented flow for
         // server-side created transactions). The card window opens ON THIS
         // page — no redirect at all.
