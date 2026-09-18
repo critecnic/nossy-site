@@ -154,41 +154,19 @@ export const PREMIUM_0220_FORCE_JOB_IDS: readonly number[] = [
 ];
 
 /**
- * Premium 1874 — regra de bloqueio (paywall) determinística:
- *  1. Lista Premium 0220 (anúncio designado)            -> sempre bloqueado;
- *  2. 10% das vagas remotas (id % 10 === 0)             -> bloqueado;
- *  3. Vaga com e-mail de contato real (contactEmail)    -> bloqueada
- *     (empresa + e-mail só aparecem após pagamento US$ 7 confirmado);
- *  4. Todo o resto (sem contato)                        -> GRATUITA.
+ * PADRÃO 0220 — VAGAS LIVRES (2026-09-18, pedido do dono):
+ * "retire toda a área premium, deixe todos os anúncios livres".
+ *
+ * A regra de paywall foi DESATIVADA: TODAS as vagas são públicas — empresa,
+ * e-mail e telefone visíveis sem pagamento. A assinatura é mantida para não
+ * quebrar os call-sites existentes (páginas, layouts e APIs de dados);
+ * qualquer chamada agora retorna paywall=false.
  */
-export function shouldHavePaywall(job: {
+export function shouldHavePaywall(_job: {
   id?: number;
   type?: string;
   contactEmail?: string | null;
 }): PaywallResult {
-  const id = job.id || 0;
-
-  // Premium 0220: anúncios designados explicitamente ficam sempre bloqueados
-  if (id > 0 && PREMIUM_0220_FORCE_JOB_IDS.includes(id)) {
-    return { paywall: true, reason: 'premium_0220' };
-  }
-
-  const workType = (job.type || '').toLowerCase();
-  const isRemote = workType === 'remote' || workType === 'remoto';
-
-  // 10% of remote jobs (deterministic)
-  if (isRemote && id % 10 === 0) {
-    return { paywall: true, reason: 'remote_10pct' };
-  }
-
-  // PADRÃO 1874 (regra do dono): vaga com e-mail de contato real é PREMIUM —
-  // empresa e e-mail ficam bloqueados até o pagamento de US$ 7 confirmado.
-  // Sem isso ~17 mil vagas com contato ficavam livres ("premium não está
-  // bloqueado para ver empresa e e-mail").
-  if (job.contactEmail && String(job.contactEmail).trim() !== '') {
-    return { paywall: true, reason: 'contact_premium' };
-  }
-
   return { paywall: false, reason: '' };
 }
 

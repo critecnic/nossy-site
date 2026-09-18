@@ -17,7 +17,7 @@ import securityConfig from "./config/security.json";
  *   de acesso para TODAS as rotas não isentas.
  *
  * Fluxo de cada requisição:
- *   1. Rota isenta? (webhook Paddle, diagnóstico, estáticos)  -> passa
+ *   1. Rota isenta? (diagnóstico, estáticos)                  -> passa
  *   2. IP local/dev?                                          -> passa
  *   3. Camada 1: rota de agente/admin e agentLockEnabled?     -> dono? passa : 403
  *   4. Camada 2: lockEnabled?                                 -> dono? passa : 403
@@ -34,14 +34,11 @@ import securityConfig from "./config/security.json";
 const ACCESS_COOKIE = "nossy_acesso";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 dias
 
-// Caminhos isentos: chamadas servidor-a-servidor (a Paddle não teria o IP do
-// dono) e infraestrutura sem conteúdo de negócio. /api/webhook-0220 é o alias
-// do rewrite no next.config — o middleware roda ANTES do rewrite, então o
-// pathname chega ainda como o alias original.
+// Caminhos isentos: infraestrutura sem conteúdo de negócio.
+// (As isenções de webhook/health do Paddle foram removidas junto com a
+// integração de pagamento — Task 20, vagas livres.)
 const EXEMPT_PREFIXES = [
-  "/api/webhook",        // webhook da Paddle (servidor-a-servidor)
   "/api/security/ip",    // diagnóstico: mostra o IP do visitante ao dono
-  "/api/payment/health", // health check (sem dados de negócio)
   "/_next/",             // assets do framework
 ];
 const EXEMPT_EXACT = ["/favicon.ico", "/robots.txt"];

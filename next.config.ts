@@ -26,18 +26,7 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         { source: "/data/:path*", destination: "/api/data-blocked" },
       ],
-      afterFiles: [
-      // Premium 0220 — alias gerido via API para o webhook da Paddle.
-      // A Paddle recusa criar um segundo webhook com o MESMO destino
-      // (notification_setting_cannot_be_duplicate), e o webhook criado
-      // manualmente no dashboard não permite recuperar o secret via API
-      // (GET /notification-settings -> 403 com a chave atual). Este alias
-      // dá um destino distinto (https://nossy.pro/api/webhook-0220) para o
-      // webhook criado 100% via API, cujo secret é capturado automaticamente
-      // e sincronizado à Vercel pelo workflow sync-vercel-env.yml. O rewrite
-      // preserva body e headers, então a validação HMAC é idêntica.
-      { source: "/api/webhook-0220", destination: "/api/webhook" },
-      ],
+      afterFiles: [],
     };
   },
   async headers() {
@@ -53,11 +42,9 @@ const nextConfig: NextConfig = {
           { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
           {
             key: "Content-Security-Policy",
-            // Premium 0220 — CSP inclui os domínios do Paddle.js: sem eles o
-            // navegador baixa cdn.paddle.com mas RECUSA executar o script
-            // (script-src), e bloquearia o iframe do checkout (frame-src).
-            // Era a causa do bug "clica Pay e a página volta ao início".
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.paddle.com https://vitals.vercel-insights.com https://va.vercel-scripts.com; frame-src https://*.paddle.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+            // Task 20 — CSP endurecido: os domínios do Paddle.js foram
+            // removidos junto com a integração de pagamento (vagas livres).
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
           },
         ],
       },

@@ -1,86 +1,45 @@
-// Premium 0220 — máscara SERVER-SIDE dos dados protegidos.
+// PADRÃO 0220 — VAGAS LIVRES (2026-09-18, pedido do dono):
+// "retire toda a área premium, deixe todos os anúncios livres".
 //
-// Antes: a ofuscação era apenas visual (React trocava por "***"), mas as
-// APIs devolviam a vaga COMPLETA para o navegador — bastava abrir o
-// DevTools (aba Network) para ler empresa, e-mail, telefone e site de uma
-// vaga bloqueada. As meta tags (title/OG) também publicavam o nome da
-// empresa para o Google.
+// O paywall foi REMOVIDO do site. Este módulo existe apenas para manter as
+// assinaturas antigas usadas por rotas de dados e layouts — agora como
+// OPERAÇÃO NULA (no-op): nenhuma vaga é mascarada, nenhum texto é limpo,
+// nenhum cookie de desbloqueio é consultado. Toda a informação da vaga
+// (empresa, e-mail, telefone) é pública para todos os visitantes.
 //
-// Agora: as rotas de dados aplicam esta máscara ANTES de responder, e as
-// meta tags usam "Confidential" para vagas bloqueadas. O desbloqueio
-// continua baseado nos cookies assinados (nossy_premium / wv_unlock_{id})
-// verificados com timingSafeEqual em src/lib/unlock.ts.
-
-import { shouldHavePaywall } from './shared';
-import { PREMIUM_COOKIE, unlockCookieName, verifyPremium, verifyUnlock } from './unlock';
+// Benefício colateral de performance: com a máscara nula, as respostas das
+// APIs de dados tornam-se idênticas para todos os usuários e podem ser
+// cacheadas na CDN (Cache-Control público), reduzindo custo e latência.
 
 export type CookieGetter = (name: string) => string | undefined;
 
-/**
- * True quando o pedido tem cookie válido que libera a vaga:
- * cookie Premium (todas as vagas) OU o cookie de desbloqueio da vaga.
- */
-export function isJobUnlocked(jobId: number, getCookie: CookieGetter): boolean {
-  const id = Number(jobId);
-  if (!Number.isFinite(id) || id <= 0) return false;
-  if (verifyPremium(getCookie(PREMIUM_COOKIE))) return true;
-  return verifyUnlock(id, getCookie(unlockCookieName(id)));
+/** No-op: todas as vagas estão desbloqueadas. Mantido por compatibilidade. */
+export function isJobUnlocked(_jobId: number, _getCookie?: CookieGetter): boolean {
+  return true;
 }
 
-/**
- * Remove os campos identificadores de uma vaga. Mantém as chaves (com
- * placeholders) para que os componentes continuem funcionando sem
- * lógica condicional extra.
- *
- * PADRÃO 1874: a DESCRICÃO também é limpa — muitas vagas citam o nome da
- * empresa no texto ("...na Shopify..."), o que revelava a empresa mesmo com
- * o campo company mascarado (vazamento reportado pelo dono).
- */
+/** No-op: o texto volta intacto — o nome da empresa é público. */
 export function scrubCompanyFromText(
   text: string | undefined | null,
-  company: string | undefined | null
+  _company?: string | undefined | null
 ): string {
-  const desc = text || '';
-  const name = (company || '').trim();
-  if (!desc || !name) return desc;
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  try {
-    return desc.replace(new RegExp(escaped, 'gi'), '***');
-  } catch {
-    return desc;
-  }
+  return text || '';
 }
 
+/** No-op: vaga volta idêntica (nenhum campo é mascarado). */
 export function maskJobContact<T extends Record<string, any>>(job: T): T {
-  return {
-    ...job,
-    company: '***',
-    companyUrl: null,
-    contactEmail: '',
-    contactPhone: null,
-    description: scrubCompanyFromText(job.description, job.company),
-  };
+  return job;
 }
 
-/**
- * Rota de DETALHE (resposta por-usuário): aplica a máscara somente se a
- * vaga for Premium 0220 e o pedido não tiver cookie de desbloqueio.
- * ATENÇÃO: respostas por-usuário não podem ser cacheadas publicamente —
- * use "private, no-store" para vagas com paywall.
- */
-export function maskJobIfLocked<T extends Record<string, any>>(job: T, getCookie: CookieGetter): T {
-  const pw = shouldHavePaywall(job);
-  if (!pw.paywall) return job;
-  if (isJobUnlocked(job.id, getCookie)) return job;
-  return maskJobContact(job);
+/** No-op: nenhuma vaga fica bloqueada, logo nada é mascarado. */
+export function maskJobIfLocked<T extends Record<string, any>>(
+  job: T,
+  _getCookie?: CookieGetter
+): T {
+  return job;
 }
 
-/**
- * Rotas de LISTA (resposta pública/cacheável, igual para todos): aplica a
- * máscara em TODA vaga com paywall, independente de cookie. As listas
- * sempre exibem "***" — o conteúdo real só aparece na página da vaga
- * após pagamento verificado.
- */
+/** No-op: nenhuma vaga tem paywall, logo nada é mascarado. */
 export function maskJobAlways<T extends Record<string, any>>(job: T): T {
-  return shouldHavePaywall(job).paywall ? maskJobContact(job) : job;
+  return job;
 }

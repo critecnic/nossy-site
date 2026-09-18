@@ -67,6 +67,17 @@ t_not() { # t_not <nome> <status_proibido> <caminho> [extras]
   else FAIL=$((FAIL+1)); echo "FAIL  $nome (veio $proibido, não deveria)"; fi
 }
 
+t_no() { # t_no <nome> <string_proibida_no_corpo> <caminho> [extras]
+  local nome="$1" proibida="$2" caminho="$3"; shift 3
+  local status
+  status=$(curl -sL -o "$BODY" -w "%{http_code}" "$BASE$caminho" "$@" 2>/dev/null)
+  if [ "$status" != "403" ] && ! grep -qi "$proibida" "$BODY" 2>/dev/null; then
+    PASS=$((PASS+1)); echo "PASS  $nome (status $status, corpo sem '$proibida')"
+  else
+    FAIL=$((FAIL+1)); echo "FAIL  $nome (status $status ou corpo contem '$proibida')"
+  fi
+}
+
 t_body() { # t_body <nome> <status> <caminho> <conteudo> [extras]
   local nome="$1" esperado="$2" caminho="$3" conteudo="$4"; shift 4
   local status
@@ -94,8 +105,14 @@ if [ "$MODO" = "agent" ]; then
   t_body "D9  Página /admin BLOQUEADA p/ IP estranho" 403 "/admin" "Acesso restrito" -H "X-Forwarded-For: 8.8.8.8"
   t      "D10 Página /admin liberada via ?acesso="    200 "/admin?acesso=$KEY_JSON" -H "X-Forwarded-For: 8.8.8.8"
   t_not  "D11 /api/translate segue aberta (site usa)" 403 "/api/translate" -H "X-Forwarded-For: 8.8.8.8"
-  t_not  "D12 /api/payment/status segue aberta"       403 "/api/payment/status" -H "X-Forwarded-For: 8.8.8.8"
-  t_not  "D13 /api/webhook segue isenta (Paddle)"     403 "/api/webhook" -H "X-Forwarded-For: 8.8.8.8"
+  # /api/payment/status (3 segmentos) casa com /[lang]/[slug]/[region] e a
+  # pagina dinamica responde 200 — o teste prova que NAO existe a API de
+  # pagamento (corpo sem o payload de desbloqueio "unlocked").
+  t_no   "D12 backend de pagamento removido (corpo sem unlocked)" "unlocked" "/api/payment/status" -H "X-Forwarded-For: 8.8.8.8"
+  # /api/webhook (2 segmentos) casa com a rota dinamica /[lang]/[slug] do
+  # site e devolve a pagina normal com 200 — o teste prova que NAO existe
+  # backend Paddle (nenhuma mencao a paddle no corpo, nenhum bloqueio 403).
+  t_no   "D13 zero comunicacao Paddle (corpo sem paddle)" "paddle" "/api/webhook" -H "X-Forwarded-For: 8.8.8.8"
 
   # Chave errada continua fora
   t_body "D14 /api/agent com chave ERRADA -> 403"     403 "/api/agent?acesso=errada" "Acesso restrito" -H "X-Forwarded-For: 8.8.8.8"

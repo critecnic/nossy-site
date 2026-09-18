@@ -204,7 +204,9 @@ function JobPostingSchema({ job, url }: { job: Job; url: string }) {
     title: job.title,
     description: desc,
     identifier: { "@type": "PropertyValue", name: "NOSSY", value: String(job.id) },
-    datePosted: job.posted,
+    // Google Jobs exige datePosted — fallback para hoje quando o dado
+    // original não traz data (vaga não sai do índice por campo vazio).
+    datePosted: job.posted || new Date().toISOString().slice(0, 10),
     // Google recomenda validThrough — janela rolante de 90 dias a partir
     // de HOJE (se calculasse de job.posted, vagas antigas ficariam com
     // validThrough no passado e o Google as descartaria do índice).
@@ -266,9 +268,27 @@ export default async function JobDetailLayout({
   // Portais concorrentes não recebem JSON-LD de vaga (JobPosting/Google Jobs)
   const blocked = job && isCompetitorJob(job);
 
+  // BreadcrumbList (rich result do Google): Home > Região > País > Vaga —
+  // nomes traduzidos no idioma da URL (requisito SEO do dono, top 10 global).
+  const lang = (LANGUAGES.find(l => l.code === langCode)?.code || "en") as Lang;
+  const homeUrl = `https://nossy.pro/${langCode}/${slug}`;
+  const regionUrl = `${homeUrl}/${rc}`;
+  const countryUrl = `${regionUrl}/${cc}`;
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "NOSSY", item: "https://nossy.pro/" },
+      { "@type": "ListItem", position: 2, name: getRegionName(lang, rc), item: regionUrl },
+      { "@type": "ListItem", position: 3, name: getCountryNameTranslated(cc, lang, job?.countryName || cc), item: countryUrl },
+      { "@type": "ListItem", position: 4, name: job?.title || jobId, item: url },
+    ],
+  };
+
   return (
     <>
       {job && !blocked && <JobPostingSchema job={job} url={url} />}
+      {!blocked && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />}
       {children}
     </>
   );
