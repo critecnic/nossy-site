@@ -275,3 +275,21 @@ Work Log:
 Stage Summary:
 - Canal de entrega do dono 100% ao vivo e testado de ponta a ponta
 - Assim que Vagas_G4_Descricoes.csv chegar via nossy.pro/admin/uploader, o vigia publica automaticamente e escreve watch-CONCLUIDO.txt
+
+---
+Task ID: 20-e
+Agent: Main Agent
+Task: Canal público /enviar + importador DOCX (dono: "irei te enviar arquivo em word")
+
+Work Log:
+- 7ª falha do anexo do chat (g4 company.docx não chegou; dono recusou colar texto e disse que não reenviará)
+- Página pública nossy.pro/enviar + rota /api/enviar-vagas (sem agentLock — zero fricção; sem disco, 4MB, whitelist de extensão; junk morre no dry-run do vigia)
+- import-vagas-g4.py lê DOCX: modo tabela (cabeçalho com aliases) e modo blocos (quebra por linha vazia + pistas de título; ruído de 1 linha sem salário ignorado sem contar erro)
+- Padrões do dono aplicados: empresa "G4 company" e contato "g4.companny@gmail.com" (usados quando o arquivo não traz os próprios)
+- Smoke docx testado nos 2 modos (dry-run: 0 erros, pool intacto)
+- Deploy aa88b31; E2E ao vivo: /enviar HTTP 200; POST docx → ok:true notificado:true; vigia detectou em 1s e IGNOROU (nome de teste) — cadeia validada de ponta a ponta
+- Produção 19/19 PASS após deploy
+
+Stage Summary:
+- Dono agora tem 2 canais: nossy.pro/enviar (público, 1 clique) e /admin/uploader (com chave)
+- Ao chegar o arquivo real: vigia publica automaticamente (import → build → push → deploy → IndexNow → watch-CONCLUIDO.txt)
