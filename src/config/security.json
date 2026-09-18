@@ -1,0 +1,6 @@
+{
+  "lockEnabled": false,
+  "allowedIps": [],
+  "accessKey": "nossy-0220-c14f1a97b598f963",
+  "note": "Proteção NOSSY 0220 — IP whitelisting serverless (fonte única: este arquivo, lido no build). lockEnabled=true ativa o bloqueio total: apenas IPs de allowedIps (ou quem usar a accessKey via ?acesso=) navegam no site. Para liberar um IP: adicione em allowedIps e faça deploy. A rota /api/security/ip é isenta e mostra o IP público do visitante."
+}

@@ -151,3 +151,28 @@ Stage Summary:
 - Tradução: SSR nasce no idioma da URL nas 22 línguas; catálogo mundial 197 países × 22 idiomas; fluxo de pagamento 100% traduzido
 - Pagamento: funcionando E2E (sandbox) com desbloqueio automático global — orientar dono: usar cartão de teste 4242 4242 4242 4242 (validade futura qualquer, CVV qualquer) no sandbox; cartões reais só funcionam após trocar PADDLE_ENV para live com chaves de produção
 - Guias SEO (3 artigos) continuam em inglês (conteúdo pré-existente; não é parte do sistema de tradução de UI)
+
+
+---
+Task ID: 19
+Agent: Main Agent
+Task: IP whitelisting serverless em todo o site + arquitetura serverless (padrão 0220) — dono: "apenas meu ip tenha dominio e acesso ao site"
+
+Work Log:
+- Re-clonou o repo (ambiente resetado) no commit 8b3150e (Task 18 já ao vivo)
+- Criado src/middleware.ts — Edge Middleware SERVERLESS da Vercel: intercepta 100% das requisições na borda, ANTES de cache/render/API, escala automático sem servidor. Fluxo: isenções → lock desligado? → IP local/dev → chave de acesso → whitelist → 403
+- Isenções preservando o padrão 0220: /api/webhook + /api/webhook-0220 (webhook Paddle servidor-a-servidor, não teria o IP do dono), /api/security/ip (diagnóstico), /api/payment/health, /_next/, favicon, robots.txt
+- Criado src/config/security.json — FONTE ÚNICA de configuração (lockEnabled, allowedIps, accessKey); ativação/desativação = editar JSON + commit → deploy. process.env descartado de propósito: o Next inlinha env de middleware no build, override ficaria silenciosamente ineficaz
+- Criado /api/security/ip — rota isenta que mostra o IP público do visitante: o dono nunca fica sem como descobrir o próprio IP, mesmo com bloqueio 100% ativo
+- Chave de acesso de emergência: ?acesso=KEY libera de QUALQUER rede (celular/4G/IP dinâmico); primeira aceitação grava cookie httpOnly nossy_acesso por 7 dias
+- Página de bloqueio 403 profissional em PT-BR (noindex, no-store) — sem emojs, sem bandeiras
+- Cliente envia headers da plataforma (x-vercel-forwarded-for primeiro, não falsificável); IPv6-mapped normalizado (::ffff:1.2.3.4 → 1.2.3.4); conexão local sem header liberada (dev seguro)
+- Armadilhas de ambiente resolvidas: lsof/fuser não enxergam sockets aqui (next-server órfão sobrevivia ao npm kill e poluía os testes) — kill_port via pkill; redirect 307 do home dropa a query → teste B3 usa cookie jar simulando navegador real
+- Testes E2E locais (scripts/test-ip-whitelist.sh, mantido no repo): MODO ATIVO 17/17 PASS (IP whitelist passa, desconhecido 403, chave válida libera via fluxo navegador, chave errada 403, cookie grava/substitui, IPv6 normalizado, diagnóstico isento, webhook/alias/health/robots isentos, sitemap bloqueada por privacidade, APIs de pagamento bloqueadas p/ estranho, CSP preservada) + MODO SEGURO 6/6 PASS (site 100% aberto como antes, sitemap/APIs abertas, CSP OK)
+- Registrada convenção do dono: "padrão premium 1874" = trabalho restrito exclusivamente ao sistema de pagamento premium e seus ajustes
+
+Stage Summary:
+- Sistema de IP whitelisting serverless instalado, testado (23/23 PASS) e ao vivo em nossy.pro em MODO SEGURO (lockEnabled=false — comportamento do site inalterado)
+- Ativação em 1 passo após o dono informar o IP (nossy.pro/api/security/ip): lockEnabled=true + allowedIps=[IP] + commit → bloqueio total
+- Chave de acesso: nossy-0220-c14f1a97b598f963
+- Pagamento Paddle preservado durante bloqueio (webhook isento) — padrão 0220 intacto
