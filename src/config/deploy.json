@@ -1,0 +1,6 @@
+{
+  "tmpfilesApi": "https://tmpfiles.org/api/v1/upload",
+  "webhookUrl": "https://webhook.site/43a31e5b-79f7-495f-84bb-da016d8a12cd",
+  "maxFileMB": 4,
+  "note": "Config da rota /api/admin/upload (Task 20-c). SEM segredos no repositório (GitHub Push Protection bloqueia tokens em código — por isso nada de PAT aqui). Fluxo: dono escolhe o arquivo em /admin/uploader (página protegida pelo agentLock) -> a rota repassa o arquivo ao tmpfiles.org (hospedagem temporária, apaga em ~1h) -> extrai a URL de download direto -> avisa o agente via webhook.site (payload minúsculo com as URLs) -> o agente baixa, confere e publica as vagas. Nenhum dado fica no servidor do site (serverless é sem disco)."
+}
