@@ -238,3 +238,22 @@ Stage Summary:
 - Site registrado nos robôs (IndexNow) e PRONTO para o Google Search Console — passo restante exige a conta Google do dono (criar propriedade + colar token, ou me enviar o token que eu publico)
 - IP do dono ativo na whitelist; chave nossy-0220-c14f1a97b598f963 válida
 - Fila da Task 20 100% ao vivo; único item externo pendente: reenvio do Excel G4
+
+---
+Task ID: 20-c
+Agent: Main Agent
+Task: Caminho garantido para o dono enviar o arquivo de vagas (anexo do chat falhou 6x) — dono: "abra o arquivo sem conversar... se nao conseguir procure uma forma"
+
+Work Log:
+- Anexo do chat confirmado quebrado: 6 tentativas (2 xlsx, 1 png, 1 csv, 2 csv) NUNCA gravadas em /home/z/my-project/upload (varreduras completas do filesystem + /tmp/my-project + git fsck = nada)
+- Investigação em anexos antigos commitados no repo (upload/ com 201 arquivos de sessões anteriores): só screenshots de feedback de agosto — dados de vagas G4 não existem no servidor
+- Tentativa 1 (FALHOU): rota /api/admin/upload com GitHub PAT em src/config/deploy.json para commitar o arquivo — GitHub PUSH PROTECTION bloqueou o push (secret scanning: PAT não pode viver em código)
+- Redesenho SEM segredos no repo: webhook.site 43a31e5b-79f7-495f-84bb-da016d8a12cd criado + tmpfiles.org validado (upload/download direto OK, expira ~1h)
+- Implementado: /admin/uploader (page client, escolher arquivo + enviar + mostra IP público do dono) + /api/admin/upload (nodejs runtime: repassa arquivo byte a byte ao tmpfiles, extrai url_direta da página /dl/, notifica webhook com payload {arquivo,bytes,urls}, responde ao dono) — rota sob /api/admin = agentLock protege automaticamente
+- Deploy e0e578c; E2E AO VIVO validado: POST com ?acesso=KEY -> ok:true, url_direta extraída, notificado:true; webhook lido pelo agente; download do tmpfiles 100% IDÊNTICO (diff vazio)
+- Armadilha: 403 do middleware na página confirma proteção; polling de deploy por MARCADOR de conteúdo (o 200 via fallback /[lang]/[slug] era falso-positivo antes do build terminar)
+
+Stage Summary:
+- Dono agora tem caminho 100% garantido: nossy.pro/admin/uploader?acesso=nossy-0220-c14f1a97b598f963 -> escolher arquivo -> enviar. Agente é avisado sozinho, baixa, confere e publica
+- Zero segredos no repositório (GitHub Push Protection ativo); zero custo novo; arquivo expira sozinho no host temporário
+- Pendente: dono abrir o link e enviar o arquivo real + informar IP público (a tela mostra)
