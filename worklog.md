@@ -219,3 +219,22 @@ Stage Summary:
 - Importador G4 pronto: python3 scripts/import-vagas-g4.py (aguarda reenvio do Excel — arquivo NÃO chegou em /home/z/my-project/upload/)
 - Chave de acesso nossy-0220-c14f1a97b598f963 segue válida; bloqueio agent/admin ativo
 - PENDENTE: dono reenviar Vagas_G4_Descricoes.xlsx + enviar IP público real (/api/security/ip)
+
+---
+Task ID: 20-b
+Agent: Main Agent
+Task: IP 192.168.1.6 confirmado + Google Search Console (cadastrar) + IndexNow automatico — dono: "2-meu ip 192.168.1.6 / 3- pode cadastrar - Google Search Console / faça tudo de forma automatica"
+
+Work Log:
+- IP 192.168.1.6 confirmado pelo dono e JÁ ATIVO em src/config/security.json (allowedIps) — nenhuma alteração necessária; 192.168.x.x segue sendo IP interno (IP público real aparece em nossy.pro/api/security/ip)
+- GSC: criado src/config/seo.json (googleSiteVerification + indexNowKey — fonte única de SEO); layout raiz injeta <meta name="google-site-verification"> em TODAS as páginas quando o campo é preenchido (método "tag HTML" do GSC; token chega do dono → 1 edit + deploy → verificação passa)
+- IndexNow: chave 0959dedefa5ce14b2ff3a913df5b9cee; arquivo public/<key>.txt (posse do site); scripts/ping-indexnow.py lê o sitemap index, coleta vagas por país e submete em lotes de 1.000 ao api.indexnow.org (Bing, Yandex, Seznam, Naver, Yep)
+- SUBMISSÃO REAL EXECUTADA: 4/4 lotes aceitos (HTTP 202/200) — 3.004 URLs (home + listagens de idioma + 3.000 vagas) informadas aos robôs em 19/09
+- Deploy 901b3fb ao vivo; validação scripts/task20b-valida-producao.py: 19/19 PASS (robots, index 83 shards, sitemap-usa 18.983 URLs, key file, 5 idiomas 200, vaga SSR + JobPosting + BreadcrumbList + nota e-mail EN/PT, CSP sem Paddle, agentLock 403)
+- Performance aquecida: 0,10–0,15s por listagem (cold start único de 5,5s em /ja/jobs) — meta <2s cumprida
+- XLSX Vagas_G4_Descricoes.xlsx NÃO chegou ao servidor (workspace resetado; busca em todo o filesystem = 0 arquivos): importador scripts/import-vagas-g4.py pronto e testado, aguarda reenvio em /home/z/my-project/upload/
+
+Stage Summary:
+- Site registrado nos robôs (IndexNow) e PRONTO para o Google Search Console — passo restante exige a conta Google do dono (criar propriedade + colar token, ou me enviar o token que eu publico)
+- IP do dono ativo na whitelist; chave nossy-0220-c14f1a97b598f963 válida
+- Fila da Task 20 100% ao vivo; único item externo pendente: reenvio do Excel G4
