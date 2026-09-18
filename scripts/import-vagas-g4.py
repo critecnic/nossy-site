@@ -22,10 +22,11 @@ como POSTS EXCLUSIVOS no site, sem acrescentar nenhuma página nova
                             inválida é publicada).
 
 Uso:
-  python3 scripts/import-vagas-g4.py [caminho.xlsx]
+  python3 scripts/import-vagas-g4.py [caminho.xlsx|caminho.csv]
 
 Depois de importar: commit + deploy (o build regenera sitemaps/índices).
 """
+import csv
 import json
 import random
 import re
@@ -39,6 +40,7 @@ DATA = ROOT / "data" / "site"
 POOL_FILE = DATA / "asia_remoto-global.json"          # Ásia = prioridade no merge
 TOTALS = DATA / "_totals.json"
 DEFAULT_XLSX = Path("/home/z/my-project/upload/Vagas_G4_Descricoes.xlsx")
+DEFAULT_CSV = Path("/home/z/my-project/upload/Vagas_G4_Descricoes.csv")
 
 ID_BASE = 900000          # acima do max atual (19590): zero colisão
 MAX_ERRO_PCT = 1.0        # pedido do dono: erros < 1%
@@ -98,22 +100,61 @@ def norm_is_text(t):
 def rand_date(rng):
     return (date.today() - timedelta(days=rng.randint(0, DIAS_ALEATORIOS))).isoformat()
 
+def ler_csv(caminho: Path):
+    """CSV -> lista de tuplas, exatamente como está no arquivo (nada é alterado).
+    Cobra: encoding (utf-8-sig -> latin-1), delimitador (sniff , ; \t) e
+    campos citados com quebras de linha dentro (módulo csv nativo)."""
+    bruto = caminho.read_bytes()
+    texto = None
+    for enc in ("utf-8-sig", "utf-8", "latin-1"):
+        try:
+            texto = bruto.decode(enc)
+            print(f"Encoding detectado: {enc}")
+            break
+        except UnicodeDecodeError:
+            continue
+    if texto is None:
+        print("ERRO: não foi possível decodificar o arquivo (encoding desconhecido)")
+        sys.exit(2)
+
+    # Delimitador: escolhe o que gera MAIS colunas no cabeçalho (heurística
+    # segura para CSV do Excel PT-BR com ',' ou ';').
+    primeira = texto.splitlines()[0] if texto.splitlines() else ""
+    melhor, melhor_n = ",", 0
+    for d in (",", ";", "\t", "|"):
+        n = len(list(csv.reader([primeira], delimiter=d))[0])
+        if n > melhor_n:
+            melhor, melhor_n = d, n
+    print(f"Delimitador: {melhor!r} ({melhor_n} colunas no cabeçalho)")
+
+    linhas = list(csv.reader(texto.splitlines(), delimiter=melhor))
+    linhas = [l for l in linhas if any(str(c or "").strip() for c in l)]  # tira linhas 100% vazias
+    return linhas
+
+
 def main():
-    xlsx = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_XLSX
-    if not xlsx.exists():
-        print(f"ERRO: Excel não encontrado em {xlsx}")
+    argv = [a for a in sys.argv[1:] if not a.startswith("--")]
+    DRY_RUN = "--dry-run" in sys.argv[1:]
+    arg = Path(argv[0]) if argv else (
+        DEFAULT_CSV if DEFAULT_CSV.exists() else DEFAULT_XLSX
+    )
+    if not arg.exists():
+        print(f"ERRO: arquivo não encontrado em {arg}")
         print("Envie o arquivo novamente; ele chega em /home/z/my-project/upload/")
         sys.exit(2)
 
-    try:
-        from openpyxl import load_workbook
-    except ImportError:
-        print("ERRO: openpyxl ausente (pip install openpyxl)")
-        sys.exit(2)
+    if arg.suffix.lower() in (".csv", ".txt"):
+        rows = ler_csv(arg)
+    else:
+        try:
+            from openpyxl import load_workbook
+        except ImportError:
+            print("ERRO: openpyxl ausente (pip install openpyxl)")
+            sys.exit(2)
+        wb = load_workbook(arg, data_only=True, read_only=True)
+        ws = wb.active
+        rows = [list(r) for r in ws.iter_rows(values_only=True)]
 
-    wb = load_workbook(xlsx, data_only=True, read_only=True)
-    ws = wb.active
-    rows = list(ws.iter_rows(values_only=True))
     if len(rows) < 2:
         print("ERRO: planilha sem dados (só cabeçalho ou vazia)")
         sys.exit(2)
@@ -200,11 +241,19 @@ def main():
             erros.append((n, f"erro inesperado: {e}"))
 
     total = len(data_rows)
+    if total == 0:
+        print("ERRO: nenhuma linha de dados após o cabeçalho")
+        sys.exit(2)
     pct_erro = (len(erros) / total * 100) if total else 0
     print(f"Válidas: {len(novos)} | Erros: {len(erros)} ({pct_erro:.2f}%)")
     if erros:
         for ln, motivo in erros[:10]:
             print(f"  linha {ln}: {motivo}")
+    if DRY_RUN:
+        print("DRY-RUN: validação concluída — NADA foi publicado.")
+        if novos:
+            print(f"Amostra (1ª vaga): id={novos[0]['id']} | {novos[0]['title']} | {novos[0]['company']} | salário={novos[0]['salary'] or '—'}")
+        sys.exit(0)
     if pct_erro > MAX_ERRO_PCT:
         print(f"ABORTADO: {pct_erro:.2f}% de erros > limite de {MAX_ERRO_PCT}% — nada foi publicado.")
         sys.exit(1)
