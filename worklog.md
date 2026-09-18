@@ -194,3 +194,28 @@ Work Log:
 Stage Summary:
 - Bloqueio de agentes de IA/admin ATIVO em produção: outros IPs recebem 403; dono acessa via IP whitelist ou chave nossy-0220-c14f1a97b598f963
 - Pendência: 192.168.1.6 é IP INTERNO (rede local) — dono deve enviar o IP público de nossy.pro/api/security/ip para entrada definitiva em allowedIps (enquanto isso, a chave libera de qualquer rede)
+
+---
+Task ID: 20
+Agent: Main Agent
+Task: Vagas livres (remove premium/Paddle) + SSR da vaga + SEO global + importador G4 — dono: "retire toda area premium, deixe todos anuncios livres... remova qualquer deploy com paddle... JSON-LD JobPosting... sitemap por países... postagem aleatória, descrições com envio via email, expor todas as vagas em todos os países (remotas), formato único p/ Google, erros <1%, não acrescentar site. Apenas post exclusive."
+
+Work Log:
+- Retomada do working tree da sessão anterior (19 arquivos Paddle/paywall deletados, sitemap index/shards em public/)
+- paywall-mask.ts recriado como NO-OP (assinaturas mantidas: maskJobAlways/maskJobIfLocked/scrubCompanyFromText/isJobUnlocked/maskJobContact/CookieGetter) — zero risco nos call-sites
+- shared.ts: shouldHavePaywall -> sempre {paywall:false}; layout raiz sem PaddleAutoOpen; [id]/page.tsx sem PaddlePayment nem fluxo verify/status/unlockNow/isLocked; middleware sem isenções /api/webhook + /api/webhook-0220 + /api/payment/health; next.config sem rewrite webhook-0220 e CSP sem domínios Paddle
+- SSR da vaga: page.tsx virou Server Component (findJobFast + findJobInPoolsSync, mesma fonte do JSON-LD/metadata) e JobDetailClient.tsx recebe initialJob — HTML inicial completo (h1, empresa, salário, descrição, contatos); falha de tradução nunca vira erro (erro <1%)
+- JSON-LD: JobPosting (já existia) agora SEM máscara (empresa real), datePosted com fallback p/ hoje (Google Jobs exige) + BreadcrumbList (Home>Região>País>Vaga) traduzido
+- i18n: chave applyByEmailHint ("envie suas informações via e-mail") nos 22 idiomas, exibida no bloco de contato de TODAS as vagas
+- Importador scripts/import-vagas-g4.py: lê XLSX (openpyxl), colunas flexíveis, IDs 900000+ (max atual 19590), datas aleatórias 14 dias, descrição + nota de e-mail, entra no pool remoto-global → gen-remote-extra espalha p/ TODOS os países; valida linha a linha e aborta se erros >1%; testado com XLSX de 5 vagas (5/5 publicadas em todos os países, 83 sitemaps regenerados) e REVERTIDO (Excel real ainda não chegou ao servidor)
+- Suíte test-ip-whitelist.sh: D12/D13 reescritos (backend de pagamento removido; /api/webhook casa com /[lang]/[slug] dinâmica — teste prova ausência de Paddle no corpo) — agent 14/14 PASS
+- Commit 613d542, push (token removido), deploy Vercel ativo (CSP sem paddle ao vivo)
+- Validação produção 27/27 PASS (task20-valida-producao.py): SSR, JSON-LD x2, nota e-mail EN/PT, 22 idiomas 200, sitemap index 83 filhos + shards, canonical, hreflang 23 tags, OG, /api/agent 403, perf média 0.15s (max 0.33s)
+
+Stage Summary:
+- TODAS as vagas livres: empresa, e-mail e telefone públicos; ZERO comunicação Paddle (rotas deletadas, CSP limpo, componentes removidos)
+- Vaga individual nasce com HTML completo (SSR) + JobPosting + BreadcrumbList no idioma — pronta p/ Google Jobs/top 10
+- Sitemap index + 83 shards por país ao vivo; vagas remotas expostas em todos os países do catálogo (~195)
+- Importador G4 pronto: python3 scripts/import-vagas-g4.py (aguarda reenvio do Excel — arquivo NÃO chegou em /home/z/my-project/upload/)
+- Chave de acesso nossy-0220-c14f1a97b598f963 segue válida; bloqueio agent/admin ativo
+- PENDENTE: dono reenviar Vagas_G4_Descricoes.xlsx + enviar IP público real (/api/security/ip)
