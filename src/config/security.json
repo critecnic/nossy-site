@@ -1,6 +1,7 @@
 {
   "lockEnabled": false,
-  "allowedIps": [],
+  "agentLockEnabled": true,
+  "allowedIps": ["192.168.1.6"],
   "accessKey": "nossy-0220-c14f1a97b598f963",
-  "note": "Proteção NOSSY 0220 — IP whitelisting serverless (fonte única: este arquivo, lido no build). lockEnabled=true ativa o bloqueio total: apenas IPs de allowedIps (ou quem usar a accessKey via ?acesso=) navegam no site. Para liberar um IP: adicione em allowedIps e faça deploy. A rota /api/security/ip é isenta e mostra o IP público do visitante."
+  "note": "Proteção NOSSY 0220 — IP whitelisting serverless (fonte única: este arquivo, lido no build). CAMADA 1 (agentLockEnabled): /api/agent, /api/admin e /admin só aceitam o dono — IP em allowedIps ou chave de acesso; site público fica 100% normal. CAMADA 2 (lockEnabled): bloqueio TOTAL do site (desligado). A chave (?acesso=... ou header x-nossy-key) libera de qualquer rede. ATENÇÃO: IPs 192.168.x.x / 10.x.x.x são IPs internos de rede local — o IP real do dono na internet aparece em nossy.pro/api/security/ip e deve ser adicionado em allowedIps."
 }

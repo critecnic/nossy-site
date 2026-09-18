@@ -2,18 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import securityConfig from "./config/security.json";
 
 /**
- * NOSSY 0220 — IP Whitelisting Serverless (Vercel Edge Middleware)
+ * NOSSY 0220 — Proteção por IP Whitelisting (Vercel Edge Middleware, serverless)
  *
- * Arquitetura: função serverless executada na borda da Vercel (Edge Network),
- * ANTES de qualquer renderização, cache ou API. Escala automática, sem servidor.
+ * Duas camadas independentes:
+ *
+ * CAMADA 1 — Agentes de IA / Admin (agentLockEnabled):
+ *   /api/agent, /api/admin, /admin → apenas o IP do dono (allowedIps) ou a
+ *   chave de acesso. Página e APIs públicas ficam 100% normais para visitantes.
+ *   Mesmo liberado por IP/chave, essas rotas continuam exigindo o Bearer
+ *   ADMIN_TOKEN que já possuem (proteção em profundidade).
+ *
+ * CAMADA 2 — Bloqueio total do site (lockEnabled, desligado por padrão):
+ *   todo o site fica restrito ao dono. Se ligado, aplica as mesmas regras
+ *   de acesso para TODAS as rotas não isentas.
  *
  * Fluxo de cada requisição:
  *   1. Rota isenta? (webhook Paddle, diagnóstico, estáticos)  -> passa
- *   2. Bloqueio desligado (lockEnabled=false)?                 -> passa (modo normal)
- *   3. IP local/dev?                                           -> passa
- *   4. accessKey válida (?acesso= ou cookie) ?                 -> passa + cookie 7 dias
- *   5. IP está na whitelist?                                   -> passa
- *   6. Caso contrário                                          -> página 403 "Acesso restrito"
+ *   2. IP local/dev?                                          -> passa
+ *   3. Camada 1: rota de agente/admin e agentLockEnabled?     -> dono? passa : 403
+ *   4. Camada 2: lockEnabled?                                 -> dono? passa : 403
+ *
+ * Regra de acesso do dono: chave de acesso (?acesso= / ?key= / header
+ * x-nossy-key / cookie nossy_acesso de 7 dias) OU IP em allowedIps.
  *
  * Fonte única de configuração: src/config/security.json (lida no build).
  * Ativação/desativação = editar o JSON e fazer deploy (commit → Vercel).
@@ -36,6 +46,9 @@ const EXEMPT_PREFIXES = [
 ];
 const EXEMPT_EXACT = ["/favicon.ico", "/robots.txt"];
 
+// CAMADA 1 — rotas de agentes de IA e administração (restritas ao dono)
+const AGENT_PREFIXES = ["/api/agent", "/api/admin", "/admin"];
+
 const LOCK_PAGE = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -56,9 +69,9 @@ const LOCK_PAGE = `<!DOCTYPE html>
 <body>
 <div class="card">
   <div class="badge">Acesso restrito</div>
-  <h1>Site em modo privado</h1>
-  <p>O acesso ao NOSSY está temporariamente limitado aos endereços autorizados pelo proprietário.</p>
-  <p>Se você é o proprietário, acesse <strong>nossy.pro/api/security/ip</strong> para consultar o seu IP atual e solicite a liberação, ou utilize sua chave de acesso na URL (?acesso=SUA_CHAVE).</p>
+  <h1>Área protegida</h1>
+  <p>Este recurso é restrito aos endereços autorizados pelo proprietário do NOSSY.</p>
+  <p>Se você é o proprietário, consulte seu IP em <strong>nossy.pro/api/security/ip</strong> ou utilize sua chave de acesso (?acesso=SUA_CHAVE).</p>
   <div class="code">NOSSY 0220 — PROTEÇÃO ATIVA</div>
 </div>
 </body>
@@ -105,30 +118,30 @@ function isExempt(pathname: string): boolean {
   return EXEMPT_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-export function middleware(req: NextRequest) {
-  if (isExempt(req.nextUrl.pathname)) {
-    return NextResponse.next();
-  }
+function isAgentPath(pathname: string): boolean {
+  return AGENT_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
-  const lockEnabled = securityConfig.lockEnabled === true;
-  if (!lockEnabled) {
-    return NextResponse.next();
-  }
+function getWhitelist(): string[] {
+  return (securityConfig.allowedIps as string[])
+    .join(",")
+    .split(",")
+    .map((entry) => normalizeIp(entry))
+    .filter(Boolean);
+}
 
-  const ip = getClientIp(req);
-  // ip null só acontece fora da Vercel (conexão direta local): libera o dev.
-  // Na Vercel o x-forwarded-for é SEMPRE definido pela plataforma.
-  if (!ip || isLocalIp(ip)) {
-    return NextResponse.next();
-  }
-
-  // Chave de acesso: permite ao dono navegar de qualquer lugar (celular, 4G,
-  // IP dinâmico) sem depender de um IP fixo. Na primeira aceitação grava um
-  // cookie httpOnly válido por 7 dias — não precisa repetir o ?acesso=.
+/**
+ * Verifica se a requisição é do dono: chave de acesso (?acesso=, ?key=,
+ * header x-nossy-key, cookie) ou IP na whitelist.
+ * Retorna a resposta de passagem (com cookie gravado quando a chave veio por
+ * query/header) ou null quando NÃO autorizado.
+ */
+function grantAccess(req: NextRequest, ip: string | null): NextResponse | null {
   const accessKey = securityConfig.accessKey || "";
   const provided =
     req.nextUrl.searchParams.get("acesso") ||
     req.nextUrl.searchParams.get("key") ||
+    req.headers.get("x-nossy-key") ||
     req.cookies.get(ACCESS_COOKIE)?.value ||
     "";
   if (accessKey && provided && provided === accessKey) {
@@ -144,16 +157,13 @@ export function middleware(req: NextRequest) {
     return res;
   }
 
-  // Whitelist de IPs (separada por vírgulas no JSON)
-  const whitelistRaw = (securityConfig.allowedIps as string[]).join(",");
-  const whitelist = whitelistRaw
-    .split(",")
-    .map((entry) => normalizeIp(entry))
-    .filter(Boolean);
-  if (ip && whitelist.includes(ip)) {
+  if (ip && getWhitelist().includes(ip)) {
     return NextResponse.next();
   }
+  return null;
+}
 
+function lockResponse(): NextResponse {
   return new NextResponse(LOCK_PAGE, {
     status: 403,
     headers: {
@@ -161,6 +171,39 @@ export function middleware(req: NextRequest) {
       "cache-control": "no-store, must-revalidate",
     },
   });
+}
+
+export function middleware(req: NextRequest) {
+  if (isExempt(req.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
+  const ip = getClientIp(req);
+  // ip null só acontece fora da Vercel (conexão direta local): libera o dev.
+  // Na Vercel o x-forwarded-for é SEMPRE definido pela plataforma.
+  if (!ip || isLocalIp(ip)) {
+    return NextResponse.next();
+  }
+
+  // CAMADA 1 — agentes de IA / admin: restritos ao dono
+  if (
+    securityConfig.agentLockEnabled === true &&
+    isAgentPath(req.nextUrl.pathname)
+  ) {
+    const granted = grantAccess(req, ip);
+    if (!granted) return lockResponse();
+    // Autorizado: segue para a rota, que ainda exige Bearer ADMIN_TOKEN
+    if (!securityConfig.lockEnabled) return granted;
+  }
+
+  // CAMADA 2 — bloqueio total do site (opcional)
+  if (securityConfig.lockEnabled !== true) {
+    return NextResponse.next();
+  }
+
+  const granted = grantAccess(req, ip);
+  if (!granted) return lockResponse();
+  return granted;
 }
 
 export const config = {

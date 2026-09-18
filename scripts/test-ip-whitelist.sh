@@ -78,7 +78,29 @@ t_body() { # t_body <nome> <status> <caminho> <conteudo> [extras]
   fi
 }
 
-if [ "$MODO" = "active" ]; then
+if [ "$MODO" = "agent" ]; then
+  KEY_IP_DONO="192.168.1.6"
+  echo "========== MODO AGENT — produção (agentLock=true, IP dono $KEY_IP_DONO) =========="
+  start_server
+
+  t_body "D1  Página normal p/ qualquer visitante"     200 "/"        "html" -H "X-Forwarded-For: 8.8.8.8"
+  t      "D2  /en/jobs normal p/ visitante"           200 "/en/jobs" -H "X-Forwarded-For: 8.8.8.8"
+  t_body "D3  /api/agent BLOQUEADO p/ IP estranho"    403 "/api/agent" "Acesso restrito" -H "X-Forwarded-For: 8.8.8.8"
+  t_not  "D4  /api/agent liberado p/ IP do dono"      403 "/api/agent" -H "X-Forwarded-For: $KEY_IP_DONO"
+  t_not  "D5  /api/agent liberado via ?acesso="       403 "/api/agent?acesso=$KEY_JSON" -H "X-Forwarded-For: 8.8.8.8"
+  t_not  "D6  /api/agent liberado via header x-nossy-key" 403 "/api/agent" -H "X-Forwarded-For: 8.8.8.8" -H "x-nossy-key: $KEY_JSON"
+  t_not  "D7  /api/agent liberado via cookie"         403 "/api/agent" -H "X-Forwarded-For: 8.8.8.8" -b "nossy_acesso=$KEY_JSON"
+  t_body "D8  /api/admin BLOQUEADO p/ IP estranho"    403 "/api/admin/health" "Acesso restrito" -H "X-Forwarded-For: 8.8.8.8"
+  t_body "D9  Página /admin BLOQUEADA p/ IP estranho" 403 "/admin" "Acesso restrito" -H "X-Forwarded-For: 8.8.8.8"
+  t      "D10 Página /admin liberada via ?acesso="    200 "/admin?acesso=$KEY_JSON" -H "X-Forwarded-For: 8.8.8.8"
+  t_not  "D11 /api/translate segue aberta (site usa)" 403 "/api/translate" -H "X-Forwarded-For: 8.8.8.8"
+  t_not  "D12 /api/payment/status segue aberta"       403 "/api/payment/status" -H "X-Forwarded-For: 8.8.8.8"
+  t_not  "D13 /api/webhook segue isenta (Paddle)"     403 "/api/webhook" -H "X-Forwarded-For: 8.8.8.8"
+
+  # Chave errada continua fora
+  t_body "D14 /api/agent com chave ERRADA -> 403"     403 "/api/agent?acesso=errada" "Acesso restrito" -H "X-Forwarded-For: 8.8.8.8"
+
+elif [ "$MODO" = "active" ]; then
   echo "========== MODO ATIVO — JSON (lockEnabled=true, IP $KEY_IP) =========="
   start_server
 

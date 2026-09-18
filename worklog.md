@@ -176,3 +176,21 @@ Stage Summary:
 - Ativação em 1 passo após o dono informar o IP (nossy.pro/api/security/ip): lockEnabled=true + allowedIps=[IP] + commit → bloqueio total
 - Chave de acesso: nossy-0220-c14f1a97b598f963
 - Pagamento Paddle preservado durante bloqueio (webhook isento) — padrão 0220 intacto
+
+
+---
+Task ID: 19-b
+Agent: Main Agent
+Task: Ativação do bloqueio de agentes de IA por IP do dono (dono: "apenas acesso agentes de ia ligada com meu ip 192.168.1.6, outro ip bloqueio; pagina normal sem alteracoes")
+
+Work Log:
+- Mapeado fluxo das rotas de IA/admin: /api/agent (NOSSY AGENT, diagnóstico/reparo, já exige Bearer ADMIN_TOKEN), /api/admin/{health,repair} (painel /admin), /api/translate (usada SERVER-SIDE pelo site — NÃO bloquear ou a tradução quebra)
+- Middleware reestruturado em 2 camadas independentes: CAMADA 1 agentLockEnabled (/api/agent + /api/admin + /admin restritos ao dono) e CAMADA 2 lockEnabled (bloqueio total, desligado); regra de acesso unificada em grantAccess (chave ?acesso= / ?key= / header x-nossy-key / cookie nossy_acesso / IP na whitelist)
+- security.json: agentLockEnabled=true, allowedIps=["192.168.1.6"] (IP informado pelo dono), lockEnabled=false; note documenta que 192.168.x.x é IP interno de rede local — o IP público real aparece em /api/security/ip
+- Header x-nossy-key adicionado para agentes de IA chamarem APIs sem query param
+- Testes E2E: MODO AGENT 14/14 PASS (página e /en/jobs normais p/ visitante, /api/agent 403 p/ estranho e liberado p/ IP do dono/chave/header/cookie, /admin 403 p/ estranho e 200 com chave, /api/translate + /api/payment + /api/webhook intactos, chave errada 403) + MODO ATIVO revalidado 17/17 PASS após refatoração
+- Estado de produção ship: agentLockEnabled=true + lockEnabled=false (site 100% normal, agentes/admin só dono)
+
+Stage Summary:
+- Bloqueio de agentes de IA/admin ATIVO em produção: outros IPs recebem 403; dono acessa via IP whitelist ou chave nossy-0220-c14f1a97b598f963
+- Pendência: 192.168.1.6 é IP INTERNO (rede local) — dono deve enviar o IP público de nossy.pro/api/security/ip para entrada definitiva em allowedIps (enquanto isso, a chave libera de qualquer rede)
