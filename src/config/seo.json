@@ -1,0 +1,5 @@
+{
+  "googleSiteVerification": "",
+  "indexNowKey": "0959dedefa5ce14b2ff3a913df5b9cee",
+  "note": "SEO NOSSY 0220. googleSiteVerification: cole aqui o token do Google Search Console (metodo 'tag HTML', ex.: 'google-site-verification=AbC123...' SEM a parte 'google-site-verification=', so o codigo apos o =). Ao preencher e publicar, a tag <meta name='google-site-verification'> e injetada automaticamente em TODAS as paginas. indexNowKey: chave do protocolo IndexNow (Bing/Yandex/Seznam/Naver) — o arquivo public/<chave>.txt e a URL do roteiro scripts/ping-indexnow.py dependem dela; nao troque sem gerar o arquivo de novo."
+}

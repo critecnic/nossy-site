@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { TOTAL_JOBS } from "@/lib/countries";
 import { safeJsonLd } from "@/lib/jsonld";
+import seoConfig from "@/config/seo.json";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
+
+// Verificacao do Google Search Console: preencha googleSiteVerification em
+// src/config/seo.json e a tag <meta name="google-site-verification"> passa a
+// sair em TODAS as paginas automaticamente (metodo "tag HTML" do GSC).
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
@@ -47,6 +52,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://nossy.pro",
   },
+  ...(seoConfig.googleSiteVerification
+    ? { verification: { google: seoConfig.googleSiteVerification as string } }
+    : {}),
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
