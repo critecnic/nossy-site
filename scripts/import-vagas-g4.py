@@ -132,6 +132,108 @@ def ler_csv(caminho: Path):
     return linhas
 
 
+# Padrões do dono (Task 20-e): empresa e e-mail de contato para TODAS as vagas
+# quando o arquivo não trouxer o próprio (o conteúdo das vagas vem 100% do arquivo).
+EMPRESA_PADRAO = "G4 company"
+EMAIL_PADRAO = "g4.companny@gmail.com"
+
+SALARIO_RE = re.compile(
+    r"(?:R\$\s?|US\$\s?|USD\s?|\$\s?)\s?[\d.,]+(?:\s?[+-]\s?[\d.,]+)?", re.I)
+EMAIL_DOC_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+
+# Palavras que indicam linha de título de vaga (para blocos de parágrafo)
+TITULO_HINT = re.compile(
+    r"^(vaga|job|position|cargo|oportunidade|title)\b|^\d+[.)\\-]?\s+\S", re.I)
+
+
+def ler_docx(caminho: Path):
+    """DOCX -> (linhas, modo). modo='tabela' (1ª linha = cabeçalho real) ou
+    'blocos' (cada item = bloco de parágrafos = 1 vaga). Nada é alterado."""
+    import docx as _docx  # python-docx
+    doc = _docx.Document(str(caminho))
+
+    # 1) tabelas --------------------------------------------------------
+    for tb in doc.tables:
+        if not tb.rows:
+            continue
+        cabe = [c.text.strip() for c in tb.rows[0].cells]
+        mape = detect_columns(cabe)
+        if "title" in mape and len(tb.rows) > 1:
+            print(f"DOCX: tabela detectada com cabeçalho reconhecível ({len(tb.rows)-1} linhas)")
+            linhas = [cabe] + [
+                [c.text.strip() for c in r.cells] for r in tb.rows[1:]
+            ]
+            return linhas, "tabela"
+
+    # 2) blocos de parágrafo -------------------------------------------
+    # NÃO remova os parágrafos vazios: são os separadores de bloco.
+    # Só tira cabeçalhos repetidos tipo "página X".
+    paras = [p.text.strip() for p in doc.paragraphs]
+    paras = [p if not re.match(r"^p[áa]gina\s+\d+$", p, re.I) else "" for p in paras]
+    com_conteudo = sum(1 for p in paras if p)
+    print(f"DOCX: {com_conteudo} parágrafos com conteúdo (modo blocos)")
+
+    # estágio 1: quebra por parágrafo vazio
+    blocos_brutos, atual = [], []
+    for p in paras:
+        if p:
+            atual.append(p)
+        elif atual:
+            blocos_brutos.append(atual)
+            atual = []
+    if atual:
+        blocos_brutos.append(atual)
+
+    # estágio 2: dentro de cada bloco, uma linha que "parece título de vaga"
+    # (Vaga: / Cargo: / 1. ...) abre um novo bloco — cobre docs sem linhas vazias
+    blocos = []
+    for bruto in blocos_brutos:
+        atual2 = []
+        for i, linha in enumerate(bruto):
+            if i > 0 and TITULO_HINT.search(linha):
+                blocos.append(atual2)
+                atual2 = [linha]
+            else:
+                atual2.append(linha)
+        if atual2:
+            blocos.append(atual2)
+    print(f"DOCX: {len(blocos)} blocos de vaga detectados")
+    return blocos, "blocos"
+
+
+def bloco_para_linha(bloco):
+    """Converte 1 bloco de parágrafo em uma 'linha' compatível com o pipeline
+    de colunas: [cargo, empresa, email, descricao, salario, local, setor, tipo]."""
+    texto_bloco = "\n".join(bloco)
+    title = bloco[0]
+    # tira prefixos comuns ("Vaga:", "Cargo:", "1.")
+    title = re.sub(r"^(vaga|job|position|cargo|oportunidade|title)\b\s*:?\s*", "", title, flags=re.I)
+    title = re.sub(r"^\d+\s*[.)\\-]\s*", "", title).strip()
+
+    email_m = EMAIL_DOC_RE.search(texto_bloco)
+    sal_m = SALARIO_RE.search(texto_bloco)
+    local_m = re.search(
+        r"(?:local|localiza[çc][ãa]o|cidade|location)\s*:?\s*([^\n]+)", texto_bloco, re.I)
+    setor_m = re.search(
+        r"(?:setor|sector|área|area|categoria|category)\s*:?\s*([^\n]+)", texto_bloco, re.I)
+    tipo_m = re.search(
+        r"(?:tipo|regime|contrato|modelo|type)\s*:?\s*([^\n]+)", texto_bloco, re.I)
+    empresa_m = re.search(
+        r"(?:empresa|company|contratante)\s*:?\s*([^\n]+)", texto_bloco, re.I)
+
+    descricao = "\n".join(bloco[1:]) if len(bloco) > 1 else texto_bloco
+    return [
+        title,
+        (empresa_m.group(1).strip() if empresa_m else ""),
+        (email_m.group(0) if email_m else ""),
+        descricao,
+        (sal_m.group(0).strip() if sal_m else ""),
+        (local_m.group(1).strip()[:80] if local_m else ""),
+        (setor_m.group(1).strip()[:60] if setor_m else ""),
+        (tipo_m.group(1).strip()[:40] if tipo_m else ""),
+    ]
+
+
 def main():
     argv = [a for a in sys.argv[1:] if not a.startswith("--")]
     DRY_RUN = "--dry-run" in sys.argv[1:]
@@ -143,8 +245,19 @@ def main():
         print("Envie o arquivo novamente; ele chega em /home/z/my-project/upload/")
         sys.exit(2)
 
+    MODO_BLOCOS = False
+    header_virtual = []
     if arg.suffix.lower() in (".csv", ".txt"):
         rows = ler_csv(arg)
+    elif arg.suffix.lower() in (".docx", ".doc"):
+        rows, modo = ler_docx(arg)
+        if modo == "tabela":
+            pass  # 1ª linha é o cabeçalho real da tabela
+        else:
+            MODO_BLOCOS = True
+            rows = [bloco_para_linha(b) for b in rows]
+            header_virtual = ["cargo", "empresa", "email", "descricao", "salario",
+                              "local", "setor", "tipo"]
     else:
         try:
             from openpyxl import load_workbook
@@ -159,8 +272,12 @@ def main():
         print("ERRO: planilha sem dados (só cabeçalho ou vazia)")
         sys.exit(2)
 
-    header, data_rows = rows[0], rows[1:]
-    cols = detect_columns(header)
+    if MODO_BLOCOS:
+        header, data_rows = header_virtual, rows
+        cols = detect_columns(header)
+    else:
+        header, data_rows = rows[0], rows[1:]
+        cols = detect_columns(header)
     if "title" not in cols:
         print(f"ERRO: coluna de CARGO não encontrada no cabeçalho: {header}")
         sys.exit(2)
@@ -185,10 +302,21 @@ def main():
                 erros.append((n, "cargo vazio"))
                 continue
 
+            # Bloco de 1 linha sem salário = ruído estrutural (título de seção,
+            # cabeçalho do doc) — não é vaga: ignora SEM contar como erro.
+            if MODO_BLOCOS:
+                desc_tmp = str(get("description") or "").strip()
+                sal_tmp = str(get("salary") or "").strip()
+                if len(desc_tmp) < 30 and not sal_tmp:
+                    print(f"  ignorado (título de seção, sem detalhes): {title[:60]}")
+                    continue
+
             email = ""
             m = EMAIL_RE.search(str(get("email") or ""))
             if m:
                 email = m.group(0).strip().lower()
+            if not email:
+                email = EMAIL_PADRAO  # pedido do dono: contato p/ enviar dados do usuário
 
             description = build_description(get("description"), email)
             if len(description) < 30:
@@ -219,7 +347,7 @@ def main():
             novos.append({
                 "id": job_id,
                 "title": title[:150],
-                "company": str(get("company") or "Confidencial").strip()[:100],
+                "company": ((str(get("company")).strip() if get("company") else "") or EMPRESA_PADRAO)[:100],  # pedido do dono: empresa G4 company
                 "location": str(get("location") or "Remoto - Worldwide").strip()[:100],
                 "country": "remoto-global",
                 "countryName": "Remoto Global",
