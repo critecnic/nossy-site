@@ -293,3 +293,19 @@ Work Log:
 Stage Summary:
 - Dono agora tem 2 canais: nossy.pro/enviar (público, 1 clique) e /admin/uploader (com chave)
 - Ao chegar o arquivo real: vigia publica automaticamente (import → build → push → deploy → IndexNow → watch-CONCLUIDO.txt)
+
+---
+Task ID: 20-f
+Agent: Main Agent
+Task: Modo COLAR TEXTO em nossy.pro/enviar (dono manda "de 50 em 50"; colagem do chat vira anexo e nunca chega — 11 falhas)
+
+Work Log:
+- Colagem do dono no chat vira anexo "Pasted Content_*.txt" que não chega (10ª e 11ª perdas)
+- Criado /api/enviar-texto (POST JSON {texto}) — salva como Vagas_G4_parte-<ts>.txt -> tmpfiles -> webhook (tipo vagas-g4-upload, via texto-colidado)
+- Página /enviar reformulada: Opção 1 = colar texto (textarea + contador de caracteres); Opção 2 = arquivo
+- Deploy 21f3eaa: Vercel não criou deployment na API (retrigger d258ee7), mas código propagou; rota E2E ao vivo 2x ok:true notificado:true; páginas locais testadas (texto ok)
+- Testes no webhook têm 232 bytes < 300 → vigia ignora (gate de tamanho)
+
+Stage Summary:
+- Dono pode colar as vagas de 50 em 50 em nossy.pro/enviar (Opção 1) — chega em segundos com contagem de caracteres
+- Pipeline de publicação intacto: interpretar -> IDs 900000+ -> todos os países -> padrão atual do site
