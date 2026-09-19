@@ -76,6 +76,20 @@ def detect_columns(header):
 
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 
+# Itens proibidos pelo dono (19/09/2026): excluídos TOTALMENTE de anúncios e
+# descrições — e-mail vagas@g4.com.br e site www.g4.com (g4.com / g4.com.br).
+# O \b final impede casar dentro de e-mails legítimos (ex.: g4.companyy@gmail.com).
+PROIBIDOS_RX = re.compile(
+    r"(?i)vagas\s*@\s*g4\s*\.\s*com(?:\s*\.\s*br)?|\b(?:https?://)?(?:www\.)?g4\.com(?:\.br)?\b"
+)
+
+def sanitize_proibidos(texto) -> str:
+    """Remove os itens proibidos e conserta a pontuação que ficar solta."""
+    t = PROIBIDOS_RX.sub("", str(texto or ""))
+    t = re.sub(r"(?i)(e-?mail da empresa|site da empresa|site)\s*[:\uff1a]\s*\.", r"\1.", t)
+    t = re.sub(r"[ \t]{2,}", " ", t)
+    return t.strip()
+
 def build_description(texto, email, lang_nota="pt"):
     texto = norm_is_text(texto)
     nota = (
@@ -297,7 +311,7 @@ def main():
                 i = cols.get(field)
                 return row[i] if i is not None and i < len(row) else None
 
-            title = str(get("title") or "").strip()
+            title = sanitize_proibidos(str(get("title") or "")).strip()
             if not title:
                 erros.append((n, "cargo vazio"))
                 continue
@@ -312,13 +326,14 @@ def main():
                     continue
 
             email = ""
-            m = EMAIL_RE.search(str(get("email") or ""))
+            m = EMAIL_RE.search(sanitize_proibidos(str(get("email") or "")))
             if m:
                 email = m.group(0).strip().lower()
             if not email:
                 email = EMAIL_PADRAO  # pedido do dono: contato p/ enviar dados do usuário
 
-            description = build_description(get("description"), email)
+            # Blindagem do dono: descrição NUNCA sai com os itens proibidos
+            description = sanitize_proibidos(build_description(get("description"), email))
             if len(description) < 30:
                 erros.append((n, "descrição vazia"))
                 continue
