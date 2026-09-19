@@ -105,36 +105,7 @@ export function getTypeLabel(lang: string, type: string): string {
   return TYPE_LABELS[lang]?.[type] || TYPE_LABELS["en"]?.[type] || type;
 }
 
-export const PAYWALL_TEXT: Record<string, { unlock: string; premium: string }> = {
-  en: { unlock: 'Unlock Contact', premium: 'Premium' },
-  "pt-br": { unlock: 'Desbloquear Contato', premium: 'Premium' },
-  "pt-pt": { unlock: 'Desbloquear Contacto', premium: 'Premium' },
-  es: { unlock: 'Desbloquear Contacto', premium: 'Premium' },
-  fr: { unlock: 'Débloquer Contact', premium: 'Premium' },
-  de: { unlock: 'Kontakt Freischalten', premium: 'Premium' },
-  it: { unlock: 'Sblocca Contatto', premium: 'Premium' },
-  nl: { unlock: 'Contact Ontgrendelen', premium: 'Premium' },
-  pl: { unlock: 'Odblokuj Kontakt', premium: 'Premium' },
-  ru: { unlock: 'Разблокировать контакт', premium: 'Премиум' },
-  zh: { unlock: '解锁联系方式', premium: '高级' },
-  ja: { unlock: '連絡先解除', premium: 'プレミアム' },
-  ko: { unlock: '연락처 잠금 해제', premium: '프리미엄' },
-  hi: { unlock: 'संपर्क अनलॉक करें', premium: 'प्रीमियम' },
-  bn: { unlock: 'যোগাযোগ আনলক', premium: 'প্রিমিয়াম' },
-  ar: { unlock: 'فتح جهات الاتصال', premium: 'مميز' },
-  tr: { unlock: 'İletişimi Aç', premium: 'Premium' },
-  vi: { unlock: 'Mở khóa liên hệ', premium: 'Premium' },
-  th: { unlock: 'ปลดล็อกข้อมูลติดต่อ', premium: 'พรีเมียม' },
-  ur: { unlock: 'رابطہ کھولیں', premium: 'پریمیم' },
-  tl: { unlock: 'I-unlock ang Contact', premium: 'Premium' },
-  sw: { unlock: 'Fungua Mawasiliano', premium: 'Premium' },
-};
-
-export function getPaywallText(lang: string) {
-  return PAYWALL_TEXT[lang] || PAYWALL_TEXT['en'];
-}
-
-// ─── Dynamic Paywall Logic (padrão Premium 0220) ───────────────────
+// ─── Paywall (padrão Premium 0220 — DESATIVADO) ─────────────────────
 
 export interface PaywallResult {
   paywall: boolean;
@@ -142,25 +113,12 @@ export interface PaywallResult {
 }
 
 /**
- * Premium 0220 — lista manual de anúncios designados.
- * Qualquer vaga cujo id esteja nesta lista fica SEMPRE com paywall de
- * $7 (nome da empresa, e-mail e contato bloqueados), independente de
- * ser remota ou da regra dos 10%.
- * Como aplicar o padrão a um anúncio: adicione o id da vaga aqui e faça
- * commit + deploy. Este é o mecanismo reutilizável do padrão Premium 0220.
- */
-export const PREMIUM_0220_FORCE_JOB_IDS: readonly number[] = [
-  // Ex.: 123456,
-];
-
-/**
- * PADRÃO 0220 — VAGAS LIVRES (2026-09-18, pedido do dono):
- * "retire toda a área premium, deixe todos os anúncios livres".
- *
- * A regra de paywall foi DESATIVADA: TODAS as vagas são públicas — empresa,
- * e-mail e telefone visíveis sem pagamento. A assinatura é mantida para não
- * quebrar os call-sites existentes (páginas, layouts e APIs de dados);
- * qualquer chamada agora retorna paywall=false.
+ * VAGAS LIVRES (2026-09-18/19, pedido do dono — "retire toda a área
+ * premium e o nome premium"): TODAS as vagas são públicas — empresa,
+ * e-mail e telefone visíveis sem pagamento. Nenhum texto ou selo
+ * "Premium" existe mais no site. A assinatura é mantida apenas para
+ * não quebrar os call-sites existentes (páginas e APIs de dados);
+ * qualquer chamada retorna paywall=false.
  */
 export function shouldHavePaywall(_job: {
   id?: number;

@@ -123,7 +123,7 @@ export default function RemoteWorkSalaryGuide2025({ params }: { params: Promise<
 
             <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-3">1. Research Extensively Before Negotiating</h3>
             <p>
-              Knowledge is power in salary negotiations. Before any discussion about compensation, research salary ranges for your specific role, experience level, and region using platforms like Levels.fyi, Glassdoor, Payscale, and NOSSY. Talk to peers in similar roles and join communities like Blind, Hashnode, and specialized Slack groups where salary data is shared. The more data points you have, the more confidently you can anchor your negotiation.
+              Knowledge is power in salary negotiations. Before any discussion about compensation, research salary ranges for your specific role, experience level, and region using platforms like Levels.fyi, Payscale, and NOSSY. Talk to peers in similar roles and join communities like Blind, Hashnode, and specialized Slack groups where salary data is shared. The more data points you have, the more confidently you can anchor your negotiation.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-3">2. Always Negotiate, Even Remotely</h3>

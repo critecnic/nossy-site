@@ -5,7 +5,7 @@ import Link from "next/link";
 import { REGIONS, TOTAL_JOBS } from "@/lib/countries";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
-import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName, shouldHavePaywall } from "@/lib/shared";
+import { getSectorMeta, getTypeStyle, getTypeLabel, getRegionName } from "@/lib/shared";
 import { formatJobLocation, normalizeRegionCode } from "@/lib/location-names";
 import { getCountryNameTranslated, getCountryCountLabel } from "@/lib/country-names";
 import SiteLogo from "@/components/SiteLogo";
@@ -134,7 +134,6 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {latest.map((job) => {
                 const m = getSectorMeta(job.sector); const tc = getTypeStyle(job.type);
-                const pwJob = shouldHavePaywall(job);
                 // normalizeRegionCode: dados têm "EUA"/"America do Norte" (com espaço)
                 // — o link precisa do slug de URL ("eua"/"america-do-norte")
                 const jobRegion = job.regiao ? normalizeRegionCode(job.regiao) : '';
@@ -145,7 +144,7 @@ export default function HomePage({ params }: { params: Promise<{ lang: string; s
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2"><span className={"rounded-full px-2.5 py-0.5 text-xs font-medium border " + tc}>{getTypeLabel(lang, job.type)}</span><span className="text-xs text-gray-400">{job.posted}</span></div>
                       <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{job.title}</h3>
-                      <p className="text-xs font-medium text-gray-600 mb-2">{pwJob.paywall ? '***' : job.company}</p>
+                      <p className="text-xs font-medium text-gray-600 mb-2">{job.company}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500"><span>{formatJobLocation(job.location, { countrySlug: job.country, countryName: job.countryName, lang })}</span><span className="text-gray-300">|</span><span className="font-medium text-sky-600">{job.salary}</span></div>
                       <div className="mt-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-600">{m.icon} {sectorNames[lang]?.[job.sector] || job.sector}</span></div>
                     </div></article>);

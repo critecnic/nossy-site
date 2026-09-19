@@ -103,18 +103,16 @@ export default function HowToFindTechJobsInEurope({ params }: { params: Promise<
               <li><strong>Digital Nomad Visas:</strong> Countries like Portugal, Spain, Greece, Croatia, and Estonia offer dedicated digital nomad visas that allow remote tech workers to live in Europe while working for foreign employers. These typically require proof of income above a minimum threshold.</li>
             </ul>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">Best Job Boards and Platforms for European Tech Jobs</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">Where to Find European Tech Jobs</h2>
             <p>
-              Finding the right tech job in Europe requires casting a wide net across multiple platforms. Here are the most effective channels:
+              The most effective strategy for landing a tech job in Europe is to search on a platform with full European coverage and then apply directly through each company's own careers page — no intermediaries, faster responses, and your application goes straight to the hiring team:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>NOSSY (nossy.pro):</strong> A dedicated tech jobs aggregator that surfaces opportunities from across 58 countries. With its powerful filtering by region, country, category, and work type, NOSSY is an excellent starting point for discovering tech roles throughout Europe and beyond.</li>
-              <li><strong>LinkedIn:</strong> Remains the dominant professional network in Europe. Many European companies post exclusively on LinkedIn, and the platform's Easy Apply feature makes submitting applications quick and straightforward. Optimize your profile with European-standard formatting and keywords relevant to your target roles.</li>
-              <li><strong>Wellfound (formerly AngelList):</strong> The premier platform for startup jobs. European startups from Berlin to Lisbon post thousands of roles here, many offering equity compensation alongside salary.</li>
-              <li><strong>Indeed and Glassdoor:</strong> Both platforms have strong European coverage. Glassdoor is particularly valuable for researching company culture, interview processes, and salary benchmarks for specific countries.</li>
-              <li><strong>Country-specific boards:</strong> Each European country has its own popular job platforms. In Germany, StepStone and Xing are essential. In France, refer to Welcome to the Jungle and Apec. In the Netherlands, check Hays and IamExpat Jobs. In Ireland, IrishJobs.ie is the leading platform.</li>
-              <li><strong>EuroBrussels:</strong> For those interested in working for EU institutions and international organizations based in Brussels, this specialized platform lists hundreds of tech and digital policy roles.</li>
-              <li><strong>Otta:</strong> A curated job search platform focused on fast-growing tech companies, with excellent coverage of European startups and scale-ups.</li>
+              <li><strong>Company career pages:</strong> Once you find a role that fits, always apply through the company's official website. Direct applications demonstrate genuine interest and often reach recruiters faster than any other channel.</li>
+              <li><strong>Remote-first companies:</strong> Many European remote employers publish their openings exclusively on their own careers pages and on aggregators like NOSSY — check both to avoid missing hidden opportunities.</li>
+              <li><strong>Tech communities and events:</strong> European meetups, conferences, and hackathons (from Berlin to Lisbon) are where many hires actually happen. Engaging with local tech communities puts you in direct contact with hiring managers.</li>
+              <li><strong>Country-specific tech ecosystems:</strong> Local tech blogs, newsletters, and incubator networks in Germany, France, the Netherlands, and Ireland regularly publish curated openings from growing companies in each market.</li>
             </ul>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">Tips for Standing Out in the European Tech Job Market</h2>

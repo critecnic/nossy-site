@@ -321,6 +321,8 @@ Rules:
   }
 
   // Gemini not available — use Google GTX + MyMemory
+  // (concorrência 6: GTX gratuito aplica rate-limit por IP — valores altos
+  // geram 429 em lote e derrubam a tradução da página inteira)
   const CONCURRENCY = 6;
   const queue = [...jobs];
   const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {

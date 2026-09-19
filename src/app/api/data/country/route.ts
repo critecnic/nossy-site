@@ -3,67 +3,18 @@ import { needsServerTranslation, translateJobListFields } from "@/lib/translate-
 import { LANGUAGES } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { maskJobAlways } from "@/lib/paywall-mask";
-import { DATA_DIR } from "@/lib/data-dir";
-import { getRemotePool, getRemoteExtraJobs } from "@/lib/remote-pool";
-import { filterCompetitorJobs } from "@/lib/competitors";
-import { promises as fsp } from "fs";
-import path from "path";
+import { getCountryListing, getSectorListing } from "@/lib/country-listing";
 
-const CHUNK_SIZE = 1000;
 const API_TIMEOUT = 8000; // 8s max for the whole request
 
 const apiRateLimits: Record<string, number[]> = {};
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   if (!apiRateLimits[ip]) apiRateLimits[ip] = [];
-  apiRateLimits[ip] = apiRateLimits[ip].filter(t => now - t < 60000);
+  apiRateLimits[ip].filter(t => now - t < 60000);
   if (apiRateLimits[ip].length >= 120) return true;
   apiRateLimits[ip].push(now);
   return false;
-}
-
-function safeFilePath(file: string): string | null {
-  if (!/^[a-z0-9][a-z0-9\-_]*\.json$/.test(file)) return null;
-  const resolved = path.resolve(DATA_DIR, file);
-  if (!resolved.startsWith(DATA_DIR + path.sep) && resolved !== DATA_DIR) return null;
-  return resolved;
-}
-
-async function getIndex(baseName: string): Promise<{ chunks: string[]; totalJobs: number } | null> {
-  try {
-    const indexPath = path.join(DATA_DIR, `${baseName}_index.json`);
-    const raw = await fsp.readFile(indexPath, 'utf-8');
-    const idx = JSON.parse(raw);
-    return { chunks: idx.chunks, totalJobs: idx.totalJobs };
-  } catch {
-    return null;
-  }
-}
-
-async function loadJobsFromChunks(baseName: string, page: number, limit: number): Promise<{ jobs: any[]; total: number } | null> {
-  const idx = await getIndex(baseName);
-  if (!idx) return null;
-
-  const total = idx.totalJobs;
-  const globalOffset = (page - 1) * limit;
-  const startChunk = Math.floor(globalOffset / CHUNK_SIZE);
-  const endChunk = Math.min(
-    Math.floor((globalOffset + limit - 1) / CHUNK_SIZE),
-    idx.chunks.length - 1
-  );
-
-  let combined: any[] = [];
-  for (let c = startChunk; c <= endChunk; c++) {
-    const chunkPath = safeFilePath(idx.chunks[c]);
-    if (!chunkPath) continue;
-    try {
-      const chunkRaw = await fsp.readFile(chunkPath, 'utf-8');
-      combined = combined.concat(JSON.parse(chunkRaw));
-    } catch {}
-  }
-
-  const localOffset = globalOffset - (startChunk * CHUNK_SIZE);
-  return { jobs: combined.slice(localOffset, localOffset + limit), total };
 }
 
 export async function GET(req: NextRequest) {
@@ -82,142 +33,41 @@ export async function GET(req: NextRequest) {
   if (!file) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
-
-  const safePath = safeFilePath(file);
-  if (!safePath) {
+  if (!/^[a-z0-9][a-z0-9\-_]*\.json$/.test(file)) {
     return NextResponse.json({ error: "Invalid file" }, { status: 400 });
   }
 
   try {
     const baseName = file.replace('.json', '');
-    let jobs: any[];
-    let total: number;
-    const sectorFilter = sector.trim().toLowerCase();
 
-    // CATÁLOGO MUNDIAL: país sem arquivo próprio de dados recebe o pool
-    // remoto global (todas as vagas remotas do NOSSY, pedido do dono).
-    // Países fatiados (EUA/Canadá/Austrália) NÃO têm arquivo base — têm
-    // _index.json + chunks. Só caem no pool quem não tem NENHUM dos dois.
-    const [baseExists, indexExists] = await Promise.all([
-      fsp.access(safePath).then(() => true).catch(() => false),
-      fsp.access(path.join(DATA_DIR, baseName + "_index.json")).then(() => true).catch(() => false),
-    ]);
-    const hasOwnFile = baseExists || indexExists;
-    if (!hasOwnFile) {
-      const pool = await getRemotePool();
-      let source = pool;
-      if (sectorFilter) source = pool.filter((j: any) => (j.sector || '').toLowerCase() === sectorFilter);
-      total = source.length;
-      const offset = (page - 1) * limit;
-      jobs = source.slice(offset, offset + limit);
-      const totalPagesCountPool = Math.max(1, Math.ceil(total / limit));
-      const maskedPool = jobs.map((j: any) => maskJobAlways(j));
-      if (!needsServerTranslation(lang)) {
-        return NextResponse.json({ jobs: maskedPool, total, page, totalPages: totalPagesCountPool }, {
-          headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
-        });
-      }
-      const { map: tmap, ok: tok } = await translateJobListFields(maskedPool, lang);
-      const translatedPool = maskedPool.map((job: any) => {
-        const t = tmap.get(job.id);
-        return t ? { ...job, title: t.title, company: t.company, location: t.location, ...(t.description ? { description: t.description } : {}) } : job;
-      });
-      return NextResponse.json({ jobs: translatedPool, total, page, totalPages: totalPagesCountPool }, {
-        headers: { "Content-Type": "application/json", "Cache-Control": tok ? "public, s-maxage=3600, stale-while-revalidate=600" : "no-store" },
-      });
-    }
+    // PADRÃO 0220 — rotação/mistura compartilhada com o SSR da página de
+    // país (src/lib/country-listing.ts): remotas em TODOS os países,
+    // G4 COMPANY entre os 10 primeiros, ordem rotaciona a cada 6h, nunca
+    // a mesma empresa em sequência. SSR e API nunca divergem.
+    const listing = sector.trim()
+      ? await getSectorListing(baseName, sector, page, limit)
+      : await getCountryListing(baseName, page, limit);
 
-    if (sectorFilter) {
-      // Sector filter: must scan all chunks, filter, then paginate
-      const idx = await getIndex(baseName);
-      if (idx) {
-        let allFiltered: any[] = [];
-        for (let c = 0; c < idx.chunks.length; c++) {
-          const chunkPath = safeFilePath(idx.chunks[c]);
-          if (!chunkPath) continue;
-          try {
-            const raw = await fsp.readFile(chunkPath, 'utf-8');
-            const chunk = JSON.parse(raw);
-            for (const job of chunk) {
-              if ((job.sector || '').toLowerCase() === sectorFilter) {
-                allFiltered.push(job);
-              }
-            }
-          } catch {}
-        }
-        total = allFiltered.length;
-        const offset = (page - 1) * limit;
-        jobs = allFiltered.slice(offset, offset + limit);
-      } else {
-        const raw = await fsp.readFile(safePath, "utf-8");
-        const allJobs = JSON.parse(raw);
-        const filtered = allJobs.filter((j: any) => (j.sector || '').toLowerCase() === sectorFilter);
-        total = filtered.length;
-        const offset = (page - 1) * limit;
-        jobs = filtered.slice(offset, offset + limit);
-      }
-    } else {
-      // No sector filter: original chunked pagination
-      const chunkResult = await loadJobsFromChunks(baseName, page, limit);
-      if (chunkResult) {
-        jobs = chunkResult.jobs;
-        total = chunkResult.total;
-      } else {
-        const raw = await fsp.readFile(safePath, "utf-8");
-        const allJobs = JSON.parse(raw);
-        total = allJobs.length;
-        const offset = (page - 1) * limit;
-        jobs = allJobs.slice(offset, offset + limit);
-      }
-    }
+    const { jobs, total, totalPages } = listing;
+    const pageOut = listing.page;
 
-    // PADRÃO 1874 — remoto em TODOS os países: depois das vagas locais
-    // (paginadas acima), a listagem continua no pool remoto exclusivo do
-    // país ({base}_remote-extra.json — ids do pool que NÃO colidem com ids
-    // locais, pré-computado no build). Paginação atravessa a fronteira
-    // local->pool sem buracos nem duplicatas; o detalhe já resolve ids do
-    // pool via findJobInPools (listagem <-> detalhe consistentes).
-    const localTotal = total;
-    const extraJobs = await getRemoteExtraJobs(baseName);
-    if (extraJobs.length > 0) {
-      const extraFiltered = sectorFilter
-        ? extraJobs.filter((j: any) => (j.sector || '').toLowerCase() === sectorFilter)
-        : extraJobs;
-      total += extraFiltered.length;
-      const offset = (page - 1) * limit;
-      const poolStart = Math.max(0, offset - localTotal);
-      const poolEnd = offset + limit - localTotal;
-      if (poolStart < extraFiltered.length) {
-        jobs = [...jobs, ...extraFiltered.slice(poolStart, Math.max(0, poolEnd))];
-      }
-    }
-
-    // BLOQUEIO DE CONCORRENTES: portais (LinkedIn, Indeed, Seek...) nunca
-    // aparecem nas listagens — filtro em duas camadas (dados + runtime).
-    const preMask = filterCompetitorJobs(jobs);
-    total = Math.max(0, total - (jobs.length - preMask.length));
-    jobs = preMask;
-
-    const totalPagesCount = Math.max(1, Math.ceil(total / limit));
-
-    // Premium 0220: listas são respostas PÚBLICAS (cache CDN) — a máscara
-    // é aplicada SEMPRE às vagas com paywall, para todos os visitantes.
-    // O conteúdo real só é servido na rota de detalhe, por cookie válido.
+    // Premium 0220 (vagas livres): máscara mantida como no-op para não
+    // quebrar call-sites — toda vaga é pública.
     const masked = jobs.map((j: any) => maskJobAlways(j));
 
     if (!Array.isArray(jobs) || jobs.length === 0) {
-      return NextResponse.json({ jobs: [], total, page: 1, totalPages: totalPagesCount }, {
+      return NextResponse.json({ jobs: [], total, page: pageOut, totalPages }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
     if (!needsServerTranslation(lang)) {
-      return NextResponse.json({ jobs: masked, total, page, totalPages: totalPagesCount }, {
+      return NextResponse.json({ jobs: masked, total, page: pageOut, totalPages }, {
         headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
       });
     }
 
-    console.log(`[NOSSY API] Country ${file} page ${page} sector=${sectorFilter || 'all'}: ${jobs.length}/${total} jobs lang=${lang}`);
+    console.log(`[NOSSY API] Country ${file} page ${pageOut} sector=${sector || 'all'}: ${jobs.length}/${total} jobs lang=${lang}`);
     const { map: translatedMap, ok: translateOk } = await translateJobListFields(masked, lang);
 
     const translated = masked.map((job: any) => {
@@ -231,7 +81,7 @@ export async function GET(req: NextRequest) {
       ? "public, s-maxage=3600, stale-while-revalidate=600"
       : "no-store";
 
-    return NextResponse.json({ jobs: translated, total, page, totalPages: totalPagesCount }, {
+    return NextResponse.json({ jobs: translated, total, page: pageOut, totalPages }, {
       headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
     });
   } catch (err: any) {

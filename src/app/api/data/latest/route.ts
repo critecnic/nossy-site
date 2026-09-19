@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     if (!needsServerTranslation(lang)) {
       clearTimeout(timer);
       return new NextResponse(JSON.stringify(masked), {
-        headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=1800" },
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=600" },
       });
     }
 
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     });
 
     const cacheHeader = translateOk
-      ? "public, s-maxage=1800"
+      ? "public, s-maxage=1800, stale-while-revalidate=600"
       : "no-store";
 
     return new NextResponse(JSON.stringify(translated), {
