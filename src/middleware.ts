@@ -203,6 +203,23 @@ export function middleware(req: NextRequest) {
   return granted;
 }
 
+// OTIMIZAÇÃO VERCEL (2026-09-30): o matcher largo ("todas as URLs") fazia o
+// middleware rodar em CADA request público — 1 invocação de função por visita
+// MESMO com página servida do cache de borda. Foi o principal responsável por
+// estourar 1.005.028/1.000.000 invocações/mês do plano Hobby (pausa 402).
+// Agora o middleware protege APENAS as rotas sensíveis (Camada 1); páginas
+// públicas passam direto ao cache da CDN com ZERO invocações.
+// ⚠️ A Camada 2 (lockEnabled — bloqueio TOTAL do site) só age nestas rotas
+// com este matcher estreito. Se precisar do bloqueio total de novo, restaure:
+//   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/api/agent",
+    "/api/agent/:path*",
+    "/api/admin",
+    "/api/admin/:path*",
+    "/api/security/ip",
+  ],
 };

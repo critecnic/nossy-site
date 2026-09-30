@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { LANGUAGES, LANG_SLUGS, sectorNames, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import { getSectorMeta, getTypeStyle, getTypeLabel, formatSalary, getRegionName, getCompanyCareerUrl } from "@/lib/shared";
@@ -57,7 +57,6 @@ export default function CountryJobsClient({
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const PER = 18;
-  const searchParams = useSearchParams();
   const router = useRouter();
 
   const homeHref = "/" + lang + "/" + (LANG_SLUGS[lang] || "jobs");
@@ -93,11 +92,27 @@ export default function CountryJobsClient({
   useEffect(() => {
     // Página via URL (?page=N) tem precedência; senão, troca silenciosa
     // pela versão traduzida da página 1 (SSR já entregou o conteúdo).
-    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+    // OTIMIZAÇÃO ISR (2026-09-30): leitura client-only de window.location
+    // substitui useSearchParams() — que forçava bail-out de render
+    // estático/ISR (BAILOUT_TO_CLIENT_SIDE_RENDERING) e derrubava a página
+    // de país com 500 quando a rota virou ISR.
+    const readPage = () => {
+      try {
+        return parseInt(new URLSearchParams(window.location.search).get("page") || "1", 10) || 1;
+      } catch { return 1; }
+    };
+    const onPop = () => {
+      const p = readPage();
+      if (p > 1) fetchPage(p);
+      else if (!SOURCE_LANGS.has(langCode)) fetchPage(1, true);
+    };
+    const pageFromUrl = readPage();
     if (pageFromUrl > 1) fetchPage(pageFromUrl);
     else if (!SOURCE_LANGS.has(langCode)) fetchPage(1, true);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [langCode]);
 
   // Type filter aliases: PT and EN variants map to the same filter key
   const TYPE_ALIASES: Record<string, string[]> = {

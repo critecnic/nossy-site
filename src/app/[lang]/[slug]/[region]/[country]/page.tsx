@@ -21,6 +21,17 @@ const PER = 18;
 // background; a rotação de 6h da listagem permanece consistente com a API.
 export const revalidate = 3600;
 
+// OTIMIZAÇÃO VERCEL (2026-09-30): revalidate SEM generateStaticParams fazia
+// o Next 15 tratar esta rota como dinâmica (no-store) — cada fetch de robô ou
+// usuário gerava 1 invocação de função (1M/mês estourou na Vercel Hobby).
+// Com dynamicParams + generateStaticParams([]) a rota vira ISR sob demanda:
+// o 1º request renderiza e cacheia na CDN; os seguintes são cache hits com
+// ZERO invocações até o revalidate expirar.
+export const dynamicParams = true;
+export async function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: {

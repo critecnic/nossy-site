@@ -9,6 +9,18 @@ import { findJobInPoolsSync } from "@/lib/remote-pool";
 import { isCompetitorJob } from "@/lib/competitors";
 import JobDetailClient from "./JobDetailClient";
 
+// OTIMIZAÇÃO VERCEL (2026-09-30): esta rota era 100% dinâmica (sem revalidate
+// e sem generateStaticParams) — cada fetch de robô/usuário = 1 invocação de
+// função; com 62.687 URLs nos sitemaps, estourou 1M invocações/mês na Vercel
+// Hobby (pausa 402). Padrão ISR sob demanda: 1º request renderiza e cacheia
+// na CDN por 24h (conteúdo da vaga não muda); demais requests = cache hit com
+// ZERO invocações. generateStaticParams([]) é o que ativa o ISR no Next 15.
+export const revalidate = 86400;
+export const dynamicParams = true;
+export async function generateStaticParams() {
+  return [];
+}
+
 interface Job {
   id: number; title: string; company: string; companyUrl: string;
   location: string; country: string; countryName: string;
