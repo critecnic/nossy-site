@@ -4,6 +4,18 @@ import { REGIONS } from "@/lib/countries";
 import { getRegionName } from "@/lib/shared";
 import type { Lang } from "@/lib/i18n";
 
+// ISR on-demand (mesmo padrão do país/detalhe): [] + dynamicParams=true
+// registra o segmento na máquina de ISR — 1a visita renderiza, resto da CDN.
+// SEM revalidate aqui de propósito: a região lê só dados embutidos no build
+// (nunca muda sem deploy) — cache indefinido é seguro. E um revalidate de
+// layout venceria (menor valor da árvore) o revalidate de 24h da página de
+// detalhe, reduzindo-a a 1h. Cada rota define o próprio tempo:
+//   país/setores 1h (página/layouts respectivos), detalhe 24h (página [id]).
+export const dynamicParams = true;
+export async function generateStaticParams() {
+  return [];
+}
+
 const REGION_META_DESC: Record<string, (name: string, count: string) => string> = {
   en: (n, c) => `Browse ${n} tech jobs on NOSSY. ${c}+ vacancies across multiple countries.`,
   "pt-br": (n, c) => `Navegue vagas de tecnologia na ${n} no NOSSY. ${c}+ vagas em diversos paises.`,

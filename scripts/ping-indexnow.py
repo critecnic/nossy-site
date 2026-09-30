@@ -14,7 +14,7 @@ Como funciona:
   2. O arquivo public/<chave>.txt prova a posse do site;
   3. Este roteiro lê o sitemap index (https://nossy.pro/sitemap.xml),
      coleta os shards por país (sitemap-usa.xml, sitemap-germany.xml...)
-     e submete as URLs em lotes de 1.000 (limite do protocolo: 10.000).
+     e submete as URLs em lotes de 200 (limite do protocolo: 10.000).
 
 Uso:
   python3 scripts/ping-indexnow.py            # submete tudo (páginas + vagas)
@@ -37,8 +37,8 @@ KEY = SEO["indexNowKey"].strip()
 HOST = "nossy.pro"
 ORIGIN = f"https://{HOST}"
 ENDPOINT = "https://api.indexnow.org/IndexNow"
-CHUNK = 1000          # protocolo IndexNow: até 10.000 URLs por POST; 1.000 é educado
-PAUSA = 0.6           # segundos entre lotes
+CHUNK = 200           # protocolo aceita até 10.000; 200 espalha a descoberta e evita rajada de rastreamento (pico de invocations na Vercel)
+PAUSA = 1.5           # segundos entre lotes (mais educado com os robôs)
 
 def http_get(url: str, timeout: int = 25) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": "NOSSY-IndexNow/1.0"})
