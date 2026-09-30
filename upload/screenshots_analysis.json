@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Com base nas imagens fornecidas, aqui está uma descrição detalhada do estado da página e dos erros identificados:\n\n## **Visão Geral do Estado da Página**\nA página está em um **estado de falha crítica**. O conteúdo principal não carregou e, em vez disso, exibe apenas uma mensagem de erro genérica sobre uma exceção no lado do cliente (client-side exception). A interface está completamente quebrada para o usuário final.\n\n---\n\n## **Erros Específicos Identificados**\n\n### **1. Erro Principal: Exceção de Aplicação (Client-Side Exception)**\n- **Mensagem visível:** *\"Application error: a client-side exception has occurred while loading nossy.pro (see the browser console for more information).\"*\n- **Localização:** Centro da tela, texto preto sobre fundo branco/cinza claro\n- **Natureza:** Erro de JavaScript/React (provavelmente Next.js ou framework similar) que impediu a renderização correta da aplicação\n- **Impacto:** A página inteira ficou inutilizável - nenhum conteúdo funcional é exibido\n\n### **2. Falha na Renderização do Conteúdo**\n- **Problema:** A área de conteúdo está **completamente em branco**, exceto pela mensagem de erro\n- **O que deveria aparecer:** Lista de vagas de emprego (baseado na URL `/pt-br/vagas/europa` e `/en/jobs/europa/bulgaria`)\n- **Estado atual:** Nenhum card de vaga, filtro, header de navegação ou footer visível\n\n### **3. Ausência de Elementos de UI**\nNão são visíveis:\n- Menu de navegação principal\n- Barra de pesquisa\n- Filtros de localização/categoria\n- Cards de vagas de emprego\n- Paginação\n- Rodapé do site\n- Qualquer elemento interativo\n\n---\n\n## **Detalhes Técnicos Observados**\n\n### **URLs Afetadas (comparação entre as duas imagens):**\n1. **Imagem 1:** `nossy.pro/pt-br/vagas/europa` (versão em português)\n2. **Imagem 2:** `nossy.pro/en/jobs/europa/bulgaria` (versão em inglês, rota específica Bulgária)\n\n*Observação:* Ambas as URLs apresentam o **mesmo erro idêntico**, indicando que o problema é sistêmico e não específico de uma rota.\n\n### **Contexto do Browser:**\n- **Navegador:** Google Chrome (baseado na interface visual)\n- **Sistema operacional:** Windows 11 (barra de tarefas visível com data 26/08/2026)\n- **Abas abertas:** Múltiplas abas do site nossy.pro estão ativas, sugerindo que o usuário estava navegando pelo site quando ocorreu o erro\n- **Extensões:** Várias extensões instaladas (ícones visíveis na barra de endereços)\n\n### **Indicadores Adicionais:**\n- O ícone da aba mostra um \"X\" (fechar) ao invés do spinner de carregamento, indicando que a tentativa de renderização foi **concluída com falha** (não está mais carregando, mas sim exibindo o estado de erro)\n- A barra de favoritos mostra vários links de rádio (\"Rádio Eternal Music\", \"Rádio Sonho\", etc.), mas isso é irrelevante para o erro em si\n\n---\n\n## **Diagnóstico Provável**\n\nEste é um erro clássico de **aplicação React/Next.js** onde:\n1. O JavaScript do cliente (bundle) encontrou uma exceção durante a hidratação (hydration) ou renderização inicial\n2. O Error Boundary capturou o erro e exibiu esta mensagem genérica\n3. O erro provavelmente está relacionado a:\n   - Dados inválidos recebidos da API\n   - Falha em carregar um componente dinâmico\n   - Problema com rotas internacionais (i18n)\n   - Incompatibilidade entre servidor e cliente (SSR mismatch)\n\n## **Recomendações Imediatas**\n\nPara resolver, seria necessário:\n1. Abrir o **Console do Desenvolvedor** (F12) para ver o stack trace completo do erro\n2. Verificar os logs de rede (Network tab) para identificar se alguma chamada à API falhou (status 500, 404, etc.)\n3. Verificar se há erros de CORS ou problemas de cache\n4. Tentar recarregar a página (hard refresh: Ctrl+F5) ou limpar cookies/cache do site\n\n**Conclusão:** A página está **100% inoperante** para o usuário final, representando uma falha crítica de produção que impede qualquer interação com o conteúdo de vagas de emprego.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787793007,
+  "id": "2026082709095492cbe3fab0e24475",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026082709095492cbe3fab0e24475",
+  "usage": {
+    "completion_tokens": 1082,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 5493,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 6575
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Com base na imagem fornecida, aqui está a análise detalhada da tela do Vercel:\n\n### 1) Identificação da Página\nEsta é a página de **Gerenciamento de Tokens de Acesso (Access Tokens)**, localizada dentro das configurações da conta do usuário. \n*   **URL visível:** `vercel.com/account/settings/tokens`\n*   **Contexto:** É a área onde o usuário pode criar, visualizar e gerenciar tokens de API (Personal Access Tokens) que permitem que aplicativos externos ou scripts acessem e controlem sua conta no Vercel programaticamente.\n\n### 2) Tokens Presentes na Lista\nExistem **dois (2) tokens** listados na tabela abaixo do formulário de criação:\n\n1.  **Vercel Dashboard from Chrome on Windows (current)**\n2.  **nossy-deploy**\n\n### 3) Scope (Escopo/Permissão) de Cada Token\nO escopo define quais recursos o token tem permissão para acessar:\n\n*   **Token \"Vercel Dashboard...\":** O scope é representado por um **ícone vermelho circular com padrão de pontos** (parece ser um ícone genérico ou específico de dashboard). Não há um nome de projeto explícito ao lado, sugerindo que seja um token de escopo mais amplo ou relacionado à sessão atual do navegador.\n*   **Token \"nossy-deploy\":** O scope é explicitamente definido como **\"nossy-site\"**, indicando que este token tem acesso restrito apenas ao projeto/escopo denominado \"nossy-site\". Ao lado há um ícone roxo com a letra \"N\".\n\n### 4) Status e Metadados dos Tokens\nAmbos os tokens apresentam status de **ativo**, mas com detalhes diferentes:\n\n| Token | Status / Expiração | Última Atividade | Idade |\n| :--- | :--- | :--- | :--- |\n| **Vercel Dashboard...** | **Never expires** (Nunca expira) | **Just now** (Agora mesmo) | Criado há **3d** (3 dias) |\n| **nossy-deploy** | **Never expires** (Nunca expira) | **21m ago** (21 minutos atrás) | Criado há **21m** (21 minutos) |\n\n*   **Observação sobre seleção:** Ambos os tokens estão **selecionados** (checkbox marcada), e a interface indica \"**1 selected**\" na barra de ações em massa (embora dois pareçam marcados visualmente, ou o primeiro representa a seleção principal).\n\n### 5) Botões de Ação Visíveis\nHá múltiplos botões e elementos interativos na tela:\n\n*   **Botão Principal (Criação):** Um botão branco com texto preto **\"Create\"** à direita do formulário \"Create Token\", usado para gerar um novo token.\n*   **Filtros de Status:** Botões/filtros para filtrar a lista: **All**, **Active**, **Expired**, **Revoked** (atualmente \"All\" está selecionado).\n*   **Menu de Ações Individuais:** Cada token possui um botão de **três pontos (...)** à direita na linha, que abre um menu suspenso para ações como Revogar (Revoke) ou Editar.\n*   **Barra de Ações em Massa:** Acima da lista, aparece uma barra indicando \"**1 selected**\" (1 selecionado), sugerindo que ações em lote (como revogação múltipla) podem estar disponíveis quando itens são selecionados.\n*   **Navegação Lateral:** Links como \"Back\", \"Overview\", \"Domains\", e a seção ativa **\"Tokens\"** sob \"Settings\".\n*   **Link Informativo:** Link \"Access Tokens\" com ícone de link externo para documentação.\n\n**Resumo Visual:** A tela alerta o usuário (\"Be careful!\") sobre o poder desses tokens, pois eles permitem controle total da conta, e mostra que o usuário acabou de criar um token de deploy (`nossy-deploy`) para um projeto específico há poucos minutos.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787928485,
+  "id": "20260828224754cacf42aa27fd4075",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260828224754cacf42aa27fd4075",
+  "usage": {
+    "completion_tokens": 925,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2799,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 3724
+  }
+}
