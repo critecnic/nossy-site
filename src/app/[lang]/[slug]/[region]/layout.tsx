@@ -4,8 +4,11 @@ import { REGIONS } from "@/lib/countries";
 import { getRegionName } from "@/lib/shared";
 import type { Lang } from "@/lib/i18n";
 
-// ISR on-demand (mesmo padrão do país/detalhe): [] + dynamicParams=true
-// registra o segmento na máquina de ISR — 1a visita renderiza, resto da CDN.
+// Task 8 (refino, 2026-10-01): em vez de [] (ISR on-demand — a 1ª visita de
+// cada região/idioma custava 1 invocation), o GSP agora ENUMERA as 5 regiões:
+// combinado com o GSP de [slug] (22 idiomas), as 110 páginas viram SSG ●
+// PRERENDERIZADAS no build (countries.json é estático — build barato).
+// Zero invocations para regiões, e o HTML já nasce no deploy.
 // SEM revalidate aqui de propósito: a região lê só dados embutidos no build
 // (nunca muda sem deploy) — cache indefinido é seguro. E um revalidate de
 // layout venceria (menor valor da árvore) o revalidate de 24h da página de
@@ -13,7 +16,7 @@ import type { Lang } from "@/lib/i18n";
 //   país/setores 1h (página/layouts respectivos), detalhe 24h (página [id]).
 export const dynamicParams = true;
 export async function generateStaticParams() {
-  return [];
+  return REGIONS.map((r) => ({ region: r.code }));
 }
 
 const REGION_META_DESC: Record<string, (name: string, count: string) => string> = {

@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/data/**": ["./data/site/**"],
     "/api/admin/**": ["./data/site/**"],
+    // Task 8 (refino): a listagem do país renderiza on-demand (ISR) e lê
+    // data/site/ em runtime — sem esta linha a 1ª visita de cada país
+    // (que define o cache de 1h) poderia nascer sem os JSONs no lambda.
+    "/[lang]/[slug]/[region]/[country]": ["./data/site/**"],
     "/[lang]/[slug]/[region]/[country]/[id]": ["./data/site/**"],
     "/[lang]/[slug]/[region]/[country]/sectors/[sectorSlug]": ["./data/site/**"],
   },

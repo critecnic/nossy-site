@@ -86,7 +86,10 @@ def main():
         print("ERRO: indexNowKey vazia em src/config/seo.json")
         sys.exit(2)
 
-    max_urls = 10000
+    # Task 8 (refino): teto padrão menor — ondas curtas de descoberta em vez
+    # de submeter milhares de URLs de uma vez (pico de crawl = pico de
+    # invocations do plano Hobby). Use --max N para ampliar conscientemente.
+    max_urls = 500
     so_shards = "--so-shards" in sys.argv
     if "--max" in sys.argv:
         max_urls = int(sys.argv[sys.argv.index("--max") + 1])
