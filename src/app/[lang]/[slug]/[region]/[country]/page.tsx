@@ -5,6 +5,8 @@
 // todo o catálogo misturadas e rotação determinística por janela de 6h.
 // A tradução do idioma chega em background via CountryJobsClient (mesmo
 // padrão das páginas de detalhe) — SSR fica rápido, sem chamadas externas.
+import fs from "fs";
+import path from "path";
 import type { Metadata } from "next";
 import { LANGUAGES, LANG_SLUGS, i18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -27,9 +29,30 @@ export const revalidate = 3600;
 // Com dynamicParams + generateStaticParams([]) a rota vira ISR sob demanda:
 // o 1º request renderiza e cacheia na CDN; os seguintes são cache hits com
 // ZERO invocações até o revalidate expirar.
+//
+// REFINO (2026-10-02): em vez de [] (on-demand — a 1ª visita de cada
+// país/idioma custava 1 invocation), o GSP ENUMERA os países COM arquivo de
+// dados próprio (~58, lido de data/site no build) — × 22 idiomas do layout
+// pai ≈ 1,3 mil páginas SSG ● PRERENDERIZADAS: HTML nasce no deploy e a
+// borda responde HIT desde o 1º acesso (x-nextjs-cache MISS->HIT validado
+// localmente). Países do catálogo mundial sem arquivo continuam ISR
+// on-demand via dynamicParams. O regex casa só ARQUIVOS PRINCIPAIS:
+// nomes com 2º "_" (remote-extra/idmap/index/chunks _pN) não casam porque
+// a classe [a-z0-9-] não inclui "_"; all-digit (latest_20) é descartado.
 export const dynamicParams = true;
-export async function generateStaticParams() {
-  return [];
+export function generateStaticParams(): { region: string; country: string }[] {
+  const dir = path.join(process.cwd(), "data", "site");
+  const out: { region: string; country: string }[] = [];
+  try {
+    for (const f of fs.readdirSync(dir)) {
+      const m = f.match(/^([a-z0-9-]+)_([a-z0-9-]+)\.json$/i);
+      if (!m || /^\d+$/.test(m[2])) continue;
+      out.push({ region: m[1].toLowerCase(), country: m[2].toLowerCase() });
+    }
+  } catch {
+    // sem data/site no build — segue ISR on-demand para todos
+  }
+  return out;
 }
 
 export async function generateMetadata({
